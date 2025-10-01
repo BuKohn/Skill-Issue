@@ -1,0 +1,151 @@
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Регистрация | Skill Issue</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+</head>
+<body>
+    <header class="header" id="header">
+        <nav class="header-container">
+            <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
+            <div class="nav-group nav-group-left">
+                <a class="nav-links" href="https://www.youtube.com/">руководства</a>
+                <a class="nav-links">анкеты</a>
+            </div>
+            <div class="nav-group nav-group-right">
+                <input class="search" placeholder="поиск руководств, анкет и профилей">
+                <a class="nav-links">избранное</a>
+                <div class="menu-container">
+                    <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+                    <div class="context-menu">
+                        <a href="{% url 'register_page' %}">зарегистрироваться</a>
+                        <a href="{% url 'login_page' %}">войти</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="register_container">
+        <form id="register_form" class="register_panel" novalidate>
+            <p class="simple-text" style="margin: auto; font-size: 2rem">Давайте зарегистрируемся</p>
+            
+            <input class="register_input" type="text" id="reg_username" placeholder="введите username">
+            <input class="register_input" type="password" id="reg_password" placeholder="введите пароль">
+            <input class="register_input" type="password" id="reg_repeat_password" placeholder="повторите пароль">
+            <input class="register_input" type="email" id="reg_email" placeholder="введите email">
+
+            <div style="height: 20px; margin-top: -30px; margin-bottom: -20px">
+                <p id="reg_error" class="simple-text" style="font-size:0.8rem"></p>
+            </div>
+
+            <button type="submit" class="register_button">зарегистрироваться</button>
+            <a href="{% url 'login_page' %}" class="simple-text" style="color: dimgray; font-size: 1rem; margin-top: -20px">я уже смешарик</a>
+        </form>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem">
+                <tr>
+                    <td colspan="3" style="width:33%;">
+                        <a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration: none; color: lightgray; margin-top: 5px; font-size: 1.25rem ">Сибирский Федеральный Университет</a>
+                    <td style="text-align:right"><p class="nav-group-right" style="margin-top: 5px; font-size: 1.25rem;">@skill_issue 2025</p>
+                </tr>
+                <tr>
+                    <td><p style="text-align:left">@bukohm</p>
+                    <td><p style="text-align:center">@hoolkayyy</p>
+                    <td><p style="text-align:right">@K1rkaSs</p>
+                </tr>
+            </table>
+        </div>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const reg_form = document.getElementById('register_form');
+        const inputs = document.querySelectorAll('.register_input');
+        const error_par = document.getElementById('reg_error');
+
+        const bad_passwords = ['12345678', 'qwertyui', '1234567890', 'qwertyuio', 
+                               'qwertyuiop', '11111111', '22222222', '33333333', 
+                               '44444444', '55555555', '66666666', '77777777', 
+                               '88888888', '99999999', '00000000'];
+
+        const originalPlaceholders = {};
+        inputs.forEach(input => {
+            originalPlaceholders[input.id] = input.placeholder;
+        });
+
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.classList.remove('input_error');
+                this.placeholder = originalPlaceholders[this.id];
+                error_par.textContent = '';
+            });
+            input.addEventListener('input', function() {
+                this.classList.remove('input_error');
+                error_par.textContent = '';
+            });
+        });
+
+        reg_form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            let isValid = true;
+
+            const username = document.getElementById('reg_username').value.trim();
+            const password = document.getElementById('reg_password').value.trim();
+            const repeat_password = document.getElementById('reg_repeat_password').value.trim();
+            const email = document.getElementById('reg_email').value.trim();
+
+            if (username.length < 3) {
+                error_par.textContent = 'username должен содержать минимум 3 символа';
+                isValid = false;
+            } else if (password.length < 8) {
+                error_par.textContent = 'пароль должен содержать минимум 8 символов';
+                isValid = false;
+            } else if (bad_passwords.some(p => password.includes(p))) {
+                error_par.textContent = 'пароль содержит недопустимые комбинации';
+                isValid = false;
+            } else if (password !== repeat_password) {
+                error_par.textContent = 'пароли не совпадают';
+                isValid = false;
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                error_par.textContent = 'некорректный адрес email';
+                isValid = false;
+            }
+
+            if (isValid) {
+                const data = {username, password, email};
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                fetch("/users/register/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrfToken
+                    },
+                    body: JSON.stringify(data),
+                    credentials: "include"
+                })
+                .then(res => res.json())
+                .then(result => {
+                    if (result.id) {
+                        alert("Успешная регистрация!");
+                        window.location.href = "{% url 'login_page' %}";
+                    } else {
+                        error_par.textContent = JSON.stringify(result);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    error_par.textContent = "Ошибка сервера";
+                });
+            }
+        });
+    });
+    </script>
+</body>
+</html>
