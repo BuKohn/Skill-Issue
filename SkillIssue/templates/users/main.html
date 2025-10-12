@@ -1,21 +1,22 @@
 {% load static %}
-<html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
     <title>Skill Issue</title>
-    <link rel="stylesheet" href="../../static/css/styles.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
     <header class="header" id="header">
         <nav class="header-container">
             <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
             <div class="nav-group nav-group-left">
-                <a class="nav-links" href="https://www.youtube.com/">руководства</a>
+                <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
                 <a class="nav-links">анкеты</a>
             </div>
             <div class="nav-group nav-group-right">
-                <input class="search" placeholder="поиск руководств, анкет и профилей"></input>
+                <input class="search" placeholder="поиск руководств, анкет и профилей">
                 <a class="nav-links">избранное</a>
-                <div class="menu-container">
+                <div class="menu-container" id="menu-container">
                     <a class="nav-links" href="{% url 'login_page' %}">войти</a>
                     <div class="context-menu">
                         <a href="{% url 'register_page' %}">зарегистрироваться</a>
@@ -25,28 +26,66 @@
             </div>
         </nav>
     </header>
+
     <div class="body-background">
-        <img src="{% static 'images/logo.png' %}" style="width: 40%; height: auto; margin-top: 50px">
+        <img src="{% static 'images/logo.png' %}" alt="Skill Issue logo"
+             style="width: 40%; height: auto; margin-top: 50px;">
         <br><br>
         <hr style="width: 50%; color: ghostwhite">
         <p class="logo" style="color: black; font-size: 2.5rem">Skill Issue</p>
         <hr style="width: 40%; color: ghostwhite">
         <p class="simple-text" style="margin-top: 5px">проект для поиска и обмена навыками</p>
     </div>
+
     <footer class="footer">
         <div class="footer-container">
             <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem">
                 <tr>
-                    <td colspan="3" style="width:33%;"><a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem ">Сибирский Федеральный Университет</a>
-                    <td style="text-align:right"><p class="nav-group-right" style="margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">@skill_issue 2025</p>                 
+                    <td colspan="3" style="width:33%;">
+                        <a href="https://www.sfu.ru/ru" class="nav-group-left"
+                           style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">
+                           Сибирский Федеральный Университет
+                        </a>
+                    </td>
+                    <td style="text-align:right;">
+                        <p class="nav-group-right" style="margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">@skill_issue 2025</p>
+                    </td>
                 </tr>
                 <tr>
-                    <td><p style="text-align:left">@bukohm</p>
-                    <td><p style="text-align:center">@hoolkayyy</p>
-                    <td><p style="text-align:right">@K1rkaSs</p>          
+                    <td><p style="text-align:left">@bukohm</p></td>
+                    <td><p style="text-align:center">@hoolkayyy</p></td>
+                    <td><p style="text-align:right">@K1rkaSs</p></td>
                 </tr>
             </table>
         </div>
     </footer>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+    const menuContainer = document.querySelector(".menu-container");
+
+    try {
+        const response = await fetch("/api/me/", {
+            credentials: "include", // это обязательно
+        });
+
+        if (response.ok) {
+            const user = await response.json();
+            menuContainer.innerHTML = `
+                <a class="nav-links" href="/users/${user.username}/" style="margin-right: 20px;">профиль</a>
+                <a class="nav-links" href="/logout/">выйти</a>
+            `;
+
+            // добавим обработчик выхода
+            document.getElementById("logout-btn").addEventListener("click", async () => {
+                await fetch("/logout/", { credentials: "include" });
+                location.reload();
+            });
+        }
+    } catch (err) {
+        console.error("Ошибка при проверке авторизации", err);
+    }
+});
+    </script>
 </body>
 </html>

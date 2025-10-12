@@ -1,0 +1,92 @@
+{% load static %}
+<html>
+<head>
+    <title>Skill Issue</title>
+    <link rel="stylesheet" href="{% static 'css/styles (2).css' %}">
+</head>
+<body>
+<header class="header" id="header">
+    <nav class="header-container">
+        <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
+        <div class="nav-group nav-group-left">
+            <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
+            <a class="nav-links" href="#">анкеты</a>
+        </div>
+        <div class="nav-group nav-group-right">
+            <input class="search" placeholder="поиск руководств, анкет и профилей">
+            <a class="nav-links" href="#">избранное</a>
+            <div class="menu-container">
+                {% if user.is_authenticated %}
+                    <a class="nav-links" href="{% url 'logout_page' %}">выйти</a>
+                {% else %}
+                    <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+                    <div class="context-menu">
+                        <a href="{% url 'register_page' %}">зарегистрироваться</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div class="body-background">
+    <h1 class="simple-text" style="margin-top: 20px; font-size: 1.5rem;">Руководства</h1>
+    <hr style="width: 96%; margin: 10px auto;">
+    <p class="simple-text" style="font-size: 1.1rem;">Просматривайте руководства других пользователей и узнавайте много нового!</p>
+    <hr style="width: 75%; margin: 10px auto;">
+
+    <div class="profile-row-container" style="display: flex; justify-content: center; gap:5%; margin-top:20px">
+        <form method="GET" action="{% url 'guides_search' %}" style="display: flex; gap: 10px;">
+            <input name="query" placeholder="поиск" class="search-guides" value="{{ request.GET.query }}">
+            <input name="tags" placeholder="теги через запятую" class="search-guides" value="{{ request.GET.tags }}">
+            <button type="submit" class="profile-button">найти</button>
+        </form>
+    </div>
+
+    <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;">Результат поиска</h2>
+    <div class="profile-column-container">
+        {% if search_results %}
+            {% for guide in search_results %}
+            <div class="guide-element">
+                {% with guide.image.url as img_url %}
+                <img src="{{ img_url|default:STATIC_URL }}images/default-avatar.jpg" class="image-element" alt="{{ guide.title }}">
+                {% endwith %}
+                <a class="text-element">{{ guide.title }}</a>
+                <hr style="width: 75%; margin: 0 auto;">
+                <div class="profile-row-container" style="margin: auto; gap:5px">
+                    <a class="text-element">{{ guide.author.username }}</a>
+                    <a class="text-element">{{ guide.rating }}★</a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="text-align:center; font-style: italic; margin: 20px 0;">По вашему запросу ничего не найдено</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<footer class="footer">
+        <div class="footer-container">
+            <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem">
+                <tr>
+                    <td colspan="3" style="width:33%;">
+                        <a href="https://www.sfu.ru/ru" class="nav-group-left"
+                           style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">
+                           Сибирский Федеральный Университет
+                        </a>
+                    </td>
+                    <td style="text-align:right;">
+                        <p class="nav-group-right" style="margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">@skill_issue 2025</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td><p style="text-align:left">@bukohm</p></td>
+                    <td><p style="text-align:center">@hoolkayyy</p></td>
+                    <td><p style="text-align:right">@K1rkaSs</p></td>
+                </tr>
+            </table>
+        </div>
+</footer>
+</body>
+</html>

@@ -10,7 +10,7 @@
         <nav class="header-container">
             <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
             <div class="nav-group nav-group-left">
-                <a class="nav-links" href="https://www.youtube.com/">руководства</a>
+                <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
                 <a class="nav-links">анкеты</a>
             </div>
             <div class="nav-group nav-group-right">
@@ -70,6 +70,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const passwordInput = document.getElementById('login_password');
     const error_par = document.getElementById('login_error');
 
+    if (!loginForm) return;
+
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== "") {
@@ -95,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        fetch("{% url 'login' %}", {
+        fetch("/api/login/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
