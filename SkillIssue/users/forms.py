@@ -1,6 +1,6 @@
 from django import forms
 
-from users.models import Guide
+from .models import Guide
 
 
 class GuideForm(forms.ModelForm):
