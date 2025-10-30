@@ -48,17 +48,19 @@
         {% if popular_guides %}
             {% for guide in popular_guides %}
             <div class="guide-element">
-                {% if guide.image %}
-                    <img src="{{ guide.image.url }}" class="image-element" alt="{{ guide.title }}">
-                {% else %}
-                    <img src="{% static 'images/default-avatar.jpg' %}" class="image-element" alt="{{ guide.title }}">
-                {% endif %}
-                <a class="text-element">{{ guide.title }}</a>
-                <hr style="width: 75%; margin: 0 auto;">
-                <div class="profile-row-container" style="margin: auto; gap:5px">
-                    <a class="text-element">{{ guide.author.username }}</a>
-                    <a class="text-element">{{ guide.rating }}★</a>
-                </div>
+                <a href="{% url 'guide_detail' guide.id %}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; width: 100%; height: 100%;">
+                    {% if guide.image %}
+                        <img src="{{ guide.image.url }}" class="image-element" alt="{{ guide.title }}">
+                    {% else %}
+                        <img src="{% static 'images/default-avatar.jpg' %}" class="image-element" alt="{{ guide.title }}">
+                    {% endif %}
+                    <span class="text-element">{{ guide.title }}</span>
+                    <hr style="width: 75%; margin: 0 auto;">
+                    <div class="profile-row-container" style="margin: auto; gap:5px">
+                        <span class="text-element">{{ guide.author.username }}</span>
+                        <span class="text-element">{{ guide.rating }}★</span>
+                    </div>
+                </a>
             </div>
             {% endfor %}
         {% else %}
@@ -71,47 +73,48 @@
         {% if top_guides %}
             {% for guide in top_guides %}
             <div class="guide-element">
-                {% if guide.image %}
-                    <img src="{{ guide.image.url }}" class="image-element" alt="{{ guide.title }}">
-                {% else %}
-                    <img src="{% static 'images/default-avatar.jpg' %}" class="image-element" alt="{{ guide.title }}">
-                {% endif %}
-                <a class="text-element">{{ guide.title }}</a>
-                <hr style="width: 75%; margin: 0 auto;">
-                <div class="profile-row-container" style="margin: auto; gap:5px">
-                    <a class="text-element">{{ guide.author.username }}</a>
-                    <a class="text-element">{{ guide.rating }}★</a>
-                </div>
+                <a href="{% url 'guide_detail' guide.id %}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; width: 100%; height: 100%;">
+                    {% if guide.image %}
+                        <img src="{{ guide.image.url }}" class="image-element" alt="{{ guide.title }}">
+                    {% else %}
+                        <img src="{% static 'images/default-avatar.jpg' %}" class="image-element" alt="{{ guide.title }}">
+                    {% endif %}
+                    <span class="text-element">{{ guide.title }}</span>
+                    <hr style="width: 75%; margin: 0 auto;">
+                    <div class="profile-row-container" style="margin: auto; gap:5px">
+                        <span class="text-element">{{ guide.author.username }}</span>
+                        <span class="text-element">{{ guide.rating }}★</span>
+                    </div>
+                </a>
             </div>
             {% endfor %}
         {% else %}
             <p style="text-align:center; font-style: italic; margin: 20px 0;">Лучших руководств пока нет</p>
         {% endif %}
     </div>
-
 </div>
 
 <footer class="footer">
-        <div class="footer-container">
-            <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem">
-                <tr>
-                    <td colspan="3" style="width:33%;">
-                        <a href="https://www.sfu.ru/ru" class="nav-group-left"
-                           style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">
-                           Сибирский Федеральный Университет
-                        </a>
-                    </td>
-                    <td style="text-align:right;">
-                        <p class="nav-group-right" style="margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">@skill_issue 2025</p>
-                    </td>
-                </tr>
-                <tr>
-                    <td><p style="text-align:left">@bukohm</p></td>
-                    <td><p style="text-align:center">@hoolkayyy</p></td>
-                    <td><p style="text-align:right">@K1rkaSs</p></td>
-                </tr>
-            </table>
-        </div>
+    <div class="footer-container">
+        <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem">
+            <tr>
+                <td colspan="3" style="width:33%;">
+                    <a href="https://www.sfu.ru/ru" class="nav-group-left"
+                       style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">
+                       Сибирский Федеральный Университет
+                    </a>
+                </td>
+                <td style="text-align:right;">
+                    <p class="nav-group-right" style="margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">@skill_issue 2025</p>
+                </td>
+            </tr>
+            <tr>
+                <td><p style="text-align:left">@bukohm</p></td>
+                <td><p style="text-align:center">@hoolkayyy</p></td>
+                <td><p style="text-align:right">@K1rkaSs</p></td>
+            </tr>
+        </table>
+    </div>
 </footer>
 
 </body>

@@ -13,7 +13,7 @@
                 <a class="nav-links">анкеты</a>
             </div>
             <div class="nav-group nav-group-right">
-                <input class="search" placeholder="поиск руководств, анкет и профилей"></input>
+                <input class="search" placeholder="поиск руководств, анкет и профилей">
                 <a class="nav-links">избранное</a>
                 <div class="menu-container">
                     <a class="nav-links" href="{% url 'login_page' %}">войти</a>
@@ -25,44 +25,54 @@
             </div>
         </nav>
     </header>
+
     <div class="body-background">
-        <a class="simple-text" style="margin-top: 20px; font-size: 1.5rem;">Начните создавать своё руководство!</a>
-        <a class="simple-text" style="margin-top: 0px; font-size: 0.8rem; color:#424242; margin-bottom: 20px">Поддерживается разметка текста с помощью markdown</a>
-    <div class="editor-container">
-        <input type="text" class="guide_name_input" placeholder="Введите название руководства"></textarea>
-      <!-- Редактор -->
-        <div class="editor-section">
-            <div class="editor-header">
-                <div class="toolbar">
-                    <button class="toolbar-btn" onclick="insertText('**', '**')" title="Жирный текст">**B**</button>
-                    <button class="toolbar-btn" onclick="insertText('*', '*')" title="Курсив">*I*</button>
-                    <button class="toolbar-btn" onclick="insertText('# ', '')" title="Заголовок 1">H1</button>
-                    <button class="toolbar-btn" onclick="insertText('## ', '')" title="Заголовок 2">H2</button>
-                    <button class="toolbar-btn" onclick="insertText('- ', '')" title="Список">-</button>
-                    <button class="toolbar-btn" onclick="insertText('```\n', '\n```')" title="Блок кода">```</button>
-                    <button class="toolbar-btn" onclick="insertText('> ', '')" title="Цитата">></button>
-                    <input type="file" id="imageInput" class="file-input" accept="image/*" onchange="handleImageUpload()">
-                    <label for="imageInput" class="file-label">Изображение</label>
+        <h1 id="pageTitle" class="simple-text" style="margin-top: 20px; font-size: 1.5rem;">
+            {% if guide %}Отредактируйте руководство{% else %}Начните создавать своё руководство!{% endif %}
+        </h1>
+        <a class="simple-text" style="margin-top: 0; font-size: 0.8rem; color:#424242; margin-bottom: 20px">
+            Поддерживается разметка текста с помощью markdown
+        </a>
+
+        <div class="editor-container">
+            <input id="titleInput" type="text" class="guide_name_input" placeholder="Введите название руководства"
+       value="{% if guide %}{{ guide.title|escape }}{% endif %}">
+
+            <div class="editor-section">
+                <div class="editor-header">
+                    <div class="toolbar">
+                        <button class="toolbar-btn" onclick="insertText('**', '**')" title="Жирный текст">**B**</button>
+                        <button class="toolbar-btn" onclick="insertText('*', '*')" title="Курсив">*I*</button>
+                        <button class="toolbar-btn" onclick="insertText('# ', '')" title="Заголовок 1">H1</button>
+                        <button class="toolbar-btn" onclick="insertText('## ', '')" title="Заголовок 2">H2</button>
+                        <button class="toolbar-btn" onclick="insertText('- ', '')" title="Список">-</button>
+                        <button class="toolbar-btn" onclick="insertText('```\n', '\n```')" title="Блок кода">```</button>
+                        <button class="toolbar-btn" onclick="insertText('> ', '')" title="Цитата">></button>
+                        <input type="file" id="imageInput" class="file-input" accept="image/*" onchange="handleImageUpload()">
+                        <label for="imageInput" class="file-label">Изображение</label>
+                    </div>
                 </div>
-          </div>
-          <textarea id="markdownEditor" placeholder="Начните писать ваше руководство здесь..."></textarea>
+                <textarea id="markdownEditor" placeholder="Начните писать ваше руководство здесь...">
+                    {% if guide %}{{ guide.content|escape }}{% endif %}
+                </textarea>
+            </div>
+
+            <div class="preview-section">
+                <div class="preview-header">
+                    <h3 style="line-height: 0; margin-top:5px">Предпросмотр</h3>
+                </div>
+                <div id="preview" class="preview-content">
+                    <em style="color: #666;">Предпросмотр появится здесь...</em>
+                </div>
+            </div>
         </div>
 
-        <div class="preview-section">
-            <div class="preview-header">
-                <h3 style="line-height: 0; margin-top:5px">Предпросмотр</h3>
-            </div>
-            <div id="preview" class="preview-content">
-                <em style="color: #666;">Предпросмотр появится здесь...</em>
-            </div>
+        <div class="actions">
+            <button class="profile-button" onclick="clearEditor()">Очистить</button>
+            <button class="profile-button" onclick="saveGuide()">Сохранить руководство</button>
         </div>
     </div>
 
-    <div class="actions">
-        <button class="profile-button" onclick="clearEditor()">Очистить</button>
-        <button class="profile-button" onclick="saveGuide()">Сохранить руководство</button>
-    </div>
-    </div>
     <footer class="footer">
         <div class="footer-container">
             <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem">
@@ -78,181 +88,192 @@
             </table>
         </div>
     </footer>
-</body>
+
 <script>
-    const editor = document.getElementById('markdownEditor');
-    const preview = document.getElementById('preview');
+const editor = document.getElementById('markdownEditor');
+const preview = document.getElementById('preview');
+const titleInput = document.getElementById('titleInput');
+const pageTitle = document.getElementById('pageTitle');
 
-    const imageStorage = new Map();
-    let imageCounter = 0;
+const imageStorage = new Map();
+let imageCounter = 0;
 
-    function insertText(before, after) {
-        const start = editor.selectionStart;
-        const end = editor.selectionEnd;
-        const selectedText = editor.value.substring(start, end);
-        const newText = editor.value.substring(0, start) + before + selectedText + after + editor.value.substring(end);
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const guideId = urlParams.get('id');
 
-        editor.value = newText;
-        editor.focus();
-        editor.setSelectionRange(start + before.length, end + before.length);
+    if (guideId) {
+        pageTitle.textContent = "Отредактируйте руководство";
 
-        updatePreview();
+        fetch(`/api/guides/${guideId}/`)
+            .then(response => {
+                if (!response.ok) throw new Error('Guide not found');
+                return response.json();
+            })
+            .then(data => {
+                titleInput.value = data.title;
+                editor.value = data.content;
+
+                const imageRegex = /!\[(.*?)\]\((.*?)\)/g;
+                let match;
+                while ((match = imageRegex.exec(data.content)) !== null) {
+                    const altText = match[1];
+                    const fileName = match[2];
+
+                    if (!fileName.startsWith("http")) {
+                        const imageUrl = `/media/guides/${fileName}`;
+                        imageStorage.set(fileName, { url: imageUrl, name: altText || fileName });
+                    }
+                }
+
+                updatePreview();
+            })
+            .catch(err => console.error(err));
     }
 
-    function handleImageUpload() {
-        const fileInput = document.getElementById('imageInput');
-        const files = fileInput.files;
-
-        if (files.length > 0) {
-            Array.from(files).forEach(file => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const imageUrl = e.target.result;
-                    imageCounter++;
-
-                    const imageKey = `image_${imageCounter}`;
-                    imageStorage.set(imageKey, {
-                        url: imageUrl,
-                        name: file.name
-                    });
-
-                    const markdownImage = `![${file.name}](${imageKey})`;
-
-                    const start = editor.selectionStart;
-                    const newText = editor.value.substring(0, start) + '\n' + markdownImage + '\n' + editor.value.substring(start);
-                    editor.value = newText;
-
-                    updatePreview();
-                };
-                reader.readAsDataURL(file);
-            });
-
-            fileInput.value = '';
-        }
-    }
-
-    // обновление предпросмотра
-    function updatePreview() {
-        const markdownText = editor.value;
-        const html = markdownToHtml(markdownText);
-        preview.innerHTML = html;
-
-    }
-
-    // парсер маркдауна
-    function markdownToHtml(markdown) {
-        if (!markdown.trim()) {
-            return '<em style="color: #666;">Предпросмотр появится здесь...</em>';
-        }
-
-        let html = markdown;
-
-        html = html.replace(/!\[(.*?)\]\((image_\d+)\)/g, function(match, alt, imageKey) {
-            if (imageStorage.has(imageKey)) {
-                const imageData = imageStorage.get(imageKey);
-                return `<img src="${imageData.url}" alt="${alt || imageData.name}" style="max-width: 100%; height: auto; display: block; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px;">`;
-            }
-            return match;
-        });
-
-        html = html.replace(/!\[(.*?)\]\((http[^)]+)\)/g, '<img src="$2" alt="$1" style="max-width: 100%; height: auto; display: block; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px;">');
-
-        html = html
-            // Заголовки
-            .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-            .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-            .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-            // Жирный текст
-            .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
-            // Курсив
-            .replace(/\*(.*?)\*/gim, '<em>$1</em>')
-            // Ссылки (но не изображения!)
-            .replace(/\[(.*?)\]\((?!image_)(.*?)\)/gim, '<a href="$2" target="_blank">$1</a>')
-            // Блоки кода
-            .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-            // Строчный код
-            .replace(/`(.*?)`/g, '<code>$1</code>')
-            // Цитаты
-            .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
-            // Списки
-            .replace(/^- (.*$)/gim, '<ul><li>$1</li></ul>')
-            .replace(/<\/ul>\s*<ul>/g, '')
-            // Переносы строк
-            .replace(/\n/g, '<br>');
-
-        return html;
-    }
-
-    // очистка
-    function clearEditor() {
-        if (confirm('Вы уверены, что хотите очистить редактор?')) {
-            editor.value = '';
-            imageStorage.clear();
-            imageCounter = 0;
-            updatePreview();
-        }
-    }
-
-    // сохранение
-    async function saveGuide() {
-        const titleInput = document.querySelector('input[type="text"][placeholder="Введите название руководства"]');
-        const guideTitle = titleInput.value.trim();
-        const content = editor.value;
-
-        if(!guideTitle || !content.trim()) { alert("Введите название и текст"); return; }
-
-        // Формируем FormData
-        const formData = new FormData();
-        formData.append("title", guideTitle);
-        formData.append("content", content);
-
-        const imageFile = document.getElementById('imageInput').files[0];
-        if(imageFile) formData.append("image", imageFile);
-
-        // Отправляем POST
-        const response = await fetch("{% url 'create_guide' %}", {
-            method: "POST",
-            body: formData,
-            headers: {
-                "X-CSRFToken": "{{ csrf_token }}",
-            },
-        });
-
-        if(response.ok){
-            alert("Руководство успешно создано!");
-            window.location.href = "{% url 'guides_list' %}";
-        } else {
-            alert("Ошибка при создании руководства");
-        }
-    }
-
-
-
-    // табуляция вместо перемещения по сайту на таб
-    editor.addEventListener('keydown', function(e) {
-        if (e.key === 'Tab') {
-            e.preventDefault();
-
-            const start = this.selectionStart;
-            const end = this.selectionEnd;
-
-            const spaces = '    ';
-            this.value = this.value.substring(0, start) + spaces + this.value.substring(end);
-
-            this.selectionStart = this.selectionEnd = start + spaces.length;
-
-            updatePreview();
-        }
-    });
-
-    editor.addEventListener('input', function() {
-        updatePreview();
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        updatePreview();
-        syncHeights();
-    });
     updatePreview();
+});
+
+
+function insertText(before, after) {
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    const selectedText = editor.value.substring(start, end);
+    const newText = editor.value.substring(0, start) + before + selectedText + after + editor.value.substring(end);
+
+    editor.value = newText;
+    editor.focus();
+    editor.setSelectionRange(start + before.length, end + before.length);
+
+    updatePreview();
+}
+
+function handleImageUpload() {
+    const fileInput = document.getElementById('imageInput');
+    const files = fileInput.files;
+
+    if (files.length > 0) {
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageUrl = e.target.result;
+
+                imageStorage.set(file.name, { url: imageUrl, name: file.name, file: file });
+
+                const markdownImage = `![${file.name}](${file.name})`;
+                const start = editor.selectionStart;
+                const newText = editor.value.substring(0, start) + '\n' + markdownImage + '\n' + editor.value.substring(start);
+                editor.value = newText;
+
+                updatePreview();
+            };
+            reader.readAsDataURL(file);
+        });
+
+        fileInput.value = '';
+    }
+}
+
+function updatePreview() {
+    const markdownText = editor.value;
+    const html = markdownToHtml(markdownText);
+    preview.innerHTML = html;
+}
+
+function markdownToHtml(markdown) {
+    if (!markdown.trim()) return '<em style="color: #666;">Предпросмотр появится здесь...</em>';
+
+    let html = markdown;
+
+    html = html.replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, path) => {
+    if (imageStorage.has(path)) {
+        const imageData = imageStorage.get(path);
+        return `<img src="${imageData.url}" alt="${alt || imageData.name}" style="max-width:100%;height:auto;margin:10px 0;border:1px solid #ddd;border-radius:5px;">`;
+    } else if (!path.startsWith("http")) {
+        return `<img src="/media/guides/${path}" alt="${alt}" style="max-width:100%;height:auto;margin:10px 0;border:1px solid #ddd;border-radius:5px;">`;
+    }
+    return `<img src="${path}" alt="${alt}" style="max-width:100%;height:auto;margin:10px 0;border:1px solid #ddd;border-radius:5px;">`;
+});
+
+    html = html.replace(/!\[(.*?)\]\((http[^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;height:auto;margin:10px 0;border:1px solid #ddd;border-radius:5px;">');
+
+    html = html
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+        .replace(/\[(.*?)\]\((?!image_)(.*?)\)/gim, '<a href="$2" target="_blank">$1</a>')
+        .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+        .replace(/`(.*?)`/g, '<code>$1</code>')
+        .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
+        .replace(/^- (.*$)/gim, '<ul><li>$1</li></ul>')
+        .replace(/<\/ul>\s*<ul>/g, '')
+        .replace(/\n/g, '<br>');
+
+    return html;
+}
+
+function clearEditor() {
+    if (confirm('Вы уверены, что хотите очистить редактор?')) {
+        editor.value = '';
+        titleInput.value = '';
+        imageStorage.clear();
+        imageCounter = 0;
+        updatePreview();
+    }
+}
+
+async function saveGuide() {
+    const guideTitle = titleInput.value.trim();
+    const content = editor.value;
+
+    if (!guideTitle || !content.trim()) {
+        alert("Введите название и текст");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("title", guideTitle);
+    formData.append("content", content);
+
+    for (const [fileName, value] of imageStorage.entries()) {
+        if (value.file) {
+            formData.append("image", value.file);
+        }
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const guideId = urlParams.get('id');
+    const url = guideId ? `/create_guide/?id=${guideId}` : "{% url 'create_guide' %}";
+
+    const response = await fetch(url, {
+        method: "POST",
+        body: formData,
+        headers: { "X-CSRFToken": "{{ csrf_token }}" }
+    });
+
+    if (response.ok) {
+        alert("Руководство успешно сохранено!");
+        window.location.href = guideId ? `/guides/${guideId}/` : "{% url 'guides_list' %}";
+    } else {
+        alert("Ошибка при сохранении руководства");
+    }
+}
+
+editor.addEventListener('keydown', function(e) {
+    if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = this.selectionStart;
+        const end = this.selectionEnd;
+        const spaces = '    ';
+        this.value = this.value.substring(0, start) + spaces + this.value.substring(end);
+        this.selectionStart = this.selectionEnd = start + spaces.length;
+        updatePreview();
+    }
+});
+
+editor.addEventListener('input', updatePreview);
 </script>
+</body>
 </html>

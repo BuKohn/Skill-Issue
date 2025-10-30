@@ -15,22 +15,11 @@ class UserProfile(models.Model):
         return self.user.username
 
 
-class Review(models.Model):
-    profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="reviews")
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    text = models.TextField()
-    stars = models.PositiveSmallIntegerField(default=5)
-    created_at = models.DateTimeField(default=timezone.now)
-
-    def __str__(self):
-        return f"Review({self.author.username} → {self.profile.user.username})"
-
-
 class Guide(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='guides')
     title = models.CharField(max_length=200)
     content = models.TextField(blank=True)
-    image = models.ImageField(upload_to='guides_images/', blank=True, null=True)
+    image = models.ImageField(upload_to='guides/', blank=True, null=True)
     tags = models.JSONField(blank=True, default=list)
     rating = models.IntegerField(default=0)
     created_at = models.DateTimeField(default=timezone.now)
@@ -38,6 +27,17 @@ class Guide(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Review(models.Model):
+    guide = models.ForeignKey(Guide, on_delete=models.CASCADE, related_name="reviews")
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField()
+    stars = models.PositiveSmallIntegerField(default=5)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Review({self.author.username} → {self.guide.title})"
 
 
 class GuideRating(models.Model):

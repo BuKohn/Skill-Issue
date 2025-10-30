@@ -1,0 +1,113 @@
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Редактировать профиль — Skill Issue</title>
+    <link rel="stylesheet" href="{% static 'css/styles (5).css' %}">
+</head>
+<body>
+<header class="header" id="header">
+    <nav class="header-container">
+        <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
+        <div class="nav-group nav-group-left">
+            <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
+            <a class="nav-links" href="#">анкеты</a>
+        </div>
+        <div class="nav-group nav-group-right">
+            <input class="search" placeholder="поиск руководств, анкет и профилей">
+            <a class="nav-links" href="#">избранное</a>
+            <div class="menu-container">
+                {% if user.is_authenticated %}
+                    <a class="nav-links" href="{% url 'logout_page' %}">выйти</a>
+                {% else %}
+                    <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+                    <div class="context-menu">
+                        <a href="{% url 'register_page' %}">зарегистрироваться</a>
+                        <a href="{% url 'login_page' %}">войти</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div class="body-background">
+    <form id="profile-form" method="POST" enctype="multipart/form-data" style="text-align:center;">
+        {% csrf_token %}
+        <div class="profile-row-container">
+            <div class="image-container" style="position:relative; display:inline-block;">
+                {% if profile.avatar %}
+                    <img id="profile-image" src="{{ profile.avatar.url }}" alt="avatar" style="padding:20px; width:250px; height:250px; border-radius:50%;">
+                {% else %}
+                    <img id="profile-image" src="{% static 'images/default-avatar.jpg' %}" alt="avatar" style="padding:20px; width:250px; height:250px; border-radius:50%;">
+                {% endif %}
+                <div class="hover-text" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); opacity:0; transition:opacity 0.3s;">
+                    <label for="file-input" class="simple-text" style="color:white; background:rgba(0,0,0,0.7); padding:5px 10px; border-radius:5px; cursor:pointer;">выбрать</label>
+                    <input id="file-input" name="avatar" type="file" accept="image/*" style="display:none;">
+                </div>
+            </div>
+
+            <div class="profile-column-container" style="min-width:67%;">
+                <input id="username-input" name="username" class="profile-input" value="{{ user.username }}" style="font-size:1.5rem; padding:20px 20px 0 0;" placeholder="Введите никнейм">
+                <hr style="color:black; width:100%;">
+                <input id="description-input" name="description" class="profile-input"
+                   value="{{ profile.bio|default:'' }}"
+                   style="font-size:1.3rem; padding:0 20px 20px 0; width:100%;"
+                   placeholder="Введите описание">
+                <a class="simple-text" style="font-size:1rem; padding:20px 20px 5px 0;">Рейтинг: {{ profile.rating|default:"0" }}/5</a>
+            </div>
+        </div>
+        <button id="save-button" type="submit" class="profile-button" style="margin:20px 0; width:200px; height:35px;">Сохранить</button>
+    </form>
+</div>
+
+<footer class="footer">
+    <div class="footer-container">
+        <table class="simple-text" style="width:100%; height:100%; color:lightgray; font-size:1rem;">
+            <tr>
+                <td colspan="3" style="width:33%;">
+                    <a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration:none; color:lightgray; margin-top:5px; font-size:1.25rem;">Сибирский Федеральный Университет</a>
+                </td>
+                <td style="text-align:right;">
+                    <p class="nav-group-right" style="margin-top:5px; font-size:1.25rem;">@skill_issue 2025</p>
+                </td>
+            </tr>
+            <tr>
+                <td><p style="text-align:left;">@bukohm</p></td>
+                <td><p style="text-align:center;">@hoolkayyy</p></td>
+                <td><p style="text-align:right;">@K1rkaSs</p></td>
+            </tr>
+        </table>
+    </div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const imgContainer = document.querySelector('.image-container');
+    const hoverText = imgContainer.querySelector('.hover-text');
+    const fileInput = document.getElementById('file-input');
+    const img = document.getElementById('profile-image');
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("updated") === "1") {
+        alert("✅ Профиль успешно обновлён!");
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+    }
+
+    imgContainer.addEventListener('mouseenter', () => hoverText.style.opacity = '1');
+    imgContainer.addEventListener('mouseleave', () => hoverText.style.opacity = '0');
+
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+});
+</script>
+</body>
+</html>

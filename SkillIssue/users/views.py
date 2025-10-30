@@ -1,3 +1,5 @@
+import re
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse
@@ -5,9 +7,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.middleware.csrf import get_token
 from rest_framework import status, permissions, generics, viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import BasePermission
+import markdown
+from django.db.models import Avg
+from django.utils.safestring import mark_safe
+
 
 from .models import UserProfile, Review, Guide, GuideRating
 from .serializers import RegisterSerializer, UserProfileSerializer, ReviewSerializer, GuideSerializer
@@ -30,7 +37,7 @@ def profile_page(request, username):
     user_obj = get_object_or_404(User, username=username)
     profile = user_obj.profile
     guides = Guide.objects.filter(author=user_obj).order_by('-created_at')
-    reviews = Review.objects.filter(profile=profile).order_by('-created_at')
+    reviews = Review.objects.filter(guide__author=user_obj).order_by('-created_at')
 
     return render(request, "users/profile.html", {
         "username": username,
@@ -90,18 +97,83 @@ def guides_search(request):
 
 @login_required
 def create_guide(request):
-    if request.method == 'POST':
-        form = GuideForm(request.POST, request.FILES)
-        if form.is_valid():
-            guide = form.save(commit=False)
-            guide.author = request.user
-            if isinstance(guide.tags, str):
-                guide.tags = [tag.strip() for tag in guide.tags.split(',') if tag.strip()]
-            guide.save()
+    guide_id = request.GET.get('id')
+    guide = None
+    if guide_id:
+        guide = get_object_or_404(Guide, id=guide_id)
+        if guide.author != request.user:
             return redirect('guides_list')
+
+    if request.method == 'POST':
+        form = GuideForm(request.POST, request.FILES, instance=guide)
+        if form.is_valid():
+            guide_obj = form.save(commit=False)
+            guide_obj.author = request.user
+            guide_obj.save()
+
+            content = guide_obj.content
+
+            for key, file in request.FILES.items():
+                if key.startswith('image_'):
+                    from django.core.files.storage import default_storage
+                    from django.core.files.base import ContentFile
+
+                    filename = default_storage.save(f'guides/{file.name}', ContentFile(file.read()))
+                    file_url = default_storage.url(filename)
+
+                    content = content.replace(f'({file.name})', f'({file_url})')
+                    content = content.replace(f'(1761295916746_{file.name})', f'({file_url})')
+
+            guide_obj.content = content
+            guide_obj.save()
+            return redirect('guide_detail', pk=guide_obj.id)
     else:
-        form = GuideForm()
-    return render(request, 'users/create_guides.html', {'form': form})
+        form = GuideForm(instance=guide)
+
+    return render(request, 'users/create_guides.html', {'form': form, 'guide': guide})
+
+
+def guide_detail(request, pk):
+    guide = get_object_or_404(Guide, pk=pk)
+
+    html = markdown.markdown(guide.content or "", extensions=['extra'])
+
+    html = re.sub(
+        r'<img\s+[^>]*src="(?!https?://|/|/media/)([^"]+)"',
+        r'<img src="/media/guides/\1"',
+        html
+    )
+
+    guide_content_html = mark_safe(html)
+    reviews = guide.reviews.all()
+
+    return render(request, 'users/guide_detail.html', {
+        'guide': guide,
+        'guide_content_html': guide_content_html,
+        'reviews': reviews,
+    })
+
+
+@login_required
+def profile_edit(request):
+    profile = request.user.profile
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        description = request.POST.get("description", "").strip()
+        avatar = request.FILES.get("avatar")
+
+        if username:
+            request.user.username = username
+            request.user.save()
+
+        profile.bio = description
+        if avatar:
+            profile.avatar = avatar
+        profile.save()
+
+        return redirect(f"{request.path}?updated=1")
+
+    return render(request, "users/profile_edit.html", {"profile": profile, "user": request.user})
 
 
 class RegisterView(APIView):
@@ -172,11 +244,6 @@ class ReviewCreateView(generics.CreateAPIView):
         serializer.save(author=self.request.user, profile=profile)
 
 
-class GuideViewSet(viewsets.ModelViewSet):
-    queryset = Guide.objects.all().order_by('-rating', '-created_at')
-    serializer_class = GuideSerializer
-
-
 class GuideCreateAPI(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -186,3 +253,51 @@ class GuideCreateAPI(APIView):
             serializer.save(author=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class IsAuthorOrReadOnly(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.author == request.user
+
+
+class GuideViewSet(viewsets.ModelViewSet):
+    queryset = Guide.objects.all().order_by('-rating', '-created_at')
+    serializer_class = GuideSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+
+class GuideRateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, guide_id):
+        guide = get_object_or_404(Guide, id=guide_id)
+        rating_value = int(request.data.get('rating', 0))
+
+        if not 1 <= rating_value <= 5:
+            return Response({'error': 'Рейтинг должен быть от 1 до 5'}, status=400)
+
+        GuideRating.objects.update_or_create(
+            guide=guide,
+            reviewer=request.user,
+            defaults={'rating': rating_value}
+        )
+
+        avg_guide_rating = guide.ratings.aggregate(avg=Avg('rating'))['avg'] or 0
+        guide.rating = int(round(avg_guide_rating))
+        guide.save(update_fields=['rating'])
+
+        author_avg_rating = Guide.objects.filter(author=guide.author).aggregate(avg=Avg('rating'))['avg'] or 0
+        profile = guide.author.profile
+        profile.rating = int(round(author_avg_rating))
+        print(profile.rating)
+        profile.save(update_fields=['rating'])
+
+        return Response({
+            "guide_average_rating": guide.rating,
+            "profile_average_rating": profile.rating
+        })
