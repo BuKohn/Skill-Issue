@@ -16,7 +16,7 @@ from django.db.models import Avg
 from django.utils.safestring import mark_safe
 
 
-from .models import UserProfile, Review, Guide, GuideRating
+from .models import Profile, GuideRating as Review, Guide
 from .serializers import RegisterSerializer, UserProfileSerializer, ReviewSerializer, GuideSerializer
 from .forms import GuideForm
 
@@ -230,7 +230,7 @@ class UserProfileDetailView(generics.RetrieveAPIView):
 
     def get_object(self):
         username = self.kwargs.get("username")
-        return get_object_or_404(UserProfile, user__username=username)
+        return get_object_or_404(Profile, user__username=username)
 
 
 class ReviewCreateView(generics.CreateAPIView):
@@ -240,7 +240,7 @@ class ReviewCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         profile_id = self.request.data.get("profile_id")
-        profile = get_object_or_404(UserProfile, id=profile_id)
+        profile = get_object_or_404(Profile, id=profile_id)
         serializer.save(author=self.request.user, profile=profile)
 
 

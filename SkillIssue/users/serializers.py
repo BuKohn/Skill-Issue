@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import UserProfile, Review, Guide
+from .models import Profile, GuideRating as Review, Guide
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -16,7 +16,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             email=validated_data.get("email", ""),
             password=validated_data["password"]
         )
-        UserProfile.objects.create(user=user)
+        Profile.objects.create(user=user)
         return user
 
 
@@ -35,7 +35,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     guides = serializers.SerializerMethodField()  # <-- добавляем guides
 
     class Meta:
-        model = UserProfile
+        model = Profile
         fields = ["username", "avatar", "bio", "rating", "reviews", "guides"]
 
     def get_guides(self, obj):

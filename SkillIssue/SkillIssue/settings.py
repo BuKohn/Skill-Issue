@@ -42,8 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'users.apps.UsersConfig',
     'rest_framework',
+    'users'
 ]
 
 MIDDLEWARE = [
@@ -81,8 +81,12 @@ WSGI_APPLICATION = 'SkillIssue.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'skill_issue',
+        'USER': 'postgres',
+        'PASSWORD': 'Kekiv118',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
