@@ -41,9 +41,10 @@ class Guide(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='guides')
     title = models.CharField(max_length=200)
     content = models.TextField(blank=True)
-    image = models.ImageField(upload_to='guides_images/', blank=True, null=True)
-    tags = models.JSONField(default=list)
-    created_at = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to='guides/', blank=True, null=True)
+    tags = models.JSONField(blank=True, default=list)
+    rating = models.IntegerField(default=0)
+    created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -70,6 +71,17 @@ class AnnouncementComment(models.Model):
 
     def __str__(self):
         return f"Комментарий от {self.author} к объявлению {self.announcement}"
+
+class Review(models.Model):
+    guide = models.ForeignKey(Guide, on_delete=models.CASCADE, related_name="reviews")
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField()
+    stars = models.PositiveSmallIntegerField(default=5)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Review({self.author.username} → {self.guide.title})"
+
 
 class GuideRating(models.Model):
     guide = models.ForeignKey(Guide, on_delete=models.CASCADE, related_name='reviews')

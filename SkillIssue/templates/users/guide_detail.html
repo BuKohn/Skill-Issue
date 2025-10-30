@@ -1,0 +1,244 @@
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ guide.title }} — Skill Issue</title>
+    <link rel="stylesheet" href="{% static 'css/styles (5).css' %}">
+</head>
+<body>
+<header class="header" id="header">
+    <nav class="header-container">
+        <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
+        <div class="nav-group nav-group-left">
+            <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
+            <a class="nav-links" href="#">анкеты</a>
+        </div>
+        <div class="nav-group nav-group-right">
+            <input class="search" placeholder="поиск руководств, анкет и профилей">
+            {% if user.is_authenticated %}
+                <a class="nav-links" href="{% url 'logout_page' %}">выйти</a>
+            {% else %}
+                <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+            {% endif %}
+        </div>
+    </nav>
+</header>
+
+<div class="body-background">
+    <a class="simple-text" style="font-size: 2rem; margin: 10px 0;">{{ guide.title }}</a>
+
+    <div class="profile-row-container" style="margin: 10px 0; gap: 20px; justify-content: center;">
+        <a class="simple-text" style="font-size: 1.5rem" href="{% url 'profile_page' guide.author.username %}">
+            {{ guide.author.username }}
+        </a>
+        <a class="simple-text" style="font-size: 1.5rem">
+            Рейтинг: {{ guide.rating }}/5
+        </a>
+    </div>
+
+    <div id="preview" class="preview-content"
+         style="width: 95%; margin: auto; box-shadow: 0px 1px 3px #424242; padding: 20px;">
+        {% if guide_content_html %}
+            {{ guide_content_html|safe }}
+        {% else %}
+            <em style="color: #666;">Контент руководства отсутствует</em>
+        {% endif %}
+    </div>
+
+    {% if user == guide.author %}
+    <form method="GET" action="{% url 'create_guide' %}">
+        <input type="hidden" name="id" value="{{ guide.id }}">
+        <button type="submit" class="profile-button" style="height: 40px; width: 200px; border:none; box-shadow: 0px 1px 3px #424242; margin-top: 20px;">
+            Редактировать
+        </button>
+    </form>
+    {% endif %}
+
+    <hr style="color: black; width: 96%; margin: 20px auto;">
+    <a class="simple-text" style="line-height: 20px; padding-bottom: 20px;">Отзывы к руководству</a>
+
+    <div class="profile-column-container" style="gap: 20px;">
+        {% for review in reviews %}
+        <div class="profile-column-container"
+             style="justify-content: left; padding: 10px 20px; background-color: ghostwhite;
+                    border-radius: 5px; box-shadow: 0px 1px 2px; width: 75%; margin: auto;">
+            <div class="profile-row-container">
+                {% if review.author.profile.avatar %}
+                    <img src="{{ review.author.profile.avatar.url }}" class="rec_avatar">
+                {% else %}
+                    <img src="{% static 'users/default_avatar.png' %}" class="rec_avatar">
+                {% endif %}
+                <div class="profile-column-container">
+                    <a class="simple-text" style="font-size: 1rem; padding-left: 10px">
+                        {{ review.author.username }}
+                    </a>
+                    <a class="simple-text" style="font-size: 0.8rem; color: #444; padding-left: 10px">
+                        {{ review.created_at|date:"d.m.Y" }}
+                    </a>
+                </div>
+                <a class="simple-text" style="font-size: 1rem; margin-left: auto;">
+                    ⭐ {{ review.stars }}
+                </a>
+            </div>
+            <a class="simple-text" style="font-size: 1rem; padding-top: 5px;">{{ review.text }}</a>
+        </div>
+        {% empty %}
+        <p class="simple-text" style="text-align:center;">Пока нет отзывов.</p>
+        {% endfor %}
+    </div>
+
+    {% if user.is_authenticated %}
+        {% if user != guide.author %}
+            <hr style="color: black; width: 96%; margin: 20px auto;">
+            <a class="simple-text">Напишите свой отзыв</a>
+            <form id="review-form" method="POST" style="width: 80%; margin: auto;">
+                {% csrf_token %}
+                <textarea id="review-text" name="text" class="textarea_profile" placeholder="Начните печатать здесь"></textarea>
+                <a id="error" hidden class="simple-text"
+                   style="font-size: 1rem; margin: 10px auto; margin-top: -10px; color: red;">
+                   Отзыв не может быть пустым!
+                </a>
+                <div id="rating-container" class="profile-row-container" style="margin: auto; gap: 10px">
+                    <button id="star_1" class="star-button">★</button>
+                    <button id="star_2" class="star-button">★</button>
+                    <button id="star_3" class="star-button">★</button>
+                    <button id="star_4" class="star-button">★</button>
+                    <button id="star_5" class="star-button">★</button>
+                    <button id="response_bttn" class="profile-button"
+                            style="width: 20%; height: 40px; border: none; box-shadow: 0px 1px 3px #424242;"
+                            type="submit">Отправить</button>
+                </div>
+            </form>
+        {% else %}
+            <hr style="color: black; width: 96%; margin: 20px auto;">
+            <p class="simple-text" style="text-align:center; margin-top:20px; color:#666;">
+                Вы не можете оценивать собственное руководство.
+            </p>
+        {% endif %}
+    {% else %}
+        <p style="text-align:center; margin-top:20px;">
+            <a href="{% url 'login_page' %}">Войдите</a>, чтобы оставить отзыв.
+        </p>
+    {% endif %}
+</div>
+
+<footer class="footer">
+    <div class="footer-container">
+        <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem;">
+            <tr>
+                <td colspan="3" style="width:33%;">
+                    <a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration: none; color: lightgray; margin-top: 5px; font-size: 1.25rem;">
+                        Сибирский Федеральный Университет
+                    </a>
+                </td>
+                <td style="text-align:right;">
+                    <p class="nav-group-right" style="margin-top: 5px; font-size: 1.25rem;">@skill_issue 2025</p>
+                </td>
+            </tr>
+            <tr>
+                <td><p style="text-align:left">@bukohm</p></td>
+                <td><p style="text-align:center">@hoolkayyy</p></td>
+                <td><p style="text-align:right">@K1rkaSs</p></td>
+            </tr>
+        </table>
+    </div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stars = [
+        document.getElementById('star_1'),
+        document.getElementById('star_2'),
+        document.getElementById('star_3'),
+        document.getElementById('star_4'),
+        document.getElementById('star_5')
+    ];
+
+    const textarea = document.getElementById('review-text');
+    const error_text = document.getElementById('error');
+    const form = document.getElementById('review-form');
+    const guideRatingElem = document.querySelector('.profile-row-container a:nth-child(2)');
+
+    let currentRating = 0;
+    let hoverTimeout;
+
+    function updateStars(rating) {
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.style.backgroundColor = '#00BFFF';
+                star.style.color = '#FFFFFF';
+                star.style.boxShadow = '0px 1px 3px #424242';
+            } else {
+                star.style.backgroundColor = '#f0f0f0';
+                star.style.color = '#666666';
+                star.style.boxShadow = '0px 1px 3px #424242';
+            }
+        });
+    }
+
+    stars.forEach((star, index) => {
+        star.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentRating = index + 1;
+            updateStars(currentRating);
+            clearTimeout(hoverTimeout);
+        });
+
+        star.addEventListener('mouseenter', function() {
+            clearTimeout(hoverTimeout);
+            updateStars(index + 1);
+        });
+
+        star.addEventListener('mouseleave', function() {
+            hoverTimeout = setTimeout(() => {
+                updateStars(currentRating);
+            }, 100);
+        });
+    });
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        if (!textarea.value || currentRating === 0) {
+            error_text.removeAttribute('hidden');
+            error_text.textContent = !textarea.value && currentRating === 0
+                ? 'Отзыв не может быть пустым и необходимо выбрать оценку!'
+                : !textarea.value
+                    ? 'Отзыв не может быть пустым!'
+                    : 'Необходимо выбрать оценку!';
+            return;
+        } else {
+            error_text.setAttribute('hidden', 'true');
+        }
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const guideId = "{{ guide.id }}";
+
+        fetch(`/api/guides/${guideId}/rate/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ rating: currentRating})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.guide_average_rating !== undefined) {
+                guideRatingElem.textContent = `Рейтинг: ${data.guide_average_rating}/5`;
+                textarea.value = '';
+                currentRating = 0;
+                updateStars(currentRating);
+            }
+
+        })
+        .catch(err => console.error(err));
+    });
+
+    updateStars(0);
+});
+
+</script>
+
+</body>
+</html>

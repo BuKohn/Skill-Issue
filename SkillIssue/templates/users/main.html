@@ -60,32 +60,34 @@
         </div>
     </footer>
 
-    <script>
-    document.addEventListener("DOMContentLoaded", async () => {
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
     const menuContainer = document.querySelector(".menu-container");
 
     try {
-        const response = await fetch("/api/me/", {
-            credentials: "include", // это обязательно
-        });
+        const response = await fetch("/api/me/", { credentials: "include" });
 
         if (response.ok) {
             const user = await response.json();
             menuContainer.innerHTML = `
                 <a class="nav-links" href="/users/${user.username}/" style="margin-right: 20px;">профиль</a>
-                <a class="nav-links" href="/logout/">выйти</a>
+                <a class="nav-links" href="#" id="logout-btn">выйти</a>
             `;
 
-            // добавим обработчик выхода
-            document.getElementById("logout-btn").addEventListener("click", async () => {
-                await fetch("/logout/", { credentials: "include" });
-                location.reload();
-            });
+            const logoutBtn = document.getElementById("logout-btn");
+            if (logoutBtn) {
+                logoutBtn.addEventListener("click", async (e) => {
+                    e.preventDefault();
+                    await fetch("/logout/", { credentials: "include" });
+                    location.reload();
+                });
+            }
         }
     } catch (err) {
         console.error("Ошибка при проверке авторизации", err);
     }
 });
-    </script>
+</script>
+
 </body>
 </html>

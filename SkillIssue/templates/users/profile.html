@@ -1,188 +1,167 @@
 {% load static %}
-<html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
     <title>Skill Issue</title>
-    <link rel="stylesheet" href="{% static 'css/styles_profile.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles (5).css' %}">
 </head>
 <body>
-    <header class="header" id="header">
-        <nav class="header-container">
-            <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
-            <div class="nav-group nav-group-left">
-                <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
-                <a class="nav-links">анкеты</a>
-            </div>
-            <div class="nav-group nav-group-right">
-                <input class="search" placeholder="поиск руководств, анкет и профилей">
-                <a class="nav-links">избранное</a>
-                <div class="menu-container" id="menu-container">
+<header class="header" id="header">
+    <nav class="header-container">
+        <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
+        <div class="nav-group nav-group-left">
+            <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
+            <a class="nav-links" href="#">анкеты</a>
+        </div>
+        <div class="nav-group nav-group-right">
+            <input class="search" placeholder="поиск руководств, анкет и профилей">
+            <a class="nav-links" href="#">избранное</a>
+            <div id="menu-container" class="menu-container">
+                {% if user.is_authenticated %}
+                    <a class="nav-links" href="{% url 'logout_page' %}">выйти</a>
+                {% else %}
                     <a class="nav-links" href="{% url 'login_page' %}">войти</a>
                     <div class="context-menu">
                         <a href="{% url 'register_page' %}">зарегистрироваться</a>
                         <a href="{% url 'login_page' %}">войти</a>
                     </div>
-                </div>
-            </div>
-        </nav>
-    </header>
-
-    <div class="body-background">
-        <!-- Профиль -->
-        <div class="profile-row-container" id="profile-info" data-username="{{ username }}">
-            <img src="{% static 'images/default-avatar.jpg' %}" style="padding: 20px 20px 5px 20px">
-            <div class="profile-column-container" style="min-width: 67%;">
-                <a class="simple-text profile-username" style="font-size: 1.5rem; padding: 20px 20px 0 0">Profile-Username</a>
-                <hr style="color: black; width: 100%; padding-left: 0">
-                <a class="simple-text profile-description" style="font-size: 1.3rem; max-height: 80%; padding: 0 20px 20px 0">Profile-Description</a>
-                <a class="simple-text profile-rating" style="font-size: 1rem; margin-top: auto; padding: 20px 20px 5px 0">Profile-Rating 0/5</a>
+                {% endif %}
             </div>
         </div>
+    </nav>
+</header>
 
-        <hr style="color:black; width: 96%;">
+<div class="body-background">
+    <div id="profile-info" class="profile-row-container" data-username="{{ profile.user.username }}">
+        {% if profile.avatar %}
+            <img src="{{ profile.avatar.url }}" alt="{{ profile.user.username }}" style="padding: 20px 20px 5px 20px; width: 250px; height: 250px;">
+        {% else %}
+            <img src="{% static 'images/default-avatar.jpg' %}" alt="avatar" style="padding: 20px 20px 5px 20px; width: 250px; height: 250px;">
+        {% endif %}
 
-        <!-- Кнопки -->
-        <div class="profile-row-container" style="gap: 20px; padding-left: 20px; padding-top: 25px">
-            <button class="profile-button" id="bttn-1">руководства</button>
-            <button class="profile-button" id="bttn-2">анкеты</button>
-        </div>
-
-        <!-- Контейнеры для динамических данных -->
-        <div id="guides-container" class="profile-row-container" style="padding:10px 20px; gap:20px;"></div>
-
-        <a class="simple-text" style="line-height:40px; padding-top:25px;">Отзывы о {{ username }}</a>
-        <div id="reviews-container" class="profile-column-container" style="gap:20px;"></div>
-
-        <!-- Форма отправки отзыва -->
-        <hr style="color: black; width: 96%; margin: 20px auto;">
-        <a class="simple-text">Напишите свой отзыв</a>
-        <div class="profile-column-container">
-            <textarea class="textarea_profile" placeholder="Начните печатать здесь"></textarea>
-            <div class="profile-row-container" style="margin: auto; gap: 10px">
-                <button id="star_1" class="star-button">★</button>
-                <button id="star_2" class="star-button">★</button>
-                <button id="star_3" class="star-button">★</button>
-                <button id="star_4" class="star-button">★</button>
-                <button id="star_5" class="star-button">★</button>
-                <button id="response_bttn" class="profile-button" style="width: 20%; margin-bottom: 20px; height: 40px; border: none; box-shadow: 0px 1px 3px #424242;" type="submit">Отправить</button>
-            </div>
+        <div class="profile-column-container" style="min-width: 67%;">
+            <a class="simple-text profile-username" style="font-size: 1.5rem; padding: 20px 20px 0 0">{{ profile.user.username }}</a>
+            <hr style="color: black; width: 100%;">
+            <a class="simple-text profile-description" style="font-size: 1.3rem; padding: 0 20px 20px 0">
+                {{ profile.bio|default:"Описание отсутствует" }}
+            </a>
+            <a class="simple-text profile-rating" style="font-size: 1rem; margin-top: auto; padding: 20px 20px 5px 0">
+                Рейтинг: {{ profile.rating|default:"0" }}/5
+            </a>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-container">
-            <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem">
-                <tr>
-                    <td colspan="3" style="width:33%;"><a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration: none; color: lightgray; font-size: 1.25rem">Сибирский Федеральный Университет</a></td>
-                    <td style="text-align:right"><p class="nav-group-right" style="font-size: 1.25rem;">@skill_issue 2025</p></td>
-                </tr>
-                <tr>
-                    <td><p style="text-align:left">@bukohm</p></td>
-                    <td><p style="text-align:center">@hoolkayyy</p></td>
-                    <td><p style="text-align:right">@K1rkaSs</p></td>
-                </tr>
-            </table>
+    <hr style="color:black; width:96%;">
+
+    <div class="profile-row-container" style="gap:20px; padding:25px 20px 0 20px;">
+        <button class="profile-button" id="bttn-1">руководства</button>
+        <button class="profile-button" id="bttn-2">анкеты</button>
+        {% if user == profile.user %}
+        <form action="{% url 'profile_edit' %}" method="get" style="margin:0; margin-left:auto;">
+            <button class="profile-button" id="bttn-3">редактировать</button>
+        </form>
+        {% endif %}
+    </div>
+
+    <div id="guides-container" class="profile-row-container" style="padding:10px 20px; gap:20px;">
+        {% if guides %}
+            {% for guide in guides %}
+                <a href="{% url 'guide_detail' guide.id %}" class="guide-link">
+                    <div class="guide-element">
+                        {% if guide.image %}
+                            <img src="{{ guide.image.url }}" class="image-element" alt="{{ guide.title }}">
+                        {% else %}
+                            <img src="{% static 'images/default-avatar.jpg' %}" class="image-element" alt="guide">
+                        {% endif %}
+                        <span class="text-element" style="margin:auto;">{{ guide.title }}</span>
+                    </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <a style="margin:auto;">У пользователя нет руководств</a>
+        {% endif %}
+    </div>
+
+    <hr style="color:black; width:96%; margin:20px auto;">
+    <a class="simple-text" style="line-height:20px;">Отзывы о {{ profile.user.username }}</a>
+
+    <div id="reviews-container" class="profile-column-container" style="gap:20px;">
+        {% if reviews %}
+            {% for review in reviews %}
+                <div class="profile-column-container" style="justify-content:left; padding:10px 20px; background-color:ghostwhite; border-radius:5px; box-shadow:0 1px 2px; width:75%; margin:auto;">
+                    <div class="profile-row-container">
+                        {% if review.author.profile.avatar %}
+                            <img src="{{ review.author.profile.avatar.url }}" class="rec_avatar" alt="{{ review.author.username }}">
+                        {% else %}
+                            <img src="{% static 'images/default-avatar.jpg' %}" class="rec_avatar" alt="avatar">
+                        {% endif %}
+                        <div class="profile-column-container">
+                            <a class="simple-text" style="font-size:1rem; padding-left:10px;">{{ review.author.username }}</a>
+                            <a class="simple-text" style="font-size:0.8rem; color:#444; padding-left:10px;">{{ review.created_at|date:"d.m.Y" }}</a>
+                        </div>
+                    </div>
+                    <a class="simple-text" style="font-size:1rem; padding-top:5px;">{{ review.text }}</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <a style="margin:auto;">Пока нет отзывов</a>
+        {% endif %}
+    </div>
+
+    <hr style="color:black; width:96%; margin:20px auto;">
+    {% if user.is_authenticated and user != profile.user %}
+    <a class="simple-text">Напишите свой отзыв</a>
+    <form method="POST" class="profile-column-container">
+        {% csrf_token %}
+        <textarea class="textarea_profile" name="text" placeholder="Начните печатать здесь"></textarea>
+        <a id="error" hidden class="simple-text" style="font-size:1rem; margin:10px auto; color:red;">Отзыв не может быть пустым!</a>
+        <div class="profile-row-container" style="margin:auto; gap:10px;">
+            <button id="response_bttn" class="profile-button" style="width:20%; margin-bottom:20px; height:40px; border:none; box-shadow:0 1px 3px #424242;" type="submit">Отправить</button>
         </div>
-    </footer>
+    </form>
+    {% endif %}
+</div>
+
+<footer class="footer">
+    <div class="footer-container">
+        <table class="simple-text" style="width:100%; height:100%; color:lightgray; font-size:1rem;">
+            <tr>
+                <td colspan="3" style="width:33%;">
+                    <a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration:none; color:lightgray; margin-top:5px; font-size:1.25rem;">Сибирский Федеральный Университет</a>
+                </td>
+                <td style="text-align:right;">
+                    <p class="nav-group-right" style="margin-top:5px; font-size:1.25rem;">@skill_issue 2025</p>
+                </td>
+            </tr>
+            <tr>
+                <td><p style="text-align:left;">@bukohm</p></td>
+                <td><p style="text-align:center;">@hoolkayyy</p></td>
+                <td><p style="text-align:right;">@K1rkaSs</p></td>
+            </tr>
+        </table>
+    </div>
+</footer>
 
 <script>
-document.addEventListener('DOMContentLoaded', async function() {
-    // ---------- 1. Звёзды рейтинга ----------
-    const stars = [1,2,3,4,5].map(i => document.getElementById(`star_${i}`));
-    let currentRating = 0;
-    let hoverTimeout;
+    document.addEventListener('DOMContentLoaded', async function() {
 
-    function updateStars(rating) {
-        stars.forEach((star, idx) => {
-            if(idx < rating){
-                star.style.backgroundColor = '#00BFFF';
-                star.style.color = '#FFFFFF';
-            } else {
-                star.style.backgroundColor = '#f0f0f0';
-                star.style.color = '#666666';
-            }
-        });
-    }
+        const textarea = document.querySelector('textarea');
+        const error_text = document.getElementById('error');
+        const button = document.getElementById('response_bttn');
 
-    stars.forEach((star, idx) => {
-        star.addEventListener('click', () => { currentRating = idx+1; updateStars(currentRating); clearTimeout(hoverTimeout); });
-        star.addEventListener('mouseenter', () => { clearTimeout(hoverTimeout); updateStars(idx+1); });
-        star.addEventListener('mouseleave', () => { hoverTimeout = setTimeout(()=>{updateStars(currentRating)}, 100); });
-    });
-    updateStars(0);
-
-    // ---------- 2. Подгрузка информации о профиле ----------
-    const profileContainer = document.getElementById("profile-info");
-    const guidesContainer = document.getElementById("guides-container");
-    const reviewsContainer = document.getElementById("reviews-container");
-
-    if(profileContainer){
-        const username = profileContainer.dataset.username;
-        try{
-            const res = await fetch(`/api/profile/${username}/`);
-            if(res.ok){
-                const data = await res.json();
-
-                // Обновляем профиль
-                profileContainer.querySelector(".profile-username").textContent = data.username;
-                profileContainer.querySelector(".profile-description").textContent = data.description;
-                profileContainer.querySelector(".profile-rating").textContent = `Рейтинг: ${data.rating}/5`;
-
-                // Руководства
-                guidesContainer.innerHTML = "";
-                if(data.guides && data.guides.length > 0){
-                    data.guides.forEach(g => {
-                        const div = document.createElement("div");
-                        div.className = "guide-element";
-                        div.innerHTML = `<img src="${g.image || '/static/images/default-avatar.jpg'}" class="image-element"><a class="text-element" style="margin:auto">${g.title}</a>`;
-                        guidesContainer.appendChild(div);
-                    });
-                } else {
-                    const noGuides = document.createElement("a");
-                    noGuides.textContent = "У пользователя нет руководств";
-                    noGuides.style.display = "block";
-                    noGuides.style.textAlign = "center";
-                    noGuides.style.margin = "20px 0";
-                    noGuides.style.fontStyle = "italic";
-                    guidesContainer.appendChild(noGuides);
-                }
-
-                // Отзывы
-                reviewsContainer.innerHTML = "";
-                if(data.reviews && data.reviews.length > 0){
-                    data.reviews.forEach(r => {
-                        const div = document.createElement("div");
-                        div.className = "profile-column-container";
-                        div.style = "justify-content: left; padding:10px 20px; background-color:ghostwhite; border-radius:5px; box-shadow:0px 1px 2px; width:92%; margin:auto";
-                        div.innerHTML = `
-                            <div class="profile-row-container">
-                                <img src="/static/images/default-avatar.jpg" class="rec_avatar">
-                                <div class="profile-column-container">
-                                    <a class="simple-text" style="font-size:1rem; padding-left:10px">${r.author_username}</a>
-                                    <a class="simple-text" style="font-size:0.8rem; color:#444; padding-left:10px">${new Date(r.created_at).toLocaleDateString()}</a>
-                                </div>
-                                <a class="simple-text" style="font-size:1rem; position:sticky; left:100%">raiting(${r.stars} star)</a>
-                            </div>
-                            <a class="simple-text" style="font-size:1rem; padding-top:5px">${r.text}</a>
-                        `;
-                        reviewsContainer.appendChild(div);
-                    });
-                } else {
-                    const noReviews = document.createElement("a");
-                    noReviews.textContent = "Пока нет отзывов";
-                    noReviews.style.display = "block";
-                    noReviews.style.textAlign = "center";
-                    noReviews.style.margin = "20px 0";
-                    noReviews.style.fontStyle = "italic";
-                    reviewsContainer.appendChild(noReviews);
-                }
-            }
-        }catch(err){
-            console.error("Ошибка при загрузке профиля:", err);
+        if (button && textarea && error_text) {
+            button.addEventListener('click', textarea_check);
         }
-    }
 
-    // ---------- 3. Динамическое меню ----------
+        function textarea_check(event) {
+            if (!textarea.value.trim()) {
+                event.preventDefault();
+                error_text.removeAttribute('hidden');
+            } else {
+                error_text.setAttribute('hidden', 'true');
+            }
+        }
+
     const menuContainer = document.getElementById("menu-container");
     try{
         const response = await fetch("/api/me/", {credentials:"include"});
