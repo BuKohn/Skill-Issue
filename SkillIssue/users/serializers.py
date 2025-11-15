@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Profile, GuideRating as Review, Guide
+from .models import Profile, Review, Guide, Announcement
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -21,11 +21,17 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    author_username = serializers.CharField(source="author.username", read_only=True)
+    author_username = serializers.CharField(source='author.username', read_only=True)
+    author_avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = Review
-        fields = ["id", "author_username", "text", "stars", "created_at"]
+        fields = ['id', 'author_username', 'author_avatar', 'text', 'stars', 'created_at']
+
+    def get_author_avatar(self, obj):
+        if hasattr(obj.author, 'profile') and obj.author.profile.avatar:
+            return obj.author.profile.avatar.url
+        return None
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -49,3 +55,11 @@ class GuideSerializer(serializers.ModelSerializer):
     class Meta:
         model = Guide
         fields = ['id', 'title', 'content', 'image', 'tags', 'rating', 'author_name', 'created_at']
+
+
+class AnnouncementSerializer(serializers.ModelSerializer):
+    author = serializers.CharField(source='author.username', read_only=True)
+
+    class Meta:
+        model = Announcement
+        fields = ['id', 'title', 'description', 'image', 'author', 'tags', 'created_at', 'updated_at']

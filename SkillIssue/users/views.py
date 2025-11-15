@@ -6,18 +6,20 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.middleware.csrf import get_token
-from rest_framework import status, permissions, generics, viewsets
+from rest_framework import status, permissions, generics, viewsets, serializers
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import BasePermission
 import markdown
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.db.models import Avg
 from django.utils.safestring import mark_safe
 
 
-from .models import Profile, GuideRating as Review, Guide
-from .serializers import RegisterSerializer, UserProfileSerializer, ReviewSerializer, GuideSerializer
+from .models import Profile, GuideRating, Review, Guide, ProfileReview, Announcement
+from .serializers import RegisterSerializer, UserProfileSerializer, ReviewSerializer, GuideSerializer, \
+    AnnouncementSerializer
 from .forms import GuideForm
 
 
@@ -37,13 +39,15 @@ def profile_page(request, username):
     user_obj = get_object_or_404(User, username=username)
     profile = user_obj.profile
     guides = Guide.objects.filter(author=user_obj).order_by('-created_at')
-    reviews = Review.objects.filter(guide__author=user_obj).order_by('-created_at')
+    announcements = Announcement.objects.filter(author=user_obj).order_by('-created_at')
+    reviews = ProfileReview.objects.filter(profile=profile).order_by('-created_at')
 
     return render(request, "users/profile.html", {
         "username": username,
         "profile": profile,
         "guides": guides,
-        "reviews": reviews
+        "reviews": reviews,
+        "announcements": announcements,
     })
 
 
@@ -76,6 +80,12 @@ def guides_list(request):
         'popular_guides': popular_guides,
         'top_guides': top_guides
     })
+
+
+@login_required
+def announcement_list_view(request):
+    announcements = Announcement.objects.all().order_by("-created_at")
+    return render(request, "users/announcement.html", {"announcements": announcements})
 
 
 @login_required
@@ -145,7 +155,7 @@ def guide_detail(request, pk):
     )
 
     guide_content_html = mark_safe(html)
-    reviews = guide.reviews.all()
+    reviews = guide.reviews.select_related("author", "author__profile").order_by("-created_at")
 
     return render(request, 'users/guide_detail.html', {
         'guide': guide,
@@ -234,14 +244,44 @@ class UserProfileDetailView(generics.RetrieveAPIView):
 
 
 class ReviewCreateView(generics.CreateAPIView):
-    queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        profile_id = self.request.data.get("profile_id")
-        profile = get_object_or_404(Profile, id=profile_id)
-        serializer.save(author=self.request.user, profile=profile)
+        guide_id = self.request.data.get("guide_id")
+        stars = self.request.data.get("stars")  # получаем рейтинг
+        if not stars:
+            stars = 0
+
+        guide = get_object_or_404(Guide, id=guide_id)
+
+        # Проверяем, оставлял ли пользователь отзыв
+        if Review.objects.filter(guide=guide, author=self.request.user).exists():
+            raise serializers.ValidationError("Вы уже оставили отзыв на этот гайд.")
+
+        # Сохраняем отзыв
+        review = serializer.save(author=self.request.user, guide=guide, stars=stars)
+
+        # Пересчитываем средний рейтинг руководства
+        avg_rating = guide.reviews.aggregate(avg=Avg('stars'))['avg'] or 0
+        guide.rating = int(round(avg_rating))
+        guide.save(update_fields=['rating'])
+
+        author_avg_rating = Guide.objects.filter(author=guide.author).aggregate(avg=Avg('rating'))['avg'] or 0
+        profile = guide.author.profile
+        profile.rating = int(round(author_avg_rating))
+        profile.save(update_fields=['rating'])
+
+    def create(self, request, *args, **kwargs):
+        try:
+            response = super().create(request, *args, **kwargs)
+            # Добавляем обновлённый рейтинг в ответ
+            guide_id = request.data.get("guide_id")
+            guide = get_object_or_404(Guide, id=guide_id)
+            response.data["guide_average_rating"] = guide.rating
+            return response
+        except serializers.ValidationError as e:
+            return Response({"error": e.detail[0]}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class GuideCreateAPI(APIView):
@@ -294,10 +334,114 @@ class GuideRateAPIView(APIView):
         author_avg_rating = Guide.objects.filter(author=guide.author).aggregate(avg=Avg('rating'))['avg'] or 0
         profile = guide.author.profile
         profile.rating = int(round(author_avg_rating))
-        print(profile.rating)
         profile.save(update_fields=['rating'])
 
         return Response({
             "guide_average_rating": guide.rating,
             "profile_average_rating": profile.rating
         })
+
+
+@login_required
+def create_announcement_view(request):
+    if request.method == "POST":
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+        tags_raw = request.POST.get("tags", "")
+        tags_list = [tag.strip() for tag in tags_raw.split(",") if tag.strip()]
+        image = request.FILES.get("image")
+
+        if title and description:
+            Announcement.objects.create(
+                title=title,
+                description=description,
+                author=request.user,
+                tags=tags_list,
+                image = image
+            )
+            return redirect("announcements_list")
+
+    return render(request, "users/create_announcement.html")
+
+
+class AnnouncementViewSet(viewsets.ModelViewSet):
+    queryset = Announcement.objects.all().order_by("-created_at")
+    serializer_class = AnnouncementSerializer
+    parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+
+class ReviewUpdateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def put(self, request, pk):
+        review = get_object_or_404(Review, pk=pk)
+
+        if review.author != request.user:
+            return Response({"error": "Нет доступа"}, status=403)
+
+        stars = int(request.data.get("stars"))
+        text = request.data.get("text", "").strip()
+
+        if not text:
+            return Response({"error": "Текст не может быть пустым"}, status=400)
+
+        review.text = text
+        review.stars = stars
+        review.save()
+
+        # Обновляем средний рейтинг гида
+        avg_rating = review.guide.reviews.aggregate(avg=Avg('stars'))['avg'] or 0
+        review.guide.rating = int(round(avg_rating))
+        review.guide.save(update_fields=['rating'])
+
+        # Обновляем рейтинг профиля автора
+        author_avg_rating = Guide.objects.filter(author=review.guide.author).aggregate(avg=Avg('rating'))['avg'] or 0
+        profile = review.guide.author.profile
+        profile.rating = int(round(author_avg_rating))
+        profile.save(update_fields=['rating'])
+
+        return Response({
+            "id": review.id,
+            "text": review.text,
+            "stars": review.stars,
+            "created_at": review.created_at,
+            "guide_average_rating": review.guide.rating,
+            "profile_average_rating": profile.rating
+        })
+
+
+class ReviewDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        # Находим отзыв
+        review = get_object_or_404(Review, pk=pk)
+
+        # Проверяем, что пользователь — автор
+        if review.author != request.user:
+            return Response({"error": "Нет доступа"}, status=403)
+
+        guide = review.guide
+        review.delete()
+
+        # Обновляем средний рейтинг гида
+        avg_rating = guide.reviews.aggregate(avg=Avg('stars'))['avg'] or 0
+        guide.rating = int(round(avg_rating))
+        guide.save(update_fields=['rating'])
+
+        # Обновляем рейтинг профиля автора
+        author_avg_rating = Guide.objects.filter(author=guide.author).aggregate(avg=Avg('rating'))['avg'] or 0
+        profile = guide.author.profile
+        profile.rating = int(round(author_avg_rating))
+        profile.save(update_fields=['rating'])
+
+        return Response({
+            "message": "Отзыв удалён",
+            "guide_average_rating": guide.rating,
+            "profile_average_rating": profile.rating
+        })
+

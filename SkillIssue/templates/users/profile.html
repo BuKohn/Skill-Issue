@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Skill Issue</title>
-    <link rel="stylesheet" href="{% static 'css/styles (5).css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
 <header class="header" id="header">
@@ -11,7 +11,7 @@
         <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
         <div class="nav-group nav-group-left">
             <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
-            <a class="nav-links" href="#">анкеты</a>
+            <a class="nav-links" href="#">объявления</a>
         </div>
         <div class="nav-group nav-group-right">
             <input class="search" placeholder="поиск руководств, анкет и профилей">
@@ -46,7 +46,7 @@
                 {{ profile.bio|default:"Описание отсутствует" }}
             </a>
             <a class="simple-text profile-rating" style="font-size: 1rem; margin-top: auto; padding: 20px 20px 5px 0">
-                Рейтинг: {{ profile.rating|default:"0" }}/5
+                Рейтинг: {{ profile.rating|default:"0"|floatformat:0 }}/5
             </a>
         </div>
     </div>
@@ -81,7 +81,24 @@
             <a style="margin:auto;">У пользователя нет руководств</a>
         {% endif %}
     </div>
-
+    <div id="announcements-container" class="profile-row-container" style="padding:10px 20px; gap:20px;">
+        {% if announcements %}
+            {% for ann in announcements %}
+                <a class="announcement-link">
+                    <div class="guide-element">
+                        {% if ann.image %}
+                            <img src="{{ ann.image.url }}" class="image-element" alt="{{ ann.title }}">
+                        {% else %}
+                            <img src="{% static 'images/default-avatar.jpg' %}" class="image-element" alt="announcement">
+                        {% endif %}
+                        <span class="text-element" style="margin:auto;">{{ ann.title }}</span>
+                    </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <a style="margin:auto;">У пользователя нет объявлений</a>
+        {% endif %}
+    </div>
     <hr style="color:black; width:96%; margin:20px auto;">
     <a class="simple-text" style="line-height:20px;">Отзывы о {{ profile.user.username }}</a>
 
@@ -144,7 +161,29 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', async function() {
+    const guidesBtn = document.getElementById("bttn-1");
+    const announcementsBtn = document.getElementById("bttn-2");
+    const guidesContainer = document.getElementById("guides-container");
+    const announcementsContainer = document.getElementById("announcements-container");
 
+    guidesContainer.style.display = "flex";
+    announcementsContainer.style.display = "none";
+    guidesBtn.classList.add("active-btn");
+    announcementsBtn.classList.remove("active-btn");
+
+    guidesBtn.addEventListener("click", function() {
+        guidesContainer.style.display = "flex";
+        announcementsContainer.style.display = "none";
+        guidesBtn.classList.add("active-btn");
+        announcementsBtn.classList.remove("active-btn");
+    });
+
+    announcementsBtn.addEventListener("click", function() {
+        guidesContainer.style.display = "none";
+        announcementsContainer.style.display = "flex";
+        guidesBtn.classList.remove("active-btn");
+        announcementsBtn.classList.add("active-btn");
+    });
         const textarea = document.querySelector('textarea');
         const error_text = document.getElementById('error');
         const button = document.getElementById('response_bttn');

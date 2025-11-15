@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ guide.title }} — Skill Issue</title>
-    <link rel="stylesheet" href="{% static 'css/styles (5).css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
 <header class="header" id="header">
@@ -11,7 +11,7 @@
         <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
         <div class="nav-group nav-group-left">
             <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
-            <a class="nav-links" href="#">анкеты</a>
+            <a class="nav-links" href="#">объявления</a>
         </div>
         <div class="nav-group nav-group-right">
             <input class="search" placeholder="поиск руководств, анкет и профилей">
@@ -31,7 +31,7 @@
         <a class="simple-text" style="font-size: 1.5rem" href="{% url 'profile_page' guide.author.username %}">
             {{ guide.author.username }}
         </a>
-        <a class="simple-text" style="font-size: 1.5rem">
+        <a class="simple-text" id="guide-rating" style="font-size: 1.5rem">
             Рейтинг: {{ guide.rating }}/5
         </a>
     </div>
@@ -45,199 +45,233 @@
         {% endif %}
     </div>
 
-    {% if user == guide.author %}
-    <form method="GET" action="{% url 'create_guide' %}">
-        <input type="hidden" name="id" value="{{ guide.id }}">
-        <button type="submit" class="profile-button" style="height: 40px; width: 200px; border:none; box-shadow: 0px 1px 3px #424242; margin-top: 20px;">
-            Редактировать
-        </button>
-    </form>
-    {% endif %}
-
     <hr style="color: black; width: 96%; margin: 20px auto;">
     <a class="simple-text" style="line-height: 20px; padding-bottom: 20px;">Отзывы к руководству</a>
 
-    <div class="profile-column-container" style="gap: 20px;">
+    <div id="reviews-container" class="profile-column-container" style="gap: 20px;">
         {% for review in reviews %}
-        <div class="profile-column-container"
-             style="justify-content: left; padding: 10px 20px; background-color: ghostwhite;
-                    border-radius: 5px; box-shadow: 0px 1px 2px; width: 75%; margin: auto;">
+        <div class="profile-column-container review-block"
+             data-review-id="{{ review.id }}">
             <div class="profile-row-container">
                 {% if review.author.profile.avatar %}
                     <img src="{{ review.author.profile.avatar.url }}" class="rec_avatar">
                 {% else %}
-                    <img src="{% static 'users/default_avatar.png' %}" class="rec_avatar">
+                    <img src="{% static 'images/default-avatar.jpg' %}" class="rec_avatar">
                 {% endif %}
                 <div class="profile-column-container">
-                    <a class="simple-text" style="font-size: 1rem; padding-left: 10px">
+                    <a href="{% url 'profile_page' review.author.username %}"
+                       class="simple-text"
+                       style="font-size: 1rem; padding-left: 10px">
                         {{ review.author.username }}
                     </a>
                     <a class="simple-text" style="font-size: 0.8rem; color: #444; padding-left: 10px">
                         {{ review.created_at|date:"d.m.Y" }}
                     </a>
                 </div>
-                <a class="simple-text" style="font-size: 1rem; margin-left: auto;">
-                    ⭐ {{ review.stars }}
-                </a>
+
+                <a class="simple-text review-stars" style="font-size:1rem; margin-left:auto;">⭐ {{ review.stars }}</a>
+
+                {% if review.author == user %}
+                    <button class="profile-button edit-review-btn"
+                            data-review-id="{{ review.id }}"
+                            data-review-stars="{{ review.stars }}"
+                            data-review-text="{{ review.text|escapejs }}"
+                            style="margin-left:10px; height:30px;">
+                        ✎
+                    </button>
+                    <button class="profile-button delete-review-btn"
+                            data-review-id="{{ review.id }}"
+                            style="margin-left:5px; height:30px; background-color:#FF6347; color:white; min-width: auto; padding: 0 10px">
+                        🗑
+                    </button>
+                {% endif %}
             </div>
-            <a class="simple-text" style="font-size: 1rem; padding-top: 5px;">{{ review.text }}</a>
+
+            <a class="simple-text review-text" style="font-size:1rem; padding-top:5px;">{{ review.text }}</a>
         </div>
         {% empty %}
         <p class="simple-text" style="text-align:center;">Пока нет отзывов.</p>
         {% endfor %}
     </div>
 
-    {% if user.is_authenticated %}
-        {% if user != guide.author %}
-            <hr style="color: black; width: 96%; margin: 20px auto;">
-            <a class="simple-text">Напишите свой отзыв</a>
-            <form id="review-form" method="POST" style="width: 80%; margin: auto;">
-                {% csrf_token %}
-                <textarea id="review-text" name="text" class="textarea_profile" placeholder="Начните печатать здесь"></textarea>
-                <a id="error" hidden class="simple-text"
-                   style="font-size: 1rem; margin: 10px auto; margin-top: -10px; color: red;">
-                   Отзыв не может быть пустым!
-                </a>
-                <div id="rating-container" class="profile-row-container" style="margin: auto; gap: 10px">
-                    <button id="star_1" class="star-button">★</button>
-                    <button id="star_2" class="star-button">★</button>
-                    <button id="star_3" class="star-button">★</button>
-                    <button id="star_4" class="star-button">★</button>
-                    <button id="star_5" class="star-button">★</button>
-                    <button id="response_bttn" class="profile-button"
-                            style="width: 20%; height: 40px; border: none; box-shadow: 0px 1px 3px #424242;"
-                            type="submit">Отправить</button>
-                </div>
-            </form>
-        {% else %}
-            <hr style="color: black; width: 96%; margin: 20px auto;">
-            <p class="simple-text" style="text-align:center; margin-top:20px; color:#666;">
-                Вы не можете оценивать собственное руководство.
-            </p>
-        {% endif %}
-    {% else %}
-        <p style="text-align:center; margin-top:20px;">
-            <a href="{% url 'login_page' %}">Войдите</a>, чтобы оставить отзыв.
-        </p>
+    {% if user.is_authenticated and user != guide.author %}
+        <hr style="color: black; width: 96%; margin: 20px auto;">
+        <a class="simple-text" id="form-title">Напишите свой отзыв</a>
+
+        <form id="review-form" method="POST" style="width:80%; margin:auto;">
+            {% csrf_token %}
+            <input type="hidden" id="review-id-edit" value="">
+            <textarea id="review-text" name="text" class="textarea_profile"
+                      placeholder="Начните печатать здесь"></textarea>
+
+            <a id="error" hidden class="simple-text"
+               style="font-size:1rem; margin:10px auto; margin-top:-10px; color:red;">
+                Отзыв не может быть пустым!
+            </a>
+
+            <div id="rating-container" class="profile-row-container" style="margin:auto; gap:10px;">
+                <button class="star-button" data-value="1">★</button>
+                <button class="star-button" data-value="2">★</button>
+                <button class="star-button" data-value="3">★</button>
+                <button class="star-button" data-value="4">★</button>
+                <button class="star-button" data-value="5">★</button>
+
+                <button id="response-btn" class="profile-button"
+                        style="width:20%; height:40px; border:none; box-shadow:0px 1px 3px #424242;"
+                        type="submit">
+                    Отправить
+                </button>
+            </div>
+        </form>
     {% endif %}
 </div>
 
-<footer class="footer">
-    <div class="footer-container">
-        <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem;">
-            <tr>
-                <td colspan="3" style="width:33%;">
-                    <a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration: none; color: lightgray; margin-top: 5px; font-size: 1.25rem;">
-                        Сибирский Федеральный Университет
-                    </a>
-                </td>
-                <td style="text-align:right;">
-                    <p class="nav-group-right" style="margin-top: 5px; font-size: 1.25rem;">@skill_issue 2025</p>
-                </td>
-            </tr>
-            <tr>
-                <td><p style="text-align:left">@bukohm</p></td>
-                <td><p style="text-align:center">@hoolkayyy</p></td>
-                <td><p style="text-align:right">@K1rkaSs</p></td>
-            </tr>
-        </table>
-    </div>
-</footer>
+<footer class="footer"></footer>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const stars = [
-        document.getElementById('star_1'),
-        document.getElementById('star_2'),
-        document.getElementById('star_3'),
-        document.getElementById('star_4'),
-        document.getElementById('star_5')
-    ];
-
+    const stars = document.querySelectorAll('.star-button');
     const textarea = document.getElementById('review-text');
-    const error_text = document.getElementById('error');
+    const reviewIdInput = document.getElementById('review-id-edit');
+    const errorEl = document.getElementById('error');
     const form = document.getElementById('review-form');
-    const guideRatingElem = document.querySelector('.profile-row-container a:nth-child(2)');
+    const formTitle = document.getElementById('form-title');
+    const submitBtn = document.getElementById('response-btn');
+    const reviewsContainer = document.getElementById('reviews-container');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const guideId = "{{ guide.id }}";
 
     let currentRating = 0;
-    let hoverTimeout;
 
-    function updateStars(rating) {
-        stars.forEach((star, index) => {
-            if (index < rating) {
-                star.style.backgroundColor = '#00BFFF';
-                star.style.color = '#FFFFFF';
-                star.style.boxShadow = '0px 1px 3px #424242';
-            } else {
-                star.style.backgroundColor = '#f0f0f0';
-                star.style.color = '#666666';
-                star.style.boxShadow = '0px 1px 3px #424242';
-            }
+    function updateStars(r) {
+        stars.forEach(star => {
+            const val = parseInt(star.dataset.value);
+            star.style.backgroundColor = val <= r ? '#00BFFF' : '#f0f0f0';
+            star.style.color = val <= r ? '#fff' : '#666';
         });
     }
 
-    stars.forEach((star, index) => {
-        star.addEventListener('click', function(e) {
+    stars.forEach(star => {
+        star.addEventListener('click', (e) => {
             e.preventDefault();
-            currentRating = index + 1;
+            currentRating = parseInt(star.dataset.value);
             updateStars(currentRating);
-            clearTimeout(hoverTimeout);
         });
+    });
 
-        star.addEventListener('mouseenter', function() {
-            clearTimeout(hoverTimeout);
-            updateStars(index + 1);
+    // Редактирование существующего отзыва
+    document.querySelectorAll('.edit-review-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const reviewId = btn.dataset.reviewId;
+            const text = btn.dataset.reviewText;
+            const starsValue = parseInt(btn.dataset.reviewStars);
+
+            currentRating = starsValue;
+            updateStars(currentRating);
+            textarea.value = text;
+            reviewIdInput.value = reviewId;
+
+            submitBtn.textContent = "Сохранить изменения";
+            formTitle.textContent = "Редактировать отзыв";
         });
+    });
 
-        star.addEventListener('mouseleave', function() {
-            hoverTimeout = setTimeout(() => {
-                updateStars(currentRating);
-            }, 100);
+    document.querySelectorAll('.delete-review-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const reviewId = btn.dataset.reviewId;
+            if (!confirm("Вы уверены, что хотите удалить этот отзыв?")) return;
+
+            fetch(`/api/reviews/${reviewId}/delete/`, {
+                method: "DELETE",
+                headers: {
+                    "X-CSRFToken": csrfToken
+                }
+            }).then(res => res.json())
+              .then(data => {
+                  if (data.error) {
+                      alert(data.error);
+                      return;
+                  }
+                  // Удаляем блок отзыва со страницы
+                  const block = document.querySelector(`.review-block[data-review-id="${reviewId}"]`);
+                  block.remove();
+
+                  // Обновляем рейтинг гида
+                  if (data.guide_average_rating !== undefined) {
+                      document.getElementById('guide-rating').textContent = `Рейтинг: ${Math.floor(data.guide_average_rating)}/5`;
+                  }
+
+                  // Если есть рейтинг профиля
+                  const profileRatingEl = document.querySelector('.profile-rating');
+                  if (profileRatingEl) {
+                      profileRatingEl.textContent = `Рейтинг: ${data.profile_average_rating}/5`;
+                  }
+              });
         });
     });
 
     form.addEventListener('submit', function(e) {
         e.preventDefault();
-
-        if (!textarea.value || currentRating === 0) {
-            error_text.removeAttribute('hidden');
-            error_text.textContent = !textarea.value && currentRating === 0
-                ? 'Отзыв не может быть пустым и необходимо выбрать оценку!'
-                : !textarea.value
-                    ? 'Отзыв не может быть пустым!'
-                    : 'Необходимо выбрать оценку!';
+        if (!textarea.value.trim() || currentRating === 0) {
+            errorEl.removeAttribute('hidden');
             return;
-        } else {
-            error_text.setAttribute('hidden', 'true');
         }
+        errorEl.setAttribute('hidden', 'true');
 
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        const guideId = "{{ guide.id }}";
+        const reviewId = reviewIdInput.value;
+        const isUpdate = reviewId !== "";
+        const url = isUpdate ? `/api/reviews/${reviewId}/update/` : `/api/reviews/create/`;
+        const method = isUpdate ? "PUT" : "POST";
 
-        fetch(`/api/guides/${guideId}/rate/`, {
-            method: 'POST',
+        fetch(url, {
+            method: method,
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken
             },
-            body: JSON.stringify({ rating: currentRating})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.guide_average_rating !== undefined) {
-                guideRatingElem.textContent = `Рейтинг: ${data.guide_average_rating}/5`;
-                textarea.value = '';
-                currentRating = 0;
-                updateStars(currentRating);
-            }
+            body: JSON.stringify({
+                guide_id: guideId,
+                text: textarea.value,
+                stars: currentRating
+            })
+        }).then(res => res.json())
+          .then(data => {
+              if (data.error) {
+                  alert(data.error);
+                  return;
+              }
 
-        })
-        .catch(err => console.error(err));
+              // Обновляем текст и звезды отзыва
+              if (isUpdate) {
+                  const block = document.querySelector(`.review-block[data-review-id="${reviewId}"]`);
+                  block.querySelector('.review-text').textContent = textarea.value;
+                  block.querySelector('.review-stars').textContent = `⭐ ${currentRating}`;
+              } else {
+                  location.reload(); // Или динамически вставлять новый отзыв
+              }
+
+              // Обновляем рейтинг гида
+              if (data.guide_average_rating !== undefined) {
+                  document.getElementById('guide-rating').textContent = `Рейтинг: ${Math.floor(data.guide_average_rating)}/5`;
+              }
+
+              // Если на странице есть профиль автора, обновляем рейтинг профиля
+              const profileRatingEl = document.querySelector('.profile-rating');
+              if (profileRatingEl) {
+                  profileRatingEl.textContent = `Рейтинг: ${data.profile_average_rating}/5`;
+              }
+
+              textarea.value = "";
+              currentRating = 0;
+              updateStars(0);
+              reviewIdInput.value = "";
+              submitBtn.textContent = "Отправить";
+              formTitle.textContent = "Напишите свой отзыв";
+          });
     });
 
     updateStars(0);
 });
-
 </script>
 
 </body>

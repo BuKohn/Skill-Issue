@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Skill Issue</title>
-    <link rel="stylesheet" href="{% static 'css/styles (2).css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
 <header class="header" id="header">
@@ -10,7 +10,7 @@
         <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
         <div class="nav-group nav-group-left">
             <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
-            <a class="nav-links" href="#">анкеты</a>
+            <a class="nav-links" href="{% url 'announcements_list' %}">объявления</a>
         </div>
         <div class="nav-group nav-group-right">
             <input class="search" placeholder="поиск руководств, анкет и профилей">

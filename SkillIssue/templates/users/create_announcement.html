@@ -1,0 +1,129 @@
+{% load static %}
+
+<html>
+<head>
+    <title>Skill Issue</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <header class="header" id="header">
+        <nav class="header-container">
+            <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
+            <div class="nav-group nav-group-left">
+                <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
+                <a class="nav-links" href="{% url 'create' %}">объявления</a>
+            </div>
+            <div class="nav-group nav-group-right">
+                <input class="search" placeholder="поиск руководств, анкет и профилей">
+                <a class="nav-links">избранное</a>
+                <div class="menu-container">
+                    {% if user.is_authenticated %}
+                        <a class="nav-links" href="#">{{ user.username }}</a>
+                    {% else %}
+                        <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+                    {% endif %}
+                    <div class="context-menu">
+                        <a href="{% url 'logout_page' %}">выйти</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <form method="POST" id="announcementForm" action="{% url 'create' %}">
+        {% csrf_token %}
+        <input type="hidden" name="title">
+        <input type="hidden" name="description">
+
+        <div class="body-background">
+            <a class="simple-text" style="margin-top: 20px; font-size: 1.5rem;">Начните писать своё объявление!</a>
+            <div class="editor-container">
+                <div class="profile-row-container" style="gap: 20px">
+                    <div class="profile-column-container">
+                        <div style="display: flex; justify-content: center; margin-top: 20px;">
+                            <label for="image-upload" style="cursor: pointer;">
+                                <img id="preview-image" class="image-element" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjE1IiBoZWlnaHQ9IjIxNSIgdmlld0JveD0iMCAwIDIxNSAyMTUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMTUiIGhlaWdodD0iMjE1IiByeD0iNSIgZmlsbD0iI0ZGRkZGRiIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjEiLz4KPHBhdGggZD0iTTEwNy41IDU1VjE2MCIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNNjAgMTA3LjVIMTU1IiBzdHJva2U9IiM0MjQyNDIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=" alt="Добавить изображение" style="object-fit: cover;">
+                            </label>
+                            <input type="file" id="image-upload" class="file-input" accept="image/*">
+                        </div>
+                        <a class="simple-text" style="font-size: 1.2rem; margin: 0 auto;">Выберите изображение</a>
+                    </div>
+                <div class="profile-column-container" style="width: 100%;">
+                    <input type="text" class="guide_name_input" style="margin-left: 0" placeholder="Введите название объявления">
+                    <textarea class="textarea" style="height: 180px; max-height: 180px; min-height: 180px; margin-bottom: 30px; width: 100%;" placeholder="Напишите описание..."></textarea>
+                </div>
+                </div>
+            </div>
+            <input type="text" id = "tags" class="guide_name_input" style="margin-bottom: 20px; text-align: center;" placeholder="теги через запятую">
+            <div class="actions">
+                <button class="profile-button" onclick="clearEditor()">Очистить</button>
+                <button class="profile-button" type="button" onclick="saveGuide()">Сохранить объявление</button>
+            </div>
+        </div>
+    </form>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem">
+                <tr>
+                    <td colspan="3" style="width:33%;"><a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem ">Сибирский Федеральный Университет</a>
+                    <td style="text-align:right"><p class="nav-group-right" style="margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">@skill_issue 2025</p>
+                </tr>
+                <tr>
+                    <td><p style="text-align:left">@bukohm</p>
+                    <td><p style="text-align:center">@hoolkayyy</p>
+                    <td><p style="text-align:right">@K1rkaSs</p>
+                </tr>
+            </table>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('image-upload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewImage = document.getElementById('preview-image');
+                    previewImage.src = e.target.result;
+                    previewImage.style.objectFit = 'cover';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function clearEditor() {
+            document.getElementById('preview-image').src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjE1IiBoZWlnaHQ9IjIxNSIgdmlld0JveD0iMCAwIDIxNSAyMTUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMTUiIGhlaWdodD0iMjE1IiByeD0iNSIgZmlsbD0iI0ZGRkZGRiIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjEiLz4KPHBhdGggZD0iTTEwNy41IDU1VjE2MCIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNNjAgMTA3LjVIMTU1IiBzdHJva2U9IiM0MjQyNDIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=";
+            document.getElementById('preview-image').style.objectFit = 'contain';
+            document.getElementById('image-upload').value = '';
+            document.querySelector('.guide_name_input').value = '';
+            document.querySelector('.textarea').value = '';
+        }
+
+        function saveGuide() {
+            const formData = new FormData();
+            formData.append("title", document.querySelector(".guide_name_input").value);
+            formData.append("description", document.querySelector(".textarea").value);
+
+            const tagsInput = document.getElementById("tags").value;
+            formData.append("tags", tagsInput);
+
+            const fileInput = document.getElementById("image-upload");
+            if (fileInput.files.length > 0) {
+                formData.append("image", fileInput.files[0]);
+            }
+
+            fetch("{% url 'create' %}", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}"
+                }
+            }).then(() => {
+                window.location.href = "{% url 'announcements_list' %}";
+            });
+        }
+    </script>
+</body>
+</html>
+

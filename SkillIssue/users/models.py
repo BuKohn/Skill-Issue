@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -16,9 +17,11 @@ class Profile(models.Model):
     def __str__(self):
         return self.user.username
 
+
 class Announcement(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
+    image = models.ImageField(upload_to='announcements/', blank=True, null=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='announcements')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -26,6 +29,7 @@ class Announcement(models.Model):
 
     def __str__(self):
         return self.title
+
 
 class ChatMessage(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
@@ -36,6 +40,7 @@ class ChatMessage(models.Model):
 
     def __str__(self):
         return f"Сообщение от {self.sender} к {self.receiver}"
+
 
 class Guide(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='guides')
@@ -50,6 +55,7 @@ class Guide(models.Model):
     def __str__(self):
         return self.title
 
+
 class GuideComment(models.Model):
     guide = models.ForeignKey(Guide, on_delete=models.CASCADE, related_name='comments')
     author = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -61,6 +67,7 @@ class GuideComment(models.Model):
     def __str__(self):
         return f"Комментарий от {self.author} к {self.guide}"
 
+
 class AnnouncementComment(models.Model):
     announcement = models.ForeignKey(Announcement, on_delete=models.CASCADE, related_name='comments')
     author = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -71,6 +78,7 @@ class AnnouncementComment(models.Model):
 
     def __str__(self):
         return f"Комментарий от {self.author} к объявлению {self.announcement}"
+
 
 class Review(models.Model):
     guide = models.ForeignKey(Guide, on_delete=models.CASCADE, related_name="reviews")
@@ -84,7 +92,7 @@ class Review(models.Model):
 
 
 class GuideRating(models.Model):
-    guide = models.ForeignKey(Guide, on_delete=models.CASCADE, related_name='reviews')
+    guide = models.ForeignKey(Guide, on_delete=models.CASCADE, related_name='ratings')
     reviewer = models.ForeignKey(User, on_delete=models.CASCADE)
     rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])  # 1–5 звёзд
     created_at = models.DateTimeField(auto_now_add=True)
@@ -94,6 +102,7 @@ class GuideRating(models.Model):
 
     def __str__(self):
         return f"{self.reviewer} оценил {self.guide} на {self.rating}"
+
 
 class ProfileReview(models.Model):
     reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='given_reviews')

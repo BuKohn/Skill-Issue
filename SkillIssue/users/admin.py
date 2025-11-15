@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserProfile, Guide, Review, GuideRating
+from .models import Profile, Guide, Review, GuideRating
 
 
 @admin.register(Guide)
@@ -11,8 +11,8 @@ class GuideAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
 
 
-@admin.register(UserProfile)
-class UserProfileAdmin(admin.ModelAdmin):
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
     list_display = ("user", "rating", "created_at")
     search_fields = ("user__username",)
 
