@@ -15,7 +15,11 @@
                 <a class="nav-links">анкеты</a>
             </div>
             <div class="nav-group nav-group-right">
-                <input class="search" placeholder="поиск руководств, анкет и профилей">
+                <div class="search-container">
+                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                    <div class="search-dropdown" id="searchDropdown">
+                    </div>
+                </div>
                 <a class="nav-links">избранное</a>
                 <div class="menu-container">
                     <a class="nav-links" href="{% url 'login_page' %}">войти</a>
@@ -46,6 +50,62 @@
         </form>
     </div>
 
+    <!-- Модальное окно подтверждения email -->
+    <div id="verify_email_modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 400px; padding: 30px;">
+            <h2 class="simple-text" style="font-size: 1.5rem; margin-bottom: 20px;">Подтверждение email</h2>
+            <p class="simple-text" style="font-size: 0.9rem; margin-bottom: 20px; color: dimgray;">
+                Мы отправили код подтверждения на ваш email. 
+                <span id="verify_email_address" style="font-weight: bold;"></span>
+            </p>
+            <p class="simple-text" style="font-size: 0.8rem; margin-bottom: 20px; color: dimgray;">
+                Проверьте консоль сервера или почту для получения кода.
+            </p>
+            
+            <input class="register_input" type="text" id="verify_code" placeholder="Введите 6-значный код" maxlength="6" style="margin-bottom: 10px;">
+            
+            <div style="height: 20px; margin-bottom: 10px;">
+                <p id="verify_error" class="simple-text" style="font-size:0.8rem; color: red;"></p>
+            </div>
+
+            <button type="button" id="verify_submit_btn" class="register_button" style="width: 100%; margin-bottom: 10px;">
+                Подтвердить
+            </button>
+            
+            <button type="button" id="resend_code_btn" class="simple-text" style="background: none; border: none; color: dimgray; cursor: pointer; font-size: 0.9rem; text-decoration: underline;">
+                Отправить код повторно
+            </button>
+        </div>
+    </div>
+
+    <style>
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #1a1a1a;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal-content input {
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+
     <footer class="footer">
         <div class="footer-container">
             <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem">
@@ -63,11 +123,22 @@
         </div>
     </footer>
 
+    <script src="{% static 'js/auth.js' %}"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const reg_form = document.getElementById('register_form');
         const inputs = document.querySelectorAll('.register_input');
         const error_par = document.getElementById('reg_error');
+        
+        // Элементы модального окна
+        const verifyModal = document.getElementById('verify_email_modal');
+        const verifyCodeInput = document.getElementById('verify_code');
+        const verifyError = document.getElementById('verify_error');
+        const verifySubmitBtn = document.getElementById('verify_submit_btn');
+        const resendCodeBtn = document.getElementById('resend_code_btn');
+        const verifyEmailAddress = document.getElementById('verify_email_address');
+        
+        let registeredEmail = '';
 
         const bad_passwords = ['12345678', 'qwertyui', '1234567890', 'qwertyuio', 
                                'qwertyuiop', '11111111', '22222222', '33333333', 
@@ -88,6 +159,86 @@
             input.addEventListener('input', function() {
                 this.classList.remove('input_error');
                 error_par.textContent = '';
+            });
+        });
+
+        // Обработка ввода кода (только цифры)
+        verifyCodeInput.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '');
+            verifyError.textContent = '';
+        });
+
+        // Подтверждение email
+        verifySubmitBtn.addEventListener('click', function() {
+            const code = verifyCodeInput.value.trim();
+            
+            if (code.length !== 6) {
+                verifyError.textContent = 'Код должен содержать 6 цифр';
+                return;
+            }
+
+            verifySubmitBtn.disabled = true;
+            verifyError.textContent = '';
+
+            fetch("/api/verify-email/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: registeredEmail,
+                    code: code
+                })
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.message) {
+                    alert("Email успешно подтвержден! Теперь вы можете войти.");
+                    window.location.href = "{% url 'login_page' %}";
+                } else {
+                    verifyError.textContent = result.error || 'Ошибка подтверждения';
+                    verifySubmitBtn.disabled = false;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                verifyError.textContent = "Ошибка сервера";
+                verifySubmitBtn.disabled = false;
+            });
+        });
+
+        // Повторная отправка кода
+        resendCodeBtn.addEventListener('click', function() {
+            resendCodeBtn.disabled = true;
+            verifyError.textContent = '';
+
+            fetch("/api/resend-code/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: registeredEmail
+                })
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.message) {
+                    verifyError.textContent = 'Код отправлен повторно. Проверьте консоль сервера.';
+                    verifyError.style.color = 'green';
+                    setTimeout(() => {
+                        verifyError.textContent = '';
+                        verifyError.style.color = 'red';
+                    }, 3000);
+                } else {
+                    verifyError.textContent = result.error || 'Ошибка отправки кода';
+                }
+                resendCodeBtn.disabled = false;
+            })
+            .catch(err => {
+                console.error(err);
+                verifyError.textContent = "Ошибка сервера";
+                resendCodeBtn.disabled = false;
             });
         });
 
@@ -119,7 +270,7 @@
 
             if (isValid) {
                 const data = {username, password, email};
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                const csrfToken = getCSRFToken();
 
                 fetch("/api/register/", {
                     method: "POST",
@@ -133,10 +284,19 @@
                 .then(res => res.json())
                 .then(result => {
                     if (result.id) {
-                        alert("Успешная регистрация!");
-                        window.location.href = "{% url 'login_page' %}";
+                        registeredEmail = result.email;
+                        verifyEmailAddress.textContent = result.email;
+                        verifyCodeInput.value = '';
+                        verifyError.textContent = '';
+                        verifyModal.style.display = 'flex';
                     } else {
-                        error_par.textContent = JSON.stringify(result);
+                        if (result.error) {
+                            error_par.textContent = result.error;
+                        } else if (result.email) {
+                            error_par.textContent = 'Пользователь с таким email уже существует';
+                        } else {
+                            error_par.textContent = JSON.stringify(result);
+                        }
                     }
                 })
                 .catch(err => {
@@ -147,5 +307,6 @@
         });
     });
     </script>
+<script src="{% static 'js/search.js' %}"></script>
 </body>
 </html>

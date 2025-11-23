@@ -14,7 +14,11 @@
             <a class="nav-links" href="#">объявления</a>
         </div>
         <div class="nav-group nav-group-right">
-            <input class="search" placeholder="поиск руководств, анкет и профилей">
+            <div class="search-container">
+                <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                <div class="search-dropdown" id="searchDropdown">
+                </div>
+            </div>
             {% if user.is_authenticated %}
                 <a class="nav-links" href="{% url 'logout_page' %}">выйти</a>
             {% else %}
@@ -87,7 +91,7 @@
                 {% endif %}
             </div>
 
-            <a class="simple-text review-text" style="font-size:1rem; padding-top:5px;">{{ review.text }}</a>
+            <a class="simple-text review-text" style="text-align: left; font-size:1rem; padding-top:5px;">{{ review.text }}</a>
         </div>
         {% empty %}
         <p class="simple-text" style="text-align:center;">Пока нет отзывов.</p>
@@ -273,6 +277,6 @@ document.addEventListener('DOMContentLoaded', function() {
     updateStars(0);
 });
 </script>
-
+<script src="{% static 'js/search.js' %}"></script>
 </body>
 </html>

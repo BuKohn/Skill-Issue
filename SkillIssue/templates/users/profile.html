@@ -14,7 +14,11 @@
             <a class="nav-links" href="#">объявления</a>
         </div>
         <div class="nav-group nav-group-right">
-            <input class="search" placeholder="поиск руководств, анкет и профилей">
+            <div class="search-container">
+                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                    <div class="search-dropdown" id="searchDropdown">
+                    </div>
+            </div>
             <a class="nav-links" href="#">избранное</a>
             <div id="menu-container" class="menu-container">
                 {% if user.is_authenticated %}
@@ -55,7 +59,7 @@
 
     <div class="profile-row-container" style="gap:20px; padding:25px 20px 0 20px;">
         <button class="profile-button" id="bttn-1">руководства</button>
-        <button class="profile-button" id="bttn-2">анкеты</button>
+        <button class="profile-button" id="bttn-2">объявления</button>
         {% if user == profile.user %}
         <form action="{% url 'profile_edit' %}" method="get" style="margin:0; margin-left:auto;">
             <button class="profile-button" id="bttn-3">редактировать</button>
@@ -84,12 +88,12 @@
     <div id="announcements-container" class="profile-row-container" style="padding:10px 20px; gap:20px;">
         {% if announcements %}
             {% for ann in announcements %}
-                <a class="announcement-link">
+                <a class="announcement-link" href="{% url 'announcement_detail' ann.id %}">
                     <div class="guide-element">
                         {% if ann.image %}
                             <img src="{{ ann.image.url }}" class="image-element" alt="{{ ann.title }}">
                         {% else %}
-                            <img src="{% static 'images/default-avatar.jpg' %}" class="image-element" alt="announcement">
+                            <img src="{% static 'images/default-announcement.png' %}" class="image-element" alt="announcement">
                         {% endif %}
                         <span class="text-element" style="margin:auto;">{{ ann.title }}</span>
                     </div>
@@ -202,15 +206,29 @@
         }
 
     const menuContainer = document.getElementById("menu-container");
-    try{
-        const response = await fetch("/api/me/", {credentials:"include"});
-        if(response.ok){
-            const user = await response.json();
-            menuContainer.innerHTML = `<a class="nav-links" href="/logout/" style="margin-right:25px;">выйти</a>`;
+    if (menuContainer) {
+        try{
+            const response = await authManager.apiRequest("/api/me/");
+            if(response.ok){
+                const user = await response.json();
+                menuContainer.innerHTML = `<a class="nav-links" href="#" id="logout-btn" style="margin-right:25px;">выйти</a>`;
+                
+                const logoutBtn = document.getElementById("logout-btn");
+                if (logoutBtn) {
+                    logoutBtn.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        authManager.logout();
+                    });
+                }
+            }
+        }catch(err){ 
+            console.error(err); 
         }
-    }catch(err){ console.error(err); }
+    }
 
 });
 </script>
+<script src="{% static 'js/auth.js' %}"></script>
+<script src="{% static 'js/search.js' %}"></script>
 </body>
 </html>

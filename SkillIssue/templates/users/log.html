@@ -14,7 +14,11 @@
                 <a class="nav-links">анкеты</a>
             </div>
             <div class="nav-group nav-group-right">
-                <input class="search" placeholder="поиск руководств, анкет и профилей"></input>
+                <div class="search-container">
+                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                    <div class="search-dropdown" id="searchDropdown">
+                    </div>
+                </div>
                 <a class="nav-links">избранное</a>
                 <div class="menu-container">
                     <a class="nav-links" href="{% url 'login_page' %}">войти</a>
@@ -63,6 +67,7 @@
     </footer>
 </body>
 
+<script src="{% static 'js/auth.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('login_form');
@@ -71,21 +76,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const error_par = document.getElementById('login_error');
 
     if (!loginForm) return;
-
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== "") {
-            const cookies = document.cookie.split(";");
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.startsWith(name + "=")) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
 
     loginForm.addEventListener('submit', function(event) {
         event.preventDefault();
@@ -97,11 +87,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        error_par.textContent = '';
+
         fetch("/api/login/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken")
             },
             body: JSON.stringify({username, password}),
             credentials: "include"
@@ -110,8 +101,17 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.error) {
                 error_par.textContent = data.error;
-            } else {
+            } else if (data.access && data.refresh) {
+                // Сохраняем JWT токены
+                authManager.setTokens(data.access, data.refresh, {
+                    username: data.username,
+                    email: data.email
+                });
+                
+                // Перенаправляем на главную страницу
                 window.location.href = "{% url 'main_page' %}";
+            } else {
+                error_par.textContent = "Неожиданный ответ от сервера";
             }
         })
         .catch(err => {
@@ -121,4 +121,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+<script src="{% static 'js/search.js' %}"></script>
 </html>

@@ -13,7 +13,11 @@
             <a class="nav-links" href="{% url 'announcements_list' %}">объявления</a>
         </div>
         <div class="nav-group nav-group-right">
-            <input class="search" placeholder="поиск руководств, анкет и профилей">
+            <div class="search-container">
+                <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                <div class="search-dropdown" id="searchDropdown">
+                </div>
+            </div>
             <a class="nav-links" href="#">избранное</a>
             <div class="menu-container">
                 {% if user.is_authenticated %}
@@ -35,15 +39,26 @@
     <p class="simple-text" style="font-size: 1.1rem;">Просматривайте руководства других пользователей и узнавайте много нового!</p>
     <hr style="width: 75%; margin: 10px auto;">
 
-    <div class="profile-row-container" style="display: flex; justify-content: center; gap:5%; margin-top:20px">
-        <form method="GET" action="{% url 'guides_search' %}" style="display: flex; gap: 10px;">
-            <input name="query" placeholder="поиск" class="search-guides">
-            <input name="tags" placeholder="теги через запятую" class="search-guides">
-            <button type="submit" class="profile-button">найти</button>
-        </form>
-    </div>
+    <!-- ФОРМА ПОИСКА ПО РУКОВОДСТВАМ -->
+    <form method="GET" action="{% url 'guides_list' %}" style="display: flex; flex-direction: column; align-items: center;">
+        <div class="profile-row-container" style="display: flex; justify-content: center; gap:5%; margin-top:20px">
+            <input type="text"
+                   name="search"
+                   placeholder="поиск по названию"
+                   class="search-guides"
+                   value="{{ request.GET.search }}">
+        </div>
+        <button type="submit" class="profile-button" style="margin-top: 20px; width: 200px;">найти</button>
+    </form>
 
-    <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;">Популярное</h2>
+    <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;">
+        {% if request.GET.search %}
+            Результаты поиска "{{ request.GET.search }}"
+        {% else %}
+            Популярное
+        {% endif %}
+    </h2>
+
     <div class="scroll-area">
         {% if popular_guides %}
             {% for guide in popular_guides %}
@@ -64,10 +79,17 @@
             </div>
             {% endfor %}
         {% else %}
-            <p style="text-align:center; font-style: italic; margin: 20px 0;">Популярных руководств пока нет</p>
+            <p style="text-align:center; font-style: italic; margin: 20px 0;">
+                {% if request.GET.search %}
+                    Руководства по запросу "{{ request.GET.search }}" не найдены
+                {% else %}
+                    Популярных руководств пока нет
+                {% endif %}
+            </p>
         {% endif %}
     </div>
 
+    {% if not request.GET.search %}
     <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;">Лучшее за всё время</h2>
     <div class="scroll-area">
         {% if top_guides %}
@@ -92,6 +114,7 @@
             <p style="text-align:center; font-style: italic; margin: 20px 0;">Лучших руководств пока нет</p>
         {% endif %}
     </div>
+    {% endif %}
 </div>
 
 <footer class="footer">
@@ -116,6 +139,6 @@
         </table>
     </div>
 </footer>
-
+<script src="{% static 'js/search.js' %}"></script>
 </body>
 </html>

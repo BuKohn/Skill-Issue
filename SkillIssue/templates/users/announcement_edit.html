@@ -1,0 +1,151 @@
+{% load static %}
+<html>
+<head>
+    <title>Skill Issue - Редактирование</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <header class="header" id="header">
+        <nav class="header-container">
+            <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
+            <div class="nav-group nav-group-left">
+                <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
+                <a class="nav-links" href="{% url 'announcements_list' %}">объявления</a>
+            </div>
+            <div class="nav-group nav-group-right">
+                <div class="search-container">
+                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                    <div class="search-dropdown" id="searchDropdown">
+                    </div>
+                </div>
+                <a class="nav-links">избранное</a>
+                <div class="menu-container">
+                    {% if user.is_authenticated %}
+                        <a class="nav-links" href="{% url 'logout_page' %}">выйти</a>
+                    {% else %}
+                        <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+                        <div class="context-menu">
+                            <a href="{% url 'register_page' %}">зарегистрироваться</a>
+                            <a href="{% url 'login_page' %}">войти</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="body-background">
+        <a class="simple-text" style="margin-top: 20px; font-size: 1.5rem;">Измените своё объявление!</a>
+
+        <form method="POST" action="{% url 'update_announcement' announcement.id %}" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="editor-container">
+                <div class="profile-row-container" style="gap: 20px">
+                    <div class="profile-column-container">
+                        <div style="display: flex; justify-content: center; margin-top: 20px;">
+                            <label for="image-upload" style="cursor: pointer;">
+                                {% if announcement.image %}
+                                    <img id="preview-image" class="image-element" src="{{ announcement.image.url }}" alt="Текущее изображение" style="object-fit: cover;">
+                                {% else %}
+                                    <img id="preview-image" class="image-element" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjE1IiBoZWlnaHQ9IjIxNSIgdmlld0JveD0iMCAwIDIxNSAyMTUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMTUiIGhlaWdodD0iMjE1IiByeD0iNSIgZmlsbD0iI0ZGRkZGRiIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjEiLz4KPHBhdGggZD0iTTEwNy41IDU1VjE2MCIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNNjAgMTA3LjVIMTU1IiBzdHJva2U9IiM0MjQyNDIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=" alt="Добавить изображение" style="object-fit: cover;">
+                                {% endif %}
+                            </label>
+                            <input type="file" id="image-upload" name="image" class="file-input" accept="image/*">
+                        </div>
+                        <a class="simple-text" style="font-size: 1.2rem; margin: 0 auto;">
+                            {% if announcement.image %}Изменить изображение{% else %}Выберите изображение{% endif %}
+                        </a>
+                    </div>
+
+                    <div class="profile-column-container" style="width: 100%;">
+                        <input type="text" class="guide_name_input" name="title" style="margin-left: 0"
+                               placeholder="Введите название объявления" value="{{ announcement.title }}" required>
+                        <textarea class="textarea" name="description" style="height: 180px; max-height: 180px; min-height: 180px; margin-bottom: 30px; width: 100%;"
+                                  placeholder="Напишите описание..." required>{{ announcement.description }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <input type="text" name="tags" id="tags" class="guide_name_input" style="margin-bottom: 20px; text-align: center;"
+                placeholder="теги через запятую" value="{{ tags_string }}">
+
+            <div class="actions">
+                <button type="button" class="profile-button" onclick="clearEditor()">Очистить</button>
+                <button type="submit" class="profile-button">Сохранить изменения</button>
+            </div>
+        </form>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem">
+                <tr>
+                    <td colspan="3" style="width:33%;">
+                        <a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem ">
+                            Сибирский Федеральный Университет
+                        </a>
+                    </td>
+                    <td style="text-align:right">
+                        <p class="nav-group-right" style="margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">@skill_issue 2025</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td><p style="text-align:left">@bukohm</p></td>
+                    <td><p style="text-align:center">@hoolkayyy</p></td>
+                    <td><p style="text-align:right">@K1rkaSs</p></td>
+                </tr>
+            </table>
+        </div>
+    </footer>
+
+    <script>
+        // Загрузка текущего изображения при открытии страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if announcement.image %}
+                const currentImage = "{{ announcement.image.url }}";
+                document.getElementById('preview-image').src = currentImage;
+                document.getElementById('preview-image').style.objectFit = 'cover';
+            {% endif %}
+        });
+
+        // Обработчик загрузки нового изображения
+        document.getElementById('image-upload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewImage = document.getElementById('preview-image');
+                    previewImage.src = e.target.result;
+                    previewImage.style.objectFit = 'cover';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function clearEditor() {
+            if (confirm('Вы уверены, что хотите очистить все поля?')) {
+                document.getElementById('preview-image').src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjE1IiBoZWlnaHQ9IjIxNSIgdmlld0JveD0iMCAwIDIxNSAyMTUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMTUiIGhlaWdodD0iMjE1IiByeD0iNSIgZmlsbD0iI0ZGRkZGRiIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjEiLz4KPHBhdGggZD0iTTEwNy41IDU1VjE2MCIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNNjAgMTA3LjVIMTU1IiBzdHJva2U9IiM0MjQyNDIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=";
+                document.getElementById('preview-image').style.objectFit = 'contain';
+                document.getElementById('image-upload').value = '';
+                document.getElementById('tags').value = '';
+                document.querySelector('textarea[name="description"]').value = '';
+                document.querySelector('input[name="title"]').value = '';
+            }
+        }
+
+        // Валидация формы перед отправкой
+        document.querySelector('form').addEventListener('submit', function(event) {
+            const title = document.querySelector('input[name="title"]').value.trim();
+            const description = document.querySelector('textarea[name="description"]').value.trim();
+
+            if (!title || !description) {
+                event.preventDefault();
+                alert('Пожалуйста, заполните название и описание объявления');
+                return false;
+            }
+        });
+    </script>
+    <script src="{% static 'js/search.js' %}"></script>
+</body>
+</html>

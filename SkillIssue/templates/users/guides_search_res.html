@@ -13,7 +13,11 @@
             <a class="nav-links" href="#">объявления</a>
         </div>
         <div class="nav-group nav-group-right">
-            <input class="search" placeholder="поиск руководств, анкет и профилей">
+            <div class="search-container">
+                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                    <div class="search-dropdown" id="searchDropdown">
+                    </div>
+            </div>
             <a class="nav-links" href="#">избранное</a>
             <div class="menu-container">
                 {% if user.is_authenticated %}
@@ -88,5 +92,6 @@
             </table>
         </div>
 </footer>
+<script src="{% static 'js/search.js' %}"></script>
 </body>
 </html>

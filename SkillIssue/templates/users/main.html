@@ -14,7 +14,11 @@
                 <a class="nav-links" href="{% url 'announcements_list' %}">объявления</a>
             </div>
             <div class="nav-group nav-group-right">
-                <input class="search" placeholder="поиск руководств, анкет и профилей">
+                <div class="search-container">
+                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                    <div class="search-dropdown" id="searchDropdown">
+                    </div>
+                </div>
                 <a class="nav-links">избранное</a>
                 <div class="menu-container" id="menu-container">
                     <a class="nav-links" href="{% url 'login_page' %}">войти</a>
@@ -60,12 +64,14 @@
         </div>
     </footer>
 
+<script src="{% static 'js/auth.js' %}"></script>
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
     const menuContainer = document.querySelector(".menu-container");
 
     try {
-        const response = await fetch("/api/me/", { credentials: "include" });
+        // Используем authManager для запроса с JWT токеном
+        const response = await authManager.apiRequest("/api/me/");
 
         if (response.ok) {
             const user = await response.json();
@@ -78,16 +84,32 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (logoutBtn) {
                 logoutBtn.addEventListener("click", async (e) => {
                     e.preventDefault();
-                    await fetch("/logout/", { credentials: "include" });
-                    location.reload();
+                    authManager.logout();
                 });
             }
+        } else {
+            // Если не авторизован, показываем стандартное меню
+            menuContainer.innerHTML = `
+                <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+                <div class="context-menu">
+                    <a href="{% url 'register_page' %}">зарегистрироваться</a>
+                    <a href="{% url 'login_page' %}">войти</a>
+                </div>
+            `;
         }
     } catch (err) {
         console.error("Ошибка при проверке авторизации", err);
+        // При ошибке показываем стандартное меню
+        menuContainer.innerHTML = `
+            <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+            <div class="context-menu">
+                <a href="{% url 'register_page' %}">зарегистрироваться</a>
+                <a href="{% url 'login_page' %}">войти</a>
+            </div>
+        `;
     }
 });
 </script>
-
+<script src="{% static 'js/search.js' %}"></script>
 </body>
 </html>

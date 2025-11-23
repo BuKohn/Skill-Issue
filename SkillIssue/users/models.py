@@ -115,3 +115,24 @@ class ProfileReview(models.Model):
 
     def __str__(self):
         return f"Отзыв от {self.reviewer} на {self.profile}"
+
+
+class EmailVerificationCode(models.Model):
+    """Модель для хранения кодов подтверждения email"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='verification_codes')
+    code = models.CharField(max_length=6)
+    email = models.EmailField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Код для {self.email}: {self.code}"
+
+    def is_expired(self):
+        """Проверка истечения срока действия кода"""
+        from django.utils import timezone
+        return timezone.now() > self.expires_at

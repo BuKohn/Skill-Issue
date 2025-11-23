@@ -13,7 +13,11 @@
                 <a class="nav-links">объявления</a>
             </div>
             <div class="nav-group nav-group-right">
-                <input class="search" placeholder="поиск руководств, анкет и профилей">
+                <div class="search-container">
+                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                    <div class="search-dropdown" id="searchDropdown">
+                    </div>
+                </div>
                 <a class="nav-links">избранное</a>
                 <div class="menu-container">
                     <a class="nav-links" href="{% url 'login_page' %}">войти</a>
@@ -275,5 +279,6 @@ editor.addEventListener('keydown', function(e) {
 
 editor.addEventListener('input', updatePreview);
 </script>
+<script src="{% static 'js/search.js' %}"></script>
 </body>
 </html>

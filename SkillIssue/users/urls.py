@@ -1,11 +1,12 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
 
-from .views import GuideRateAPIView, ReviewCreateView, create_announcement_view, announcement_list_view, \
-    ReviewUpdateView, ReviewDeleteView
+from .views import GuideRateAPIView, ReviewCreateView, create_announcement_view, \
+    ReviewUpdateView, ReviewDeleteView, AnnouncementListView, GuideListView
 
 router = DefaultRouter()
 router.register(r'guides', views.GuideViewSet, basename='guides')
@@ -15,6 +16,9 @@ urlpatterns = [
     # --- API endpoints ---
     path('api/register/', views.RegisterView.as_view(), name='api_register'),
     path("api/login/", views.LoginView.as_view(), name="login"),
+    path("api/verify-email/", views.VerifyEmailView.as_view(), name="verify_email"),
+    path("api/resend-code/", views.ResendVerificationCodeView.as_view(), name="resend_code"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/me/", views.CurrentUserView.as_view(), name="current_user"),
     path("logout/", views.logout_view, name="logout_page"),
 
@@ -32,6 +36,7 @@ urlpatterns = [
     path("api/profile/reviews/create/", views.ReviewCreateView.as_view(), name="review-create"),
     path('api/profile/<str:username>/guides/', views.profile_guides_api, name='profile_guides_api'),
 
+    # --- API для руководств ---
     path('api/guides/<int:guide_id>/rate/', GuideRateAPIView.as_view(), name='guide-rate'),
     path('api/reviews/create/', ReviewCreateView.as_view(), name='review_create'),
     path('api/reviews/<int:pk>/update/', ReviewUpdateView.as_view(), name='review-update'),
@@ -39,17 +44,32 @@ urlpatterns = [
 
 
     # --- Руководства ---
-    path('guides/', views.guides_list, name='guides_list'),
-    path('search/', views.guides_search, name='guides_search'),
+    path('guides/', GuideListView.as_view(), name='guides_list'),
     path('create_guide/', views.create_guide, name='create_guide'),
     path("guides/<int:pk>/", views.guide_detail, name="guide_detail"),
 
+
+    # --- API для объявлений ---
+    path('api/announcements/comments/create/', views.AnnouncementCommentCreateView.as_view(),
+         name='create_announcement_comment'),
+    path('api/announcements/comments/<int:pk>/update/', views.AnnouncementCommentUpdateView.as_view(),
+         name='update_announcement_comment'),
+    path('api/announcements/comments/<int:pk>/delete/', views.AnnouncementCommentDeleteView.as_view(),
+         name='delete_announcement_comment'),
+
+
+
     # --- Объявления ---
     path('create/', create_announcement_view, name='create'),
-    path("announcements/", announcement_list_view, name="announcements_list"),
-
+    path("announcements/", AnnouncementListView.as_view(), name="announcements_list"),
+    path('announcements/<int:announcement_id>/', views.announcement_detail, name='announcement_detail'),
+    path('announcements/<int:announcement_id>/edit/', views.edit_announcement, name='edit_announcement'),
+    path('announcements/<int:announcement_id>/update/', views.update_announcement, name='update_announcement'),
     # --- DRF Router ---
     path('api/', include(router.urls)),
+
+    path('api/search/all/', views.search_all_items, name='search_all'),
+    path('api/search/', views.search_items, name='search'),
 ]
 
 if settings.DEBUG:
