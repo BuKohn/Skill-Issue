@@ -5,140 +5,233 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
-<header class="header" id="header">
-    <nav class="header-container">
-        <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
-        <div class="nav-group nav-group-left">
-            <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
-            <a class="nav-links" href="{% url 'announcements_list' %}">объявления</a>
-        </div>
-        <div class="nav-group nav-group-right">
-            <div class="search-container">
-                <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
-                <div class="search-dropdown" id="searchDropdown">
+    <header class="header" id="header">
+        <nav class="header-container">
+            <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
+            <div class="nav-group nav-group-left">
+                <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
+                <a class="nav-links" href="{% url 'announcements_list' %}">объявления</a>
+            </div>
+            <div class="nav-group nav-group-right">
+                <div class="search-container">
+                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                    <div class="search-dropdown" id="searchDropdown">
+                    </div>
+                </div>
+                <a class="nav-links" href="#">избранное</a>
+                <div class="menu-container">
+                    {% if user.is_authenticated %}
+                        <a class="nav-links" href="{% url 'logout_page' %}">выйти</a>
+                    {% else %}
+                        <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+                        <div class="context-menu">
+                            <a href="{% url 'register_page' %}">зарегистрироваться</a>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
-            <a class="nav-links" href="#">избранное</a>
-            <div class="menu-container">
-                {% if user.is_authenticated %}
-                    <a class="nav-links" href="{% url 'logout_page' %}">выйти</a>
-                {% else %}
-                    <a class="nav-links" href="{% url 'login_page' %}">войти</a>
-                    <div class="context-menu">
-                        <a href="{% url 'register_page' %}">зарегистрироваться</a>
+        </nav>
+    </header>
+
+    <div class="body-background">
+        <h1 class="simple-text" style="margin-top: 20px; font-size: 1.5rem;">Руководства</h1>
+        <hr style="width: 96%; margin: 10px auto;">
+        <p class="simple-text" style="font-size: 1.1rem;">Просматривайте руководства других пользователей и узнавайте много нового!</p>
+        <hr style="width: 75%; margin: 10px auto;">
+
+        <!-- ФОРМА ПОИСКА ПО РУКОВОДСТВАМ -->
+        <form method="GET" action="{% url 'guides_list' %}" style="display: flex; flex-direction: column; align-items: center;">
+            <div class="profile-row-container" style="display: flex; justify-content: center; gap:5%; margin-top:20px">
+                <input type="text"
+                       name="search"
+                       placeholder="поиск по названию"
+                       class="search-guides"
+                       value="{{ request.GET.search }}">
+
+                <input type="text"
+                       name="tags"
+                       placeholder="теги через запятую"
+                       class="search-guides"
+                       value="">
+
+                <div class="filter-container" style="position: relative;">
+                    <button type="button" class="filter-toggle" style="padding: 8px 16px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; display: flex; align-items: center;">
+                        <span id="current-filter">Все</span>
+                        <span style="margin-left: 8px;">▼</span>
+                    </button>
+
+                    <div class="filter-dropdown" 
+                     style="display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; background: white; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-width: 150px; z-index: 100;">
+                        <button type="button" class="filter-item" data-value="all" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;">
+                            За сегодня
+                        </button>
+                        <button type="button" class="filter-item" data-value="new" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;">
+                            За неделю
+                        </button>
+                        <button type="button" class="filter-item" data-value="new" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;">
+                            За месяц
+                        </button>
                     </div>
-                {% endif %}
+                </div>
             </div>
-        </div>
-    </nav>
-</header>
-
-<div class="body-background">
-    <h1 class="simple-text" style="margin-top: 20px; font-size: 1.5rem;">Руководства</h1>
-    <hr style="width: 96%; margin: 10px auto;">
-    <p class="simple-text" style="font-size: 1.1rem;">Просматривайте руководства других пользователей и узнавайте много нового!</p>
-    <hr style="width: 75%; margin: 10px auto;">
-
-    <!-- ФОРМА ПОИСКА ПО РУКОВОДСТВАМ -->
-    <form method="GET" action="{% url 'guides_list' %}" style="display: flex; flex-direction: column; align-items: center;">
-        <div class="profile-row-container" style="display: flex; justify-content: center; gap:5%; margin-top:20px">
-            <input type="text"
-                   name="search"
-                   placeholder="поиск по названию"
-                   class="search-guides"
-                   value="{{ request.GET.search }}">
-        </div>
         <button type="submit" class="profile-button" style="margin-top: 20px; width: 200px;">найти</button>
     </form>
 
-    <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;">
-        {% if request.GET.search %}
-            Результаты поиска "{{ request.GET.search }}"
-        {% else %}
-            Популярное
-        {% endif %}
-    </h2>
+        <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;">
+            {% if request.GET.search %}
+                Результаты поиска "{{ request.GET.search }}"
+            {% else %}
+                Популярное
+            {% endif %}
+        </h2>
 
-    <div class="scroll-area">
-        {% if popular_guides %}
-            {% for guide in popular_guides %}
-            <div class="guide-element">
-                <a href="{% url 'guide_detail' guide.id %}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; width: 100%; height: 100%;">
-                    {% if guide.image %}
-                        <img src="{{ guide.image.url }}" class="image-element" alt="{{ guide.title }}">
-                    {% else %}
-                        <img src="{% static 'images/default-avatar.jpg' %}" class="image-element" alt="{{ guide.title }}">
-                    {% endif %}
-                    <span class="text-element">{{ guide.title }}</span>
-                    <hr style="width: 75%; margin: 0 auto;">
-                    <div class="profile-row-container" style="margin: auto; gap:5px">
-                        <span class="text-element">{{ guide.author.username }}</span>
-                        <span class="text-element">{{ guide.rating }}★</span>
-                    </div>
-                </a>
-            </div>
-            {% endfor %}
-        {% else %}
-            <p style="text-align:center; font-style: italic; margin: 20px 0;">
-                {% if request.GET.search %}
-                    Руководства по запросу "{{ request.GET.search }}" не найдены
-                {% else %}
-                    Популярных руководств пока нет
-                {% endif %}
-            </p>
-        {% endif %}
-    </div>
-
-    {% if not request.GET.search %}
-    <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;">Лучшее за всё время</h2>
-    <div class="scroll-area">
-        {% if top_guides %}
-            {% for guide in top_guides %}
-            <div class="guide-element">
-                <a href="{% url 'guide_detail' guide.id %}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; width: 100%; height: 100%;">
-                    {% if guide.image %}
-                        <img src="{{ guide.image.url }}" class="image-element" alt="{{ guide.title }}">
-                    {% else %}
-                        <img src="{% static 'images/default-avatar.jpg' %}" class="image-element" alt="{{ guide.title }}">
-                    {% endif %}
-                    <span class="text-element">{{ guide.title }}</span>
-                    <hr style="width: 75%; margin: 0 auto;">
-                    <div class="profile-row-container" style="margin: auto; gap:5px">
-                        <span class="text-element">{{ guide.author.username }}</span>
-                        <span class="text-element">{{ guide.rating }}★</span>
-                    </div>
-                </a>
-            </div>
-            {% endfor %}
-        {% else %}
-            <p style="text-align:center; font-style: italic; margin: 20px 0;">Лучших руководств пока нет</p>
-        {% endif %}
-    </div>
-    {% endif %}
-</div>
-
-<footer class="footer">
-    <div class="footer-container">
-        <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem">
-            <tr>
-                <td colspan="3" style="width:33%;">
-                    <a href="https://www.sfu.ru/ru" class="nav-group-left"
-                       style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">
-                       Сибирский Федеральный Университет
+        <div class="scroll-area">
+            {% if popular_guides %}
+                {% for guide in popular_guides %}
+                <div class="guide-element">
+                    <a href="{% url 'guide_detail' guide.id %}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; width: 100%; height: 100%;">
+                        {% if guide.image %}
+                            <img src="{{ guide.image.url }}" class="image-element" alt="{{ guide.title }}">
+                        {% else %}
+                            <img src="{% static 'images/default-avatar.jpg' %}" class="image-element" alt="{{ guide.title }}">
+                        {% endif %}
+                        <span class="text-element">{{ guide.title }}</span>
+                        <hr style="width: 75%; margin: 0 auto;">
+                        <div class="profile-row-container" style="margin: auto; gap:5px">
+                            <span class="text-element">{{ guide.author.username }}</span>
+                            <span class="text-element">{{ guide.rating }}★</span>
+                        </div>
                     </a>
-                </td>
-                <td style="text-align:right;">
-                    <p class="nav-group-right" style="margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">@skill_issue 2025</p>
-                </td>
-            </tr>
-            <tr>
-                <td><p style="text-align:left">@bukohm</p></td>
-                <td><p style="text-align:center">@hoolkayyy</p></td>
-                <td><p style="text-align:right">@K1rkaSs</p></td>
-            </tr>
-        </table>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align:center; font-style: italic; margin: 20px 0;">
+                    {% if request.GET.search %}
+                        Руководства по запросу "{{ request.GET.search }}" не найдены
+                    {% else %}
+                        Популярных руководств пока нет
+                    {% endif %}
+                </p>
+            {% endif %}
+        </div>
+
+        {% if not request.GET.search %}
+        <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;">Лучшее за всё время</h2>
+        <div class="scroll-area">
+            {% if top_guides %}
+                {% for guide in top_guides %}
+                <div class="guide-element">
+                    <a href="{% url 'guide_detail' guide.id %}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; width: 100%; height: 100%;">
+                        {% if guide.image %}
+                            <img src="{{ guide.image.url }}" class="image-element" alt="{{ guide.title }}">
+                        {% else %}
+                            <img src="{% static 'images/default-avatar.jpg' %}" class="image-element" alt="{{ guide.title }}">
+                        {% endif %}
+                        <span class="text-element">{{ guide.title }}</span>
+                        <hr style="width: 75%; margin: 0 auto;">
+                        <div class="profile-row-container" style="margin: auto; gap:5px">
+                            <span class="text-element">{{ guide.author.username }}</span>
+                            <span class="text-element">{{ guide.rating }}★</span>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align:center; font-style: italic; margin: 20px 0;">Лучших руководств пока нет</p>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
-</footer>
+
+    <!-- Чат -->
+    <button type="button" id="floating-button" title="Открыть чат">
+        💬
+    </button>
+
+    <div id="chat-modal" >
+        <div id="chat-contacts">
+            <div id="chat-header">
+                <span>Чаты</span>
+                <button id="chat-close-button">&times;</button>
+            </div>
+            <!--СПИСОК КОНТАКТОВ-->
+            <div id="chat-list">
+                <a href="#" class="chat-item" data-user-id="1">
+                    <img src="{% static 'images/default-avatar.jpg' %}" alt="Avatar">
+                    <div style="flex: 1;">
+                        <div class="username">Алексей</div>
+                    </div>
+                </a>
+                <a href="#" class="chat-item" data-user-id="2">
+                    <img src="{% static 'images/default-avatar.jpg' %}" alt="Avatar">
+                    <div style="flex: 1;">
+                        <div class="username">Мария</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div id="chat-dialog">
+            <div id="dialog-header">
+                <button id="back-to-chats">&lt;</button>
+                <img src="{% static 'images/default-avatar.jpg' %}" alt="Avatar">
+                <a id="profile-link" href="#">Никнейм</a>
+            </div>
+
+            <div id="messages-container">
+                <div class="message-received">
+                    <div class="message-text">Привет! Готов помочь с проектом.</div>
+                    <div class="message-time">12:30</div>
+                </div>
+
+                <div class="message-sent">
+                    <div class="message-text">Отлично, спасибо!</div>
+                    <div class="message-time">12:32</div>
+                </div>
+            </div>
+
+            <div style="
+                padding: 15px 20px;
+                background: #f8f9fa;
+                border-top: 1px solid #eee;
+            ">
+                <input type="text" placeholder="Написать сообщение..." style="
+                    width: 100%;
+                    padding: 10px 12px;
+                    border: 1px solid #ddd;
+                    border-radius: 20px;
+                    outline: none;
+                    font-size: 0.95rem;
+                ">
+            </div>
+        </div>
+    </div>
+    <!-- Конец чата -->
+
+    <footer class="footer">
+        <div class="footer-container">
+            <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem">
+                <tr>
+                    <td colspan="3" style="width:33%;">
+                        <a href="https://www.sfu.ru/ru" class="nav-group-left"
+                           style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">
+                           Сибирский Федеральный Университет
+                        </a>
+                    </td>
+                    <td style="text-align:right;">
+                        <p class="nav-group-right" style="margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">@skill_issue 2025</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td><p style="text-align:left">@bukohm</p></td>
+                    <td><p style="text-align:center">@hoolkayyy</p></td>
+                    <td><p style="text-align:right">@K1rkaSs</p></td>
+                </tr>
+            </table>
+        </div>
+    </footer>
 <script src="{% static 'js/search.js' %}"></script>
+<script src="{% static 'js/filter.js' %}"></script>
+<script src="{% static 'js/toggle_chat.js' %}"></script>
 </body>
 </html>
