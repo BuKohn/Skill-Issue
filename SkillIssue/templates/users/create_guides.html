@@ -41,6 +41,9 @@
         <div class="editor-container">
             <input id="titleInput" type="text" class="guide_name_input" placeholder="Введите название руководства"
        value="{% if guide %}{{ guide.title|escape }}{% endif %}">
+            
+            <input id="tagsInput" type="text" class="guide_name_input" placeholder="Введите теги через запятую (например: Python, Django, программирование)"
+       value="{% if guide %}{{ guide.tags|join:', ' }}{% endif %}" style="margin-top: 10px;">
 
             <div class="editor-section">
                 <div class="editor-header">
@@ -97,6 +100,7 @@
 const editor = document.getElementById('markdownEditor');
 const preview = document.getElementById('preview');
 const titleInput = document.getElementById('titleInput');
+const tagsInput = document.getElementById('tagsInput');
 const pageTitle = document.getElementById('pageTitle');
 
 const imageStorage = new Map();
@@ -117,6 +121,10 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 titleInput.value = data.title;
                 editor.value = data.content;
+                // Загружаем теги
+                if (data.tags && Array.isArray(data.tags)) {
+                    tagsInput.value = data.tags.join(', ');
+                }
 
                 const imageRegex = /!\[(.*?)\]\((.*?)\)/g;
                 let match;
@@ -222,6 +230,7 @@ function clearEditor() {
     if (confirm('Вы уверены, что хотите очистить редактор?')) {
         editor.value = '';
         titleInput.value = '';
+        tagsInput.value = '';
         imageStorage.clear();
         imageCounter = 0;
         updatePreview();
@@ -231,6 +240,7 @@ function clearEditor() {
 async function saveGuide() {
     const guideTitle = titleInput.value.trim();
     const content = editor.value;
+    const tags = tagsInput.value.trim();
 
     if (!guideTitle || !content.trim()) {
         alert("Введите название и текст");
@@ -240,6 +250,7 @@ async function saveGuide() {
     const formData = new FormData();
     formData.append("title", guideTitle);
     formData.append("content", content);
+    formData.append("tags", tags);
 
     for (const [fileName, value] of imageStorage.entries()) {
         if (value.file) {

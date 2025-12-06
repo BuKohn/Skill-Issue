@@ -370,21 +370,11 @@ a {
 .scroll-area {
     display: flex;
     justify-content: center;
-    overflow-x: auto;
+    overflow: visible;
     width: 95%;
     margin: auto;
-    gap: 20px;
     padding: 20px;
-    scroll-behavior: smooth;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: thin;
-    scrollbar-color: #888 #f1f1f1;
-    mask: linear-gradient(
-        90deg,
-        transparent 0%,
-        white 2%,
-        white 98%,
-        transparent 100%);
+    min-height: fit-content;
 }
 
 .search-guides {

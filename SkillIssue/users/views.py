@@ -28,9 +28,9 @@ import random
 import string
 
 
-from .models import Profile, GuideRating, Review, Guide, ProfileReview, Announcement, AnnouncementComment, EmailVerificationCode
+from .models import Profile, GuideRating, Review, Guide, ProfileReview, Announcement, AnnouncementComment, EmailVerificationCode, ChatMessage
 from .serializers import RegisterSerializer, UserProfileSerializer, ReviewSerializer, GuideSerializer, \
-    AnnouncementSerializer
+    AnnouncementSerializer, ChatMessageSerializer, ChatContactSerializer
 from .forms import GuideForm
 
 
@@ -137,28 +137,54 @@ def create_guide(request):
             return redirect('guides_list')
 
     if request.method == 'POST':
-        form = GuideForm(request.POST, request.FILES, instance=guide)
-        if form.is_valid():
-            guide_obj = form.save(commit=False)
-            guide_obj.author = request.user
-            guide_obj.save()
+        # Обрабатываем данные формы
+        title = request.POST.get('title', '').strip()
+        content = request.POST.get('content', '').strip()
+        tags_raw = request.POST.get('tags', '').strip()
+        image = request.FILES.get('image')
+        
+        # Обрабатываем теги
+        tags_list = []
+        if tags_raw:
+            tags_list = [tag.strip() for tag in tags_raw.split(',') if tag.strip()]
+        
+        if guide:
+            # Редактирование существующего руководства
+            guide.title = title
+            guide.content = content
+            guide.tags = tags_list
+            if image:
+                guide.image = image
+            guide.save()
+            guide_obj = guide
+        else:
+            # Создание нового руководства
+            guide_obj = Guide.objects.create(
+                title=title,
+                content=content,
+                author=request.user,
+                tags=tags_list,
+                image=image if image else None
+            )
 
-            content = guide_obj.content
+        # Обрабатываем изображения в контенте
+        content = guide_obj.content
+        for key, file in request.FILES.items():
+            if key.startswith('image_'):
+                from django.core.files.storage import default_storage
+                from django.core.files.base import ContentFile
 
-            for key, file in request.FILES.items():
-                if key.startswith('image_'):
-                    from django.core.files.storage import default_storage
-                    from django.core.files.base import ContentFile
+                filename = default_storage.save(f'guides/{file.name}', ContentFile(file.read()))
+                file_url = default_storage.url(filename)
 
-                    filename = default_storage.save(f'guides/{file.name}', ContentFile(file.read()))
-                    file_url = default_storage.url(filename)
-
-                    content = content.replace(f'({file.name})', f'({file_url})')
-                    content = content.replace(f'(1761295916746_{file.name})', f'({file_url})')
-
+                content = content.replace(f'({file.name})', f'({file_url})')
+                content = content.replace(f'(1761295916746_{file.name})', f'({file_url})')
+        
+        if content != guide_obj.content:
             guide_obj.content = content
             guide_obj.save()
-            return redirect('guide_detail', pk=guide_obj.id)
+
+        return redirect('guide_detail', pk=guide_obj.id)
     else:
         form = GuideForm(instance=guide)
 
@@ -332,6 +358,7 @@ class RegisterView(APIView):
 
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []  # Отключаем CSRF для JWT логина
 
     @swagger_auto_schema(
         operation_description="Авторизация пользователя с использованием JWT токенов",
@@ -379,6 +406,9 @@ class LoginView(APIView):
 
         # Генерируем JWT токены
         refresh = RefreshToken.for_user(user)
+
+        # Создаем сессионную авторизацию, чтобы /api/me работало и по cookie
+        login(request, user)
         
         return Response({
             "access": str(refresh.access_token),
@@ -1290,3 +1320,209 @@ def search_items(request):
 
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@swagger_auto_schema(
+    method='get',
+    operation_description="Фильтрация объявлений по названию, тегам и дате",
+    manual_parameters=[
+        openapi.Parameter('search', openapi.IN_QUERY, description="Поиск по названию", type=openapi.TYPE_STRING),
+        openapi.Parameter('tags', openapi.IN_QUERY, description="Теги через запятую", type=openapi.TYPE_STRING),
+        openapi.Parameter('date_filter', openapi.IN_QUERY, description="today/week/month", type=openapi.TYPE_STRING),
+    ],
+    tags=['Объявления']
+)
+@api_view(['GET'])
+def filter_announcements(request):
+    try:
+        queryset = Announcement.objects.all()
+
+        search_query = request.GET.get('search', '').strip()
+        if search_query:
+            queryset = queryset.filter(title__icontains=search_query)
+
+        tags_query = request.GET.get('tags', '').strip()
+        if tags_query:
+            tags_list = [tag.strip().lower() for tag in tags_query.split(',') if tag.strip()]
+            if tags_list:
+                filtered_ids = []
+                for announcement in queryset.iterator():
+                    ann_tags = announcement.tags if isinstance(announcement.tags, list) else []
+                    normalized = [str(t).lower().strip() for t in ann_tags if t]
+                    if any(tag in normalized for tag in tags_list):
+                        filtered_ids.append(announcement.id)
+                queryset = queryset.filter(id__in=filtered_ids) if filtered_ids else queryset.none()
+
+        date_filter = (request.GET.get('date_filter') or '').strip()
+        if date_filter in ('today', 'week', 'month'):
+            today = timezone.localdate()
+            if date_filter == 'today':
+                queryset = queryset.filter(created_at__date=today)
+            elif date_filter == 'week':
+                start_date = today - timedelta(days=7)
+                queryset = queryset.filter(created_at__date__gte=start_date)
+            elif date_filter == 'month':
+                start_date = today - timedelta(days=30)
+                queryset = queryset.filter(created_at__date__gte=start_date)
+
+        queryset = queryset.order_by('-created_at')
+        serializer = AnnouncementSerializer(queryset, many=True, context={'request': request})
+        return Response({'count': queryset.count(), 'results': serializer.data})
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@swagger_auto_schema(
+    method='get',
+    operation_description="Фильтрация руководств по названию, тегам и дате",
+    manual_parameters=[
+        openapi.Parameter('search', openapi.IN_QUERY, description="Поиск по названию", type=openapi.TYPE_STRING),
+        openapi.Parameter('tags', openapi.IN_QUERY, description="Теги через запятую", type=openapi.TYPE_STRING),
+        openapi.Parameter('date_filter', openapi.IN_QUERY, description="today/week/month", type=openapi.TYPE_STRING),
+    ],
+    tags=['Руководства']
+)
+@api_view(['GET'])
+def filter_guides(request):
+    try:
+        queryset = Guide.objects.all()
+
+        search_query = request.GET.get('search', '').strip()
+        if search_query:
+            queryset = queryset.filter(title__icontains=search_query)
+
+        tags_query = request.GET.get('tags', '').strip()
+        if tags_query:
+            tags_list = [tag.strip().lower() for tag in tags_query.split(',') if tag.strip()]
+            if tags_list:
+                filtered_ids = []
+                for guide in queryset.iterator():
+                    g_tags = guide.tags if isinstance(guide.tags, list) else []
+                    normalized = [str(t).lower().strip() for t in g_tags if t]
+                    if any(tag in normalized for tag in tags_list):
+                        filtered_ids.append(guide.id)
+                queryset = queryset.filter(id__in=filtered_ids) if filtered_ids else queryset.none()
+
+        date_filter = (request.GET.get('date_filter') or '').strip()
+        if date_filter in ('today', 'week', 'month'):
+            today = timezone.localdate()
+            if date_filter == 'today':
+                queryset = queryset.filter(created_at__date=today)
+            elif date_filter == 'week':
+                start_date = today - timedelta(days=7)
+                queryset = queryset.filter(created_at__date__gte=start_date)
+            elif date_filter == 'month':
+                start_date = today - timedelta(days=30)
+                queryset = queryset.filter(created_at__date__gte=start_date)
+
+        queryset = queryset.order_by('-rating', '-created_at')
+        serializer = GuideSerializer(queryset, many=True, context={'request': request})
+        return Response({'count': queryset.count(), 'results': serializer.data})
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ChatContactsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """
+        Возвращает список собеседников с последним сообщением и количеством непрочитанных.
+        """
+        user = request.user
+        messages = (
+            ChatMessage.objects
+            .filter(Q(sender=user) | Q(receiver=user))
+            .select_related("sender", "receiver", "sender__profile", "receiver__profile")
+            .order_by("-created_at")
+        )
+
+        contacts_map = {}
+        for msg in messages:
+            other = msg.receiver if msg.sender_id == user.id else msg.sender
+            data = contacts_map.setdefault(
+                other.id,
+                {
+                    "user_id": other.id,
+                    "username": other.username,
+                    "avatar": other.profile.avatar.url if hasattr(other, 'profile') and other.profile.avatar else None,
+                    "last_message": "",
+                    "last_message_at": None,
+                    "unread_count": 0,
+                },
+            )
+
+            if not data["last_message_at"] or msg.created_at > data["last_message_at"]:
+                data["last_message"] = msg.message[:200]
+                data["last_message_at"] = msg.created_at
+
+            if msg.receiver_id == user.id and not msg.is_read:
+                data["unread_count"] += 1
+
+        contacts = sorted(
+            contacts_map.values(),
+            key=lambda item: item["last_message_at"] or timezone.now(),
+            reverse=True,
+        )
+        serializer = ChatContactSerializer(contacts, many=True)
+        return Response(serializer.data)
+
+
+class ChatMessagesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        """
+        Возвращает историю сообщений с конкретным пользователем и помечает входящие как прочитанные.
+        """
+        other_user = get_object_or_404(User, id=user_id)
+        if other_user == request.user:
+            return Response([])
+
+        ChatMessage.objects.filter(
+            sender=other_user,
+            receiver=request.user,
+            is_read=False
+        ).update(is_read=True)
+
+        messages = ChatMessage.objects.filter(
+            (Q(sender=request.user, receiver=other_user) |
+             Q(sender=other_user, receiver=request.user))
+        ).order_by("created_at")
+
+        serializer = ChatMessageSerializer(messages, many=True, context={"request": request})
+        return Response(serializer.data)
+
+
+class ChatSendMessageView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """
+        Создаёт новое сообщение в чат.
+        """
+        receiver_id = request.data.get("receiver_id")
+        text = (request.data.get("message") or "").strip()
+
+        if not receiver_id:
+            return Response({"error": "Не указан получатель"}, status=status.HTTP_400_BAD_REQUEST)
+        if not text:
+            return Response({"error": "Сообщение не может быть пустым"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            receiver_id = int(receiver_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Некорректный идентификатор получателя"}, status=status.HTTP_400_BAD_REQUEST)
+
+        receiver = get_object_or_404(User, id=receiver_id)
+        if receiver == request.user:
+            return Response({"error": "Нельзя отправить сообщение самому себе"}, status=status.HTTP_400_BAD_REQUEST)
+
+        message = ChatMessage.objects.create(
+            sender=request.user,
+            receiver=receiver,
+            message=text,
+        )
+
+        serializer = ChatMessageSerializer(message, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

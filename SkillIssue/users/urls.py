@@ -20,6 +20,9 @@ urlpatterns = [
     path("api/resend-code/", views.ResendVerificationCodeView.as_view(), name="resend_code"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/me/", views.CurrentUserView.as_view(), name="current_user"),
+    path("api/chat/contacts/", views.ChatContactsView.as_view(), name="chat_contacts"),
+    path("api/chat/<int:user_id>/messages/", views.ChatMessagesView.as_view(), name="chat_messages"),
+    path("api/chat/send/", views.ChatSendMessageView.as_view(), name="chat_send_message"),
     path("logout/", views.logout_view, name="logout_page"),
 
     # --- Основные страницы ---
@@ -65,6 +68,11 @@ urlpatterns = [
     path('announcements/<int:announcement_id>/', views.announcement_detail, name='announcement_detail'),
     path('announcements/<int:announcement_id>/edit/', views.edit_announcement, name='edit_announcement'),
     path('announcements/<int:announcement_id>/update/', views.update_announcement, name='update_announcement'),
+
+    # --- API для фильтрации (должны быть ПЕРЕД router.urls) ---
+    path('api/announcements/filter/', views.filter_announcements, name='filter_announcements'),
+    path('api/guides/filter/', views.filter_guides, name='filter_guides'),
+
     # --- DRF Router ---
     path('api/', include(router.urls)),
 

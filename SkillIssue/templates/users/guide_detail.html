@@ -49,6 +49,13 @@
         {% endif %}
     </div>
 
+    {% if user.is_authenticated and user == guide.author %}
+    <form action="{% url 'create_guide' %}" method="get" style="margin: 0; margin-left: auto; display: inline-block;">
+        <input type="hidden" name="id" value="{{ guide.id }}">
+        <button class="profile-button" style="height: 40px; width: 200px; border:none; box-shadow: 0px 1px 3px #424242; margin-top: 20px;">редактировать</button>
+    </form>
+    {% endif %}
+
     <hr style="color: black; width: 96%; margin: 20px auto;">
     <a class="simple-text" style="line-height: 20px; padding-bottom: 20px;">Отзывы к руководству</a>
 

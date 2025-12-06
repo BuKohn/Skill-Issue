@@ -97,11 +97,16 @@ document.addEventListener('DOMContentLoaded', function() {
             body: JSON.stringify({username, password}),
             credentials: "include"
         })
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(data => {
+                    throw new Error(data.error || `Ошибка ${res.status}`);
+                });
+            }
+            return res.json();
+        })
         .then(data => {
-            if (data.error) {
-                error_par.textContent = data.error;
-            } else if (data.access && data.refresh) {
+            if (data.access && data.refresh) {
                 // Сохраняем JWT токены
                 authManager.setTokens(data.access, data.refresh, {
                     username: data.username,
@@ -116,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(err => {
             console.error(err);
-            error_par.textContent = "Ошибка сервера";
+            error_par.textContent = err.message || "Ошибка сервера";
         });
     });
 });
