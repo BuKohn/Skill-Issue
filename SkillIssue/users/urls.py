@@ -78,6 +78,7 @@ urlpatterns = [
 
     path('api/search/all/', views.search_all_items, name='search_all'),
     path('api/search/', views.search_items, name='search'),
+    path('api/set-language/', views.set_language, name='set_language'),
 ]
 
 if settings.DEBUG:

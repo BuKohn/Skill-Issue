@@ -95,7 +95,7 @@ class ChatMessageSerializer(serializers.ModelSerializer):
 class ChatContactSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
     username = serializers.CharField()
-    avatar = serializers.CharField(allow_null=True, required=False)
+    avatar = serializers.CharField(allow_blank=True, allow_null=True, required=False)
     last_message = serializers.CharField(allow_blank=True)
     last_message_at = serializers.DateTimeField(allow_null=True)
     unread_count = serializers.IntegerField()

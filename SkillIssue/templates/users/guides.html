@@ -16,7 +16,7 @@
                 <div class="search-container">
                     <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput"
                            data-placeholder-ru="поиск руководств, анкет и профилей"
-                           data-placeholder-en="search guides, announcements and profiles">
+                           data-placeholder-en="search guides, profiles and announcements">
                     <div class="search-dropdown" id="searchDropdown">
                     </div>
                 </div>
@@ -39,7 +39,7 @@
     <div class="body-background">
         <h1 class="simple-text" style="margin-top: 20px; font-size: 1.5rem;" data-lang-ru="Руководства" data-lang-en="Guides">Руководства</h1>
         <hr style="width: 96%; margin: 10px auto;">
-        <p class="simple-text" style="font-size: 1.1rem;" data-lang-ru="Просматривайте руководства других пользователей и узнавайте много нового!" data-lang-en="Browse other users' guides and learn something new!">Просматривайте руководства других пользователей и узнавайте много нового!</p>
+        <p class="simple-text" style="font-size: 1.1rem;" data-lang-ru="Просматривайте руководства других пользователей и узнавайте много нового!" data-lang-en="Browse guides from other users and learn something new!">Просматривайте руководства других пользователей и узнавайте много нового!</p>
         <hr style="width: 75%; margin: 10px auto;">
 
         <!-- ФОРМА ПОИСКА ПО РУКОВОДСТВАМ -->
@@ -59,7 +59,7 @@
                        class="search-guides"
                        value=""
                        data-placeholder-ru="теги через запятую"
-                       data-placeholder-en="tags separated by commas">
+                       data-placeholder-en="tags separated by comma">
 
                 <div class="filter-container" style="position: relative;">
                     <button type="button" class="filter-toggle" style="padding: 8px 16px; min-width: 170px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
@@ -70,24 +70,29 @@
                     <div class="filter-dropdown" 
                      style="display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; background: white; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-width: 150px; z-index: 100;">
                         <button type="button" class="filter-item" data-value="today" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;"
-                                data-lang-ru="За сегодня" data-lang-en="Today">За сегодня</button>
+                                data-lang-ru="За сегодня" data-lang-en="Today">
+                            За сегодня
+                        </button>
                         <button type="button" class="filter-item" data-value="week" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;"
-                                data-lang-ru="За неделю" data-lang-en="This week">За неделю</button>
+                                data-lang-ru="За неделю" data-lang-en="This week">
+                            За неделю
+                        </button>
                         <button type="button" class="filter-item" data-value="month" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;"
-                                data-lang-ru="За месяц" data-lang-en="This month">За месяц</button>
+                                data-lang-ru="За месяц" data-lang-en="This month">
+                            За месяц
+                        </button>
                     </div>
                 </div>
             </div>
-        <button type="submit" class="profile-button" style="margin-top: 20px; width: 200px;" data-lang-ru="найти" data-lang-en="search">найти</button>
+        <button type="submit" class="profile-button" style="margin-top: 20px; width: 200px;"
+                data-lang-ru="найти" data-lang-en="search">найти</button>
     </form>
 
-        <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;"
-            data-lang-ru="{% if request.GET.search %}Результаты поиска &quot;{{ request.GET.search }}&quot;{% else %}Популярное{% endif %}"
-            data-lang-en="{% if request.GET.search %}Search results for &quot;{{ request.GET.search }}&quot;{% else %}Popular{% endif %}">
+        <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;">
             {% if request.GET.search %}
-                Результаты поиска "{{ request.GET.search }}"
+                <span data-lang-ru="Результаты поиска &quot;{{ request.GET.search }}&quot;" data-lang-en="Search results for &quot;{{ request.GET.search }}&quot;">Результаты поиска "{{ request.GET.search }}"</span>
             {% else %}
-                Популярное
+                <span data-lang-ru="Популярное" data-lang-en="Popular">Популярное</span>
             {% endif %}
         </h2>
 
@@ -112,13 +117,11 @@
                 </div>
                 {% endfor %}
             {% else %}
-                <p style="text-align:center; font-style: italic; margin: 20px 0;"
-                   data-lang-ru="{% if request.GET.search %}Руководства по запросу &quot;{{ request.GET.search }}&quot; не найдены{% else %}Популярных руководств пока нет{% endif %}"
-                   data-lang-en="{% if request.GET.search %}No guides found for &quot;{{ request.GET.search }}&quot;{% else %}No popular guides yet{% endif %}">
+                <p style="text-align:center; font-style: italic; margin: 20px 0;">
                     {% if request.GET.search %}
-                        Руководства по запросу "{{ request.GET.search }}" не найдены
+                        <span data-lang-ru="Руководства по запросу &quot;{{ request.GET.search }}&quot; не найдены" data-lang-en="No guides found for &quot;{{ request.GET.search }}&quot;">Руководства по запросу "{{ request.GET.search }}" не найдены</span>
                     {% else %}
-                        Популярных руководств пока нет
+                        <span data-lang-ru="Популярных руководств пока нет" data-lang-en="No popular guides yet">Популярных руководств пока нет</span>
                     {% endif %}
                 </p>
             {% endif %}
@@ -126,7 +129,7 @@
         </div>
 
         {% if not request.GET.search %}
-        <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;" data-lang-ru="Лучшее за всё время" data-lang-en="All-time top">Лучшее за всё время</h2>
+        <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;" data-lang-ru="Лучшее за всё время" data-lang-en="Best of all time">Лучшее за всё время</h2>
         <div class="scroll-area" style="display: flex; justify-content: center; overflow: visible; width: 95%; margin: auto; padding: 20px; min-height: fit-content;">
             <div class="profile-row-container" style="display: flex; gap: 20px; align-content: flex-start; flex-direction: row; flex-wrap: wrap; justify-content: center;">
             {% if top_guides %}
@@ -148,7 +151,9 @@
                 </div>
                 {% endfor %}
             {% else %}
-                <p style="text-align:center; font-style: italic; margin: 20px 0;" data-lang-ru="Лучших руководств пока нет" data-lang-en="No top guides yet">Лучших руководств пока нет</p>
+                <p style="text-align:center; font-style: italic; margin: 20px 0;">
+                    <span data-lang-ru="Лучших руководств пока нет" data-lang-en="No best guides yet">Лучших руководств пока нет</span>
+                </p>
             {% endif %}
             </div>
         </div>
@@ -156,16 +161,14 @@
     </div>
 
     <!-- Чат -->
-    <button type="button" id="floating-button" title="Открыть чат"
-            data-lang-ru-title="Открыть чат"
-            data-lang-en-title="Open chat">
+    <button type="button" id="floating-button" title="Открыть чат">
         💬
     </button>
 
     <div id="chat-modal" >
         <div id="chat-contacts">
             <div id="chat-header">
-                <span data-lang-ru="Чаты" data-lang-en="Chats">Чаты</span>
+                <span>Чаты</span>
                 <button id="chat-close-button">&times;</button>
             </div>
             <!--СПИСОК КОНТАКТОВ-->
@@ -197,9 +200,7 @@
             <div style="padding: 15px 20px; background: #f8f9fa; border-top: 1px solid #eee;">
                 <form id="message-form" style="display: flex; gap: 10px; align-items: center;">
                     <input type="text" id="message-input" placeholder="Написать сообщение..." 
-                           style="flex: 1; padding: 10px 12px; border: 1px solid #ddd; border-radius: 20px; outline: none; font-size: 0.95rem;" autocomplete="off"
-                           data-placeholder-ru="Написать сообщение..."
-                           data-placeholder-en="Write a message...">
+                           style="flex: 1; padding: 10px 12px; border: 1px solid #ddd; border-radius: 20px; outline: none; font-size: 0.95rem;" autocomplete="off">
                     <button type="submit" style="
                         background: linear-gradient(135deg, #00BFFF 0%, #0099CC 100%);
                         color: white;
@@ -216,9 +217,9 @@
                         justify-content: center;
                         min-width: 100px;
                     " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0, 191, 255, 0.4)';" 
-                       onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(0, 191, 255, 0.3)';"
-                       data-lang-ru="Отправить"
-                       data-lang-en="Send">Отправить</button>
+                       onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(0, 191, 255, 0.3)';">
+                        Отправить
+                    </button>
                 </form>
             </div>
         </div>
@@ -232,8 +233,7 @@
                     <td colspan="3" style="width:33%;">
                         <a href="https://www.sfu.ru/ru" class="nav-group-left"
                            style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;"
-                           data-lang-ru="Сибирский Федеральный Университет"
-                           data-lang-en="Siberian Federal University">
+                           data-lang-ru="Сибирский Федеральный Университет" data-lang-en="Siberian Federal University">
                            Сибирский Федеральный Университет
                         </a>
                     </td>
@@ -251,8 +251,8 @@
     </footer>
 <script src="{% static 'js/search.js' %}"></script>
 <script src="{% static 'js/filter.js' %}"></script>
+<script src="{% static 'js/toggle_language.js' %}"></script>
 <script src="{% static 'js/auth.js' %}"></script>
 <script src="{% static 'js/toggle_chat.js' %}"></script>
-<script src="{% static 'js/toggle_language.js' %}"></script>
 </body>
 </html>

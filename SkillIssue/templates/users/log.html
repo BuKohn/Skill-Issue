@@ -39,22 +39,17 @@
             <p class="simple-text" style="margin: auto; font-size: 2rem" data-lang-ru="Уже зарегистрированы?" data-lang-en="Already registered?">Уже зарегистрированы?</p>
             <p class="simple-text" style="margin: auto; margin-top: -20px; font-size: 1rem" data-lang-ru="Напомните, кто вы?" data-lang-en="Remind us who you are?">Напомните, кто вы?</p>
 
-            <input class="register_input" type="text" id="login_username" placeholder="введите username"
-                   data-placeholder-ru="введите username"
-                   data-placeholder-en="enter username"
-                   style="margin: auto">
-            <input class="register_input" type="password" id="login_password" placeholder="введите пароль"
-                   data-placeholder-ru="введите пароль"
-                   data-placeholder-en="enter password"
-                   style="margin: auto">
+            <input class="register_input" type="text" id="login_username" placeholder="введите username" style="margin: auto"
+                   data-placeholder-ru="введите username" data-placeholder-en="enter username">
+            <input class="register_input" type="password" id="login_password" placeholder="введите пароль" style="margin: auto"
+                   data-placeholder-ru="введите пароль" data-placeholder-en="enter password">
 
             <div style="height: 20px; margin-top: -30px; margin-bottom: -20px">
                 <p id="login_error" class="simple-text" style="font-size:0.8rem"></p>
             </div>
 
             <button type="submit" class="register_button" data-lang-ru="войти" data-lang-en="log in">войти</button>
-            <a href="{% url 'register_page' %}" class="simple-text" style="color: dimgray; font-size: 1rem; margin-top: -20px"
-               data-lang-ru="зарегистрироваться" data-lang-en="register">зарегистрироваться</a>
+            <a href="{% url 'register_page' %}" class="simple-text" style="color: dimgray; font-size: 1rem; margin-top: -20px" data-lang-ru="зарегистрироваться" data-lang-en="register">зарегистрироваться</a>
         </form>
     </div>
 
@@ -64,20 +59,14 @@
                 <tr>
                     <td colspan="3" style="width:33%;">
                         <a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem"
-                           data-lang-ru="Сибирский Федеральный Университет"
-                           data-lang-en="Siberian Federal University">Сибирский Федеральный Университет</a>
-                    </td>
+                           data-lang-ru="Сибирский Федеральный Университет" data-lang-en="Siberian Federal University">Сибирский Федеральный Университет</a>
                     <td style="text-align:right">
                         <p class="nav-group-right" style="margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">@skill_issue 2025</p>
-                    </td>
                 </tr>
                 <tr>
                     <td><p style="text-align:left">@bukohm</p>
-                    </td>
                     <td><p style="text-align:center">@hoolkayyy</p>
-                    </td>
                     <td><p style="text-align:right">@K1rkaSs</p>
-                    </td>
                 </tr>
             </table>
         </div>
@@ -85,6 +74,7 @@
 </body>
 
 <script src="{% static 'js/auth.js' %}"></script>
+<script src="{% static 'js/toggle_language.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('login_form');
@@ -99,11 +89,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const username = usernameInput.value.trim();
         const password = passwordInput.value.trim();
 
-        const lang = localStorage.getItem('lang') || 'RU';
-        const errorMsg = lang === 'RU' ? "Заполните все поля" : "Please fill in all fields";
-
         if (!username || !password) {
-            error_par.textContent = errorMsg;
+            error_par.textContent = "Заполните все поля";
             return;
         }
 
@@ -120,29 +107,31 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(res => {
             if (!res.ok) {
                 return res.json().then(data => {
-                    throw new Error(data.error || (lang === 'RU' ? `Ошибка ${res.status}` : `Error ${res.status}`));
+                    throw new Error(data.error || `Ошибка ${res.status}`);
                 });
             }
             return res.json();
         })
         .then(data => {
             if (data.access && data.refresh) {
+                // Сохраняем JWT токены
                 authManager.setTokens(data.access, data.refresh, {
                     username: data.username,
                     email: data.email
                 });
+                
+                // Перенаправляем на главную страницу
                 window.location.href = "{% url 'main_page' %}";
             } else {
-                error_par.textContent = lang === 'RU' ? "Неожиданный ответ от сервера" : "Unexpected server response";
+                error_par.textContent = "Неожиданный ответ от сервера";
             }
         })
         .catch(err => {
             console.error(err);
-            error_par.textContent = err.message || (lang === 'RU' ? "Ошибка сервера" : "Server error");
+            error_par.textContent = err.message || "Ошибка сервера";
         });
     });
 });
 </script>
 <script src="{% static 'js/search.js' %}"></script>
-<script src="{% static 'js/toggle_language.js' %}"></script>
 </html>

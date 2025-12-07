@@ -50,7 +50,11 @@
             <a class="simple-text profile-username" style="font-size: 1.5rem; padding: 20px 20px 0 0">{{ profile.user.username }}</a>
             <hr style="color: black; width: 100%;">
             <a class="simple-text profile-description" style="font-size: 1.3rem; padding: 0 20px 20px 0">
-                {{ profile.bio|default:"Описание отсутствует" }}
+                {% if profile.bio %}
+                    {{ profile.bio }}
+                {% else %}
+                    <span data-lang-ru="Описание отсутствует" data-lang-en="No description">Описание отсутствует</span>
+                {% endif %}
             </a>
             <a class="simple-text profile-rating" style="font-size: 1rem; margin-top: auto; padding: 20px 20px 5px 0"
                data-lang-ru="Рейтинг: {{ profile.rating|default:"0"|floatformat:0 }}/5"
@@ -229,9 +233,13 @@
             const response = await authManager.apiRequest("/api/me/");
             if(response.ok){
                 const user = await response.json();
-                const lang = localStorage.getItem('lang') || 'RU';
-                const logoutText = lang === 'RU' ? "выйти" : "log out";
-                menuContainer.innerHTML = `<a class="nav-links" href="#" id="logout-btn" style="margin-right:25px;">${logoutText}</a>`;
+                menuContainer.innerHTML = `<a class="nav-links" href="#" id="logout-btn" style="margin-right:25px;" data-lang-ru="выйти" data-lang-en="log out">выйти</a>`;
+                // Применяем язык к новым элементам
+                setTimeout(() => {
+                    if (typeof applyLanguage === 'function') {
+                        applyLanguage(currentLang);
+                    }
+                }, 100);
                 
                 const logoutBtn = document.getElementById("logout-btn");
                 if (logoutBtn) {
