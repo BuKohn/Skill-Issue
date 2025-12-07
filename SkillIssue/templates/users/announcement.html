@@ -9,27 +9,30 @@
         <nav class="header-container">
             <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
             <div class="nav-group nav-group-left">
-                <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
-                <a class="nav-links" href="{% url 'announcements_list' %}">объявления</a>
+                <a class="nav-links" href="{% url 'guides_list' %}" data-lang-ru="руководства" data-lang-en="guides">руководства</a>
+                <a class="nav-links" href="{% url 'announcements_list' %}" data-lang-ru="объявления" data-lang-en="announcements">объявления</a>
             </div>
             <div class="nav-group nav-group-right">
                 <div class="search-container">
-                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                     <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput" data-placeholder-ru="поиск руководств, анкет и профилей" data-placeholder-en="search guides, announcements and profiles">
                     <div class="search-dropdown" id="searchDropdown">
                     </div>
                 </div>
-                <a class="nav-links">избранное</a>
+                <a class="nav-links" data-lang-ru="избранное" data-lang-en="favorites">избранное</a>
+                <a class="nav-links" id="language-toggle" href="#" onclick="toggleLanguage(event)" title="Сменить язык">
+                    RU
+                </a>
                 <div class="menu-container">
                     {% if user.is_authenticated %}
                         <a class="nav-links" href="#">{{ user.username }}</a>
                         <div class="context-menu">
-                            <a href="{% url 'logout_page' %}">выйти</a>
+                            <a href="{% url 'logout_page' %}" data-lang-ru="выйти" data-lang-en="log out">выйти</a>
                         </div>
                     {% else %}
-                        <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+                        <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                         <div class="context-menu">
-                            <a href="{% url 'register_page' %}">зарегистрироваться</a>
-                            <a href="{% url 'login_page' %}">войти</a>
+                            <a href="{% url 'register_page' %}" data-lang-ru="зарегистрироваться" data-lang-en="register">зарегистрироваться</a>
+                            <a href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                         </div>
                     {% endif %}
                 </div>
@@ -38,9 +41,9 @@
     </header>
 
     <div class="body-background">
-        <a class="simple-text" style="margin-top: 20px; font-size: 1.5rem;">Объявления</a>
+        <a class="simple-text" style="margin-top: 20px; font-size: 1.5rem;" data-lang-ru="Объявления" data-lang-en="Announcements">Объявления</a>
         <hr style="width: 96%; margin: auto; margin-top: 10px; margin-bottom:10px">
-        <a class="simple-text" style="font-size: 1.1rem">Ищите интересные вам объявления и обменивайтесь навыками!</a>
+        <a class="simple-text" style="font-size: 1.1rem" data-lang-ru="Ищите интересные вам объявления и обменивайтесь навыками!" data-lang-en="Search for interesting ads and exchange your skills!">Ищите интересные вам объявления и обменивайтесь навыками!</a>
         <hr style="width: 75%; margin: auto; margin-top: 10px; margin-bottom:10px">
 
         <form method="GET" action="{% url 'announcements_list' %}" style="display: flex; flex-direction: column; align-items: center;">
@@ -49,38 +52,50 @@
                        name="search"
                        placeholder="поиск по названию"
                        class="search-guides"
-                       value="{{ request.GET.search }}">
+                       value="{{ request.GET.search }}"
+                       data-placeholder-ru="поиск по названию"
+                       data-placeholder-en="name search">
              
                 <input type="text"
                    name="tags"
                    placeholder="теги через запятую"
                    class="search-guides"
-                   value="">
+                   value=""
+                   data-placeholder-ru="теги через запятую"
+                   data-placeholder-en="tags">
 
                 <div class="filter-container" style="position: relative;">
                     <button type="button" class="filter-toggle" style="padding: 8px 16px; min-width: 170px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
-                        <span id="current-filter">Все</span>
+                        <span id="current-filter" data-lang-ru="Все" data-lang-en="all">Все</span>
                         <span style="margin-left: 8px;">▼</span>
                     </button>
 
                     <div class="filter-dropdown" 
                  style="display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; background: white; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-width: 150px; z-index: 100;">
-                        <button type="button" class="filter-item" data-value="today" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;">
+                        <button type="button" class="filter-item" data-value="today" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;"
+                        data-lang-ru="За сегодня" data-lang-en="for today">
                             За сегодня
                         </button>
-                        <button type="button" class="filter-item" data-value="week" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;">
+                        <button type="button" class="filter-item" data-value="week" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;"
+                        data-lang-ru="За неделю" data-lang-en="for week">
                             За неделю
                         </button>
-                        <button type="button" class="filter-item" data-value="month" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;">
+                        <button type="button" class="filter-item" data-value="month" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;"
+                        data-lang-ru="За месяц" data-lang-en="for month">
                             За месяц
                         </button>
                     </div>
                 </div>
             </div>
-            <button type="submit" class="profile-button" style="margin-top: 20px; width: 200px;">найти</button>
+            <button type="submit" class="profile-button" style="margin-top: 20px; width: 200px;" data-lang-ru="найти" data-lang-en="search">найти</button>
         </form>
 
-        <a class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px; margin-bottom: -10px">Объявления {% if request.GET.search %}по запросу "{{ request.GET.search }}"{% endif %}</a>
+        <a class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px; margin-bottom: -10px"
+        data-lang-ru="Объявления"
+        data-lang-en="Announcements"
+        data-lang-ru-query="по запросу"
+        data-lang-en-query="on request">
+        Объявления {% if request.GET.search %}по запросу "{{ request.GET.search }}"{% endif %}</a>
 
         <div class="scroll-area" style="display: flex; justify-content: center; overflow: visible; width: 95%; margin: auto; padding: 20px; min-height: fit-content;">
             <div class="profile-row-container" style="display: flex; gap: 10px; align-content: flex-start; flex-direction: row; flex-wrap: wrap; justify-content: center;">
@@ -100,19 +115,19 @@
                 {% empty %}
                 <div class="simple-text" style="text-align: center; width: 100%; padding: 20px;">
                     {% if request.GET.search %}
-                        Объявления по запросу "{{ request.GET.search }}" не найдены
+                        <span data-lang-ru="Объявления по запросу" data-lang-en="Announcements on request"></span> "{{ request.GET.search }}" <span data-lang-ru="не найдены" data-lang-en="not found"></span>
                     {% else %}
-                        Объявления отсутствуют
+                        <span data-lang-ru="Объявления отсутствуют" data-lang-en="No announcements available"></span>
                     {% endif %}
                 </div>
                 {% endfor %}
             </div>
         </div>
 
-        <a class="simple-text" style="margin: 10px 0; margin-top:40px">Или напишите своё собственное!</a>
+        <a class="simple-text" style="margin: 10px 0; margin-top:40px" data-lang-ru="Или напишите своё собственное!" data-lang-en="Or write your own!">Или напишите своё собственное!</a>
 
         <form action="{% url 'create' %}">
-            <input class="profile-button" style="width: 200px; height: 40px;" type="submit" value="Перейти"/>
+            <input class="profile-button" style="width: 200px; height: 40px;" type="submit" data-lang-ru="Перейти" data-lang-en="Go" value="Перейти"/>
         </form>
     </div>
 
@@ -124,7 +139,7 @@
     <div id="chat-modal" >
         <div id="chat-contacts">
             <div id="chat-header">
-                <span>Чаты</span>
+                <span data-lang-ru="Чаты" data-lang-en="Chats">Чаты</span>
                 <button id="chat-close-button">&times;</button>
             </div>
             <!--СПИСОК КОНТАКТОВ-->
@@ -156,7 +171,9 @@
             <div style="padding: 15px 20px; background: #f8f9fa; border-top: 1px solid #eee;">
                 <form id="message-form" style="display: flex; gap: 10px; align-items: center;">
                     <input type="text" id="message-input" placeholder="Написать сообщение..." 
-                           style="flex: 1; padding: 10px 12px; border: 1px solid #ddd; border-radius: 20px; outline: none; font-size: 0.95rem;" autocomplete="off">
+                           style="flex: 1; padding: 10px 12px; border: 1px solid #ddd; border-radius: 20px; outline: none; font-size: 0.95rem;" autocomplete="off"
+                           data-placeholder-ru="Написать сообщение..."
+                           data-placeholder-en="Write a message...">
                     <button type="submit" style="
                         background: linear-gradient(135deg, #00BFFF 0%, #0099CC 100%);
                         color: white;
@@ -173,7 +190,9 @@
                         justify-content: center;
                         min-width: 100px;
                     " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0, 191, 255, 0.4)';" 
-                       onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(0, 191, 255, 0.3)';">
+                       onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(0, 191, 255, 0.3)';"
+                       data-lang-ru="Отправить"
+                       data-lang-en="Send">
                         Отправить
                     </button>
                 </form>
@@ -187,8 +206,8 @@
             <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem">
                 <tr>
                     <td colspan="3" style="width:33%;">
-                        <a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem ">
-                            Сибирский Федеральный Университет
+                        <a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;" data-lang-ru="Сибирский Федеральный Университет" data-lang-en="Siberian Federal University">
+                           Сибирский Федеральный Университет
                         </a>
                     <td style="text-align:right">
                         <p class="nav-group-right" style="margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">@skill_issue 2025</p>
@@ -205,5 +224,7 @@
 <script src="{% static 'js/filter.js' %}"></script>
 <script src="{% static 'js/auth.js' %}"></script>
 <script src="{% static 'js/toggle_chat.js' %}"></script>
+<script src="{% static 'js/toggle_language.js' %}"></script>
+<script src="{% static 'js/toggle_language.js' %}"></script>
 </body>
 </html>

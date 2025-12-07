@@ -9,24 +9,27 @@
         <nav class="header-container">
             <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
             <div class="nav-group nav-group-left">
-                <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
-                <a class="nav-links" href="{% url 'announcements_list' %}">объявления</a>
+                <a class="nav-links" href="{% url 'guides_list' %}" data-lang-ru="руководства" data-lang-en="guides">руководства</a>
+                <a class="nav-links" href="{% url 'announcements_list' %}" data-lang-ru="объявления" data-lang-en="announcements">объявления</a>
             </div>
             <div class="nav-group nav-group-right">
                 <div class="search-container">
-                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput"
+                           data-placeholder-ru="поиск руководств, анкет и профилей"
+                           data-placeholder-en="search guides, announcements and profiles">
                     <div class="search-dropdown" id="searchDropdown">
                     </div>
                 </div>
-                <a class="nav-links">избранное</a>
+                <a class="nav-links" data-lang-ru="избранное" data-lang-en="favorites">избранное</a>
+                <a class="nav-links" id="language-toggle" href="#" onclick="toggleLanguage(event)" title="Сменить язык">RU</a>
                 <div class="menu-container">
                     {% if user.is_authenticated %}
-                        <a class="nav-links" href="{% url 'logout_page' %}">выйти</a>
+                        <a class="nav-links" href="{% url 'logout_page' %}" data-lang-ru="выйти" data-lang-en="log out">выйти</a>
                     {% else %}
-                        <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+                        <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                         <div class="context-menu">
-                            <a href="{% url 'register_page' %}">зарегистрироваться</a>
-                            <a href="{% url 'login_page' %}">войти</a>
+                            <a href="{% url 'register_page' %}" data-lang-ru="зарегистрироваться" data-lang-en="register">зарегистрироваться</a>
+                            <a href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                         </div>
                     {% endif %}
                 </div>
@@ -35,7 +38,7 @@
     </header>
 
     <div class="body-background">
-        <a class="simple-text" style="margin-top: 20px; font-size: 1.5rem;">Измените своё объявление!</a>
+        <a class="simple-text" style="margin-top: 20px; font-size: 1.5rem;" data-lang-ru="Измените своё объявление!" data-lang-en="Edit your announcement!">Измените своё объявление!</a>
 
         <form method="POST" action="{% url 'update_announcement' announcement.id %}" enctype="multipart/form-data">
             {% csrf_token %}
@@ -53,26 +56,36 @@
                             </label>
                             <input type="file" id="image-upload" name="image" class="file-input" accept="image/*">
                         </div>
-                        <a class="simple-text" style="font-size: 1.2rem; margin: 0 auto;">
+                        <a class="simple-text" style="font-size: 1.2rem; margin: 0 auto;"
+                           data-lang-ru="{% if announcement.image %}Изменить изображение{% else %}Выберите изображение{% endif %}"
+                           data-lang-en="{% if announcement.image %}Change image{% else %}Choose image{% endif %}">
                             {% if announcement.image %}Изменить изображение{% else %}Выберите изображение{% endif %}
                         </a>
                     </div>
 
                     <div class="profile-column-container" style="width: 100%;">
                         <input type="text" class="guide_name_input" name="title" style="margin-left: 0"
-                               placeholder="Введите название объявления" value="{{ announcement.title }}" required>
+                               placeholder="Введите название объявления"
+                               data-placeholder-ru="Введите название объявления"
+                               data-placeholder-en="Enter announcement title"
+                               value="{{ announcement.title }}" required>
                         <textarea class="textarea" name="description" style="height: 180px; max-height: 180px; min-height: 180px; margin-bottom: 30px; width: 100%;"
-                                  placeholder="Напишите описание..." required>{{ announcement.description }}</textarea>
+                                  placeholder="Напишите описание..."
+                                  data-placeholder-ru="Напишите описание..."
+                                  data-placeholder-en="Write a description..." required>{{ announcement.description }}</textarea>
                     </div>
                 </div>
             </div>
 
             <input type="text" name="tags" id="tags" class="guide_name_input" style="margin-bottom: 20px; text-align: center;"
-                placeholder="теги через запятую" value="{{ tags_string }}">
+                placeholder="теги через запятую"
+                data-placeholder-ru="теги через запятую"
+                data-placeholder-en="tags separated by commas"
+                value="{{ tags_string }}">
 
             <div class="actions">
-                <button type="button" class="profile-button" onclick="clearEditor()">Очистить</button>
-                <button type="submit" class="profile-button">Сохранить изменения</button>
+                <button type="button" class="profile-button" onclick="clearEditor()" data-lang-ru="Очистить" data-lang-en="Clear">Очистить</button>
+                <button type="submit" class="profile-button" data-lang-ru="Сохранить изменения" data-lang-en="Save changes">Сохранить изменения</button>
             </div>
         </form>
     </div>
@@ -82,7 +95,9 @@
             <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem">
                 <tr>
                     <td colspan="3" style="width:33%;">
-                        <a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem ">
+                        <a href="https://www.sfu.ru/ru  " class="nav-group-left" style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem "
+                           data-lang-ru="Сибирский Федеральный Университет"
+                           data-lang-en="Siberian Federal University">
                             Сибирский Федеральный Университет
                         </a>
                     </td>
@@ -124,7 +139,11 @@
         });
 
         function clearEditor() {
-            if (confirm('Вы уверены, что хотите очистить все поля?')) {
+            const lang = localStorage.getItem('lang') || 'RU';
+            const confirmMsg = lang === 'RU' 
+                ? 'Вы уверены, что хотите очистить все поля?' 
+                : 'Are you sure you want to clear all fields?';
+            if (confirm(confirmMsg)) {
                 document.getElementById('preview-image').src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjE1IiBoZWlnaHQ9IjIxNSIgdmlld0JveD0iMCAwIDIxNSAyMTUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMTUiIGhlaWdodD0iMjE1IiByeD0iNSIgZmlsbD0iI0ZGRkZGRiIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjEiLz4KPHBhdGggZD0iTTEwNy41IDU1VjE2MCIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNNjAgMTA3LjVIMTU1IiBzdHJva2U9IiM0MjQyNDIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=";
                 document.getElementById('preview-image').style.objectFit = 'contain';
                 document.getElementById('image-upload').value = '';
@@ -140,12 +159,17 @@
             const description = document.querySelector('textarea[name="description"]').value.trim();
 
             if (!title || !description) {
+                const lang = localStorage.getItem('lang') || 'RU';
+                const alertMsg = lang === 'RU'
+                    ? 'Пожалуйста, заполните название и описание объявления'
+                    : 'Please fill in the title and description';
                 event.preventDefault();
-                alert('Пожалуйста, заполните название и описание объявления');
+                alert(alertMsg);
                 return false;
             }
         });
     </script>
     <script src="{% static 'js/search.js' %}"></script>
+    <script src="{% static 'js/toggle_language.js' %}"></script>
 </body>
 </html>

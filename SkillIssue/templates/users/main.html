@@ -10,21 +10,24 @@
         <nav class="header-container">
             <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
             <div class="nav-group nav-group-left">
-                <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
-                <a class="nav-links" href="{% url 'announcements_list' %}">объявления</a>
+                <a class="nav-links" href="{% url 'guides_list' %}" data-lang-ru="руководства" data-lang-en="guides">руководства</a>
+                <a class="nav-links" href="{% url 'announcements_list' %}" data-lang-ru="объявления" data-lang-en="announcements">объявления</a>
             </div>
             <div class="nav-group nav-group-right">
                 <div class="search-container">
-                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput" data-placeholder-ru = "поиск руководств, анкет и профилей" data-placeholder-en="search guides, announcements and profiles">
                     <div class="search-dropdown" id="searchDropdown">
                     </div>
                 </div>
-                <a class="nav-links">избранное</a>
+                <a class="nav-links" data-lang-ru="избранное" data-lang-en="favorites">избранное</a>
+                <a class="nav-links" id="language-toggle" href="#" onclick="toggleLanguage(event)" title="Сменить язык">
+                    RU
+                </a>
                 <div class="menu-container" id="menu-container">
-                    <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+                    <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                     <div class="context-menu">
-                        <a href="{% url 'register_page' %}">зарегистрироваться</a>
-                        <a href="{% url 'login_page' %}">войти</a>
+                        <a href="{% url 'register_page' %}" data-lang-ru="зарегистрироваться" data-lang-en="register">зарегистрироваться</a>
+                        <a href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                     </div>
                 </div>
             </div>
@@ -38,7 +41,7 @@
         <hr style="width: 50%; color: ghostwhite">
         <p class="logo" style="color: black; font-size: 2.5rem">Skill Issue</p>
         <hr style="width: 40%; color: ghostwhite">
-        <p class="simple-text" style="margin-top: 5px">проект для поиска и обмена навыками</p>
+        <p class="simple-text" style="margin-top: 5px" data-lang-ru="проект для поиска и обмена навыками" data-lang-en="a project for finding and sharing skills">проект для поиска и обмена навыками</p>
     </div>
 
     <!-- Чат -->
@@ -80,7 +83,7 @@
 
             <div style="padding: 15px 20px; background: #f8f9fa; border-top: 1px solid #eee;">
                 <form id="message-form" style="display: flex; gap: 10px; align-items: center;">
-                    <input type="text" id="message-input" placeholder="Написать сообщение..." 
+                    <input type="text" id="message-input" placeholder="Написать сообщение..."  data-placeholder-ru="Написать сообщение..." data-placeholder-en="Write message..."
                            style="flex: 1; padding: 10px 12px; border: 1px solid #ddd; border-radius: 20px; outline: none; font-size: 0.95rem;" autocomplete="off">
                     <button type="submit" style="
                         background: linear-gradient(135deg, #00BFFF 0%, #0099CC 100%);
@@ -113,7 +116,7 @@
                 <tr>
                     <td colspan="3" style="width:33%;">
                         <a href="https://www.sfu.ru/ru" class="nav-group-left"
-                           style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">
+                           style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;" data-lang-ru="Сибирский Федеральный Университет" data-lang-en="Siberian Federal University">
                            Сибирский Федеральный Университет
                         </a>
                     </td>
@@ -129,7 +132,6 @@
             </table>
         </div>
     </footer>
-
 <script src="{% static 'js/auth.js' %}"></script>
 <script src="{% static 'js/toggle_chat.js' %}"></script>
 <script src="{% static 'js/filter.js' %}"></script>
@@ -144,10 +146,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (response.ok) {
             const user = await response.json();
             menuContainer.innerHTML = `
-                <a class="nav-links" href="/users/${user.username}/" style="margin-right: 20px;">профиль</a>
-                <a class="nav-links" href="#" id="logout-btn">выйти</a>
+                <a class="nav-links" href="/users/${user.username}/" style="margin-right: 20px; data-lang-ru='профиль' data-lang-en='profile'">профиль</a>
+                <a class="nav-links" href="#" id="logout-btn" data-lang-ru='выйти' data-lang-en='log out'>выйти</a>
             `;
-
+            applyLanguage(currentLang);
             const logoutBtn = document.getElementById("logout-btn");
             if (logoutBtn) {
                 logoutBtn.addEventListener("click", async (e) => {
@@ -158,25 +160,28 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else {
             // Если не авторизован, показываем стандартное меню
             menuContainer.innerHTML = `
-                <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+                <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru='войти' data-lang-en='log in'>войти</a>
                 <div class="context-menu">
-                    <a href="{% url 'register_page' %}">зарегистрироваться</a>
-                    <a href="{% url 'login_page' %}">войти</a>
+                    <a href="{% url 'register_page' %}" data-lang-ru='зарегистрироваться' data-lang-en='register'>зарегистрироваться</a>
+                    <a href="{% url 'login_page' %}"  data-lang-ru='войти' data-lang-en='log in'>войти</a>
                 </div>
             `;
+            applyLanguage(currentLang);
         }
     } catch (err) {
         console.error("Ошибка при проверке авторизации", err);
         // При ошибке показываем стандартное меню
         menuContainer.innerHTML = `
-            <a class="nav-links" href="{% url 'login_page' %}">войти</a>
-            <div class="context-menu">
-                <a href="{% url 'register_page' %}">зарегистрироваться</a>
-                <a href="{% url 'login_page' %}">войти</a>
-            </div>
-        `;
+                <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru='войти' data-lang-en='log in'>войти</a>
+                <div class="context-menu">
+                    <a href="{% url 'register_page' %}" data-lang-ru='зарегистрироваться' data-lang-en='register'>зарегистрироваться</a>
+                    <a href="{% url 'login_page' %}"  data-lang-ru='войти' data-lang-en='log in'>войти</a>
+                </div>
+            `;
+        applyLanguage(currentLang)
     }
 });
 </script>
+<script src="{% static 'js/toggle_language.js' %}"></script>
 </body>
 </html>
