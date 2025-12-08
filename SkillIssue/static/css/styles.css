@@ -864,3 +864,13 @@ textarea {
     border-radius: 50%;
     object-fit: cover;
 }
+
+#language-toggle {
+    font-weight: bold;
+    color: #00BFFF !important; /* Синий акцент */
+    transition: color 0.3s ease;
+}
+
+#language-toggle:hover {
+    color: #0088cc !important;
+}
