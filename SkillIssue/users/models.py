@@ -70,7 +70,7 @@ class GuideComment(models.Model):
 
 class AnnouncementComment(models.Model):
     announcement = models.ForeignKey(Announcement, on_delete=models.CASCADE, related_name='comments')
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='commented_announcements')
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
