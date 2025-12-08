@@ -10,24 +10,27 @@
         <nav class="header-container">
             <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
             <div class="nav-group nav-group-left">
-                <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
-                <a class="nav-links" href="{% url 'create' %}">объявления</a>
+                <a class="nav-links" href="{% url 'guides_list' %}" data-lang-ru="руководства" data-lang-en="guides">руководства</a>
+                <a class="nav-links" href="{% url 'create' %}" data-lang-ru="объявления" data-lang-en="announcements">объявления</a>
             </div>
             <div class="nav-group nav-group-right">
                 <div class="search-container">
-                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput"
+                           data-placeholder-ru="поиск руководств, анкет и профилей"
+                           data-placeholder-en="search guides, announcements and profiles">
                     <div class="search-dropdown" id="searchDropdown">
                     </div>
                 </div>
-                <a class="nav-links">избранное</a>
+                <a class="nav-links" data-lang-ru="избранное" data-lang-en="favorites">избранное</a>
+                <a class="nav-links" id="language-toggle" href="#" onclick="toggleLanguage(event)" title="Сменить язык">RU</a>
                 <div class="menu-container">
                     {% if user.is_authenticated %}
                         <a class="nav-links" href="#">{{ user.username }}</a>
                     {% else %}
-                        <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+                        <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                     {% endif %}
                     <div class="context-menu">
-                        <a href="{% url 'logout_page' %}">выйти</a>
+                        <a href="{% url 'logout_page' %}" data-lang-ru="выйти" data-lang-en="log out">выйти</a>
                     </div>
                 </div>
             </div>
@@ -40,7 +43,7 @@
         <input type="hidden" name="description">
 
         <div class="body-background">
-            <a class="simple-text" style="margin-top: 20px; font-size: 1.5rem;">Начните писать своё объявление!</a>
+            <a class="simple-text" style="margin-top: 20px; font-size: 1.5rem;" data-lang-ru="Начните писать своё объявление!" data-lang-en="Start writing your announcement!">Начните писать своё объявление!</a>
             <div class="editor-container">
                 <div class="profile-row-container" style="gap: 20px">
                     <div class="profile-column-container">
@@ -50,18 +53,27 @@
                             </label>
                             <input type="file" id="image-upload" class="file-input" accept="image/*">
                         </div>
-                        <a class="simple-text" style="font-size: 1.2rem; margin: 0 auto;">Выберите изображение</a>
+                        <a class="simple-text" style="font-size: 1.2rem; margin: 0 auto;" data-lang-ru="Выберите изображение" data-lang-en="Choose image">Выберите изображение</a>
                     </div>
                 <div class="profile-column-container" style="width: 100%;">
-                    <input type="text" class="guide_name_input" style="margin-left: 0" placeholder="Введите название объявления">
-                    <textarea class="textarea" style="height: 180px; max-height: 180px; min-height: 180px; margin-bottom: 30px; width: 100%;" placeholder="Напишите описание..."></textarea>
+                    <input type="text" class="guide_name_input" style="margin-left: 0"
+                           placeholder="Введите название объявления"
+                           data-placeholder-ru="Введите название объявления"
+                           data-placeholder-en="Enter announcement title">
+                    <textarea class="textarea" style="height: 180px; max-height: 180px; min-height: 180px; margin-bottom: 30px; width: 100%;"
+                              placeholder="Напишите описание..."
+                              data-placeholder-ru="Напишите описание..."
+                              data-placeholder-en="Write a description..."></textarea>
                 </div>
                 </div>
             </div>
-            <input type="text" id = "tags" class="guide_name_input" style="margin-bottom: 20px; text-align: center;" placeholder="теги через запятую">
+            <input type="text" id="tags" class="guide_name_input" style="margin-bottom: 20px; text-align: center;"
+                   placeholder="теги через запятую"
+                   data-placeholder-ru="теги через запятую"
+                   data-placeholder-en="tags separated by commas">
             <div class="actions">
-                <button class="profile-button" onclick="clearEditor()">Очистить</button>
-                <button class="profile-button" type="button" onclick="saveGuide()">Сохранить объявление</button>
+                <button class="profile-button" onclick="clearEditor()" data-lang-ru="Очистить" data-lang-en="Clear">Очистить</button>
+                <button class="profile-button" type="button" onclick="saveGuide()" data-lang-ru="Сохранить объявление" data-lang-en="Save announcement">Сохранить объявление</button>
             </div>
         </div>
     </form>
@@ -70,13 +82,20 @@
         <div class="footer-container">
             <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem">
                 <tr>
-                    <td colspan="3" style="width:33%;"><a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem ">Сибирский Федеральный Университет</a>
+                    <td colspan="3" style="width:33%;"><a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem "
+                           data-lang-ru="Сибирский Федеральный Университет"
+                           data-lang-en="Siberian Federal University">Сибирский Федеральный Университет</a>
+                    </td>
                     <td style="text-align:right"><p class="nav-group-right" style="margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">@skill_issue 2025</p>
+                    </td>
                 </tr>
                 <tr>
                     <td><p style="text-align:left">@bukohm</p>
+                    </td>
                     <td><p style="text-align:center">@hoolkayyy</p>
+                    </td>
                     <td><p style="text-align:right">@K1rkaSs</p>
+                    </td>
                 </tr>
             </table>
         </div>
@@ -97,17 +116,37 @@
         });
 
         function clearEditor() {
-            document.getElementById('preview-image').src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjE1IiBoZWlnaHQ9IjIxNSIgdmlld0JveD0iMCAwIDIxNSAyMTUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMTUiIGhlaWdodD0iMjE1IiByeD0iNSIgZmlsbD0iI0ZGRkZGRiIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjEiLz4KPHBhdGggZD0iTTEwNy41IDU1VjE2MCIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNNjAgMTA3LjVIMTU1IiBzdHJva2U9IiM0MjQyNDIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=";
-            document.getElementById('preview-image').style.objectFit = 'contain';
-            document.getElementById('image-upload').value = '';
-            document.querySelector('.guide_name_input').value = '';
-            document.querySelector('.textarea').value = '';
+            const lang = localStorage.getItem('lang') || 'RU';
+            const confirmMsg = lang === 'RU' 
+                ? 'Вы уверены, что хотите очистить все поля?' 
+                : 'Are you sure you want to clear all fields?';
+            if (confirm(confirmMsg)) {
+                document.getElementById('preview-image').src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjE1IiBoZWlnaHQ9IjIxNSIgdmlld0JveD0iMCAwIDIxNSAyMTUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMTUiIGhlaWdodD0iMjE1IiByeD0iNSIgZmlsbD0iI0ZGRkZGRiIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjEiLz4KPHBhdGggZD0iTTEwNy41IDU1VjE2MCIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNNjAgMTA3LjVIMTU1IiBzdHJva2U9IiM0MjQyNDIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=";
+                document.getElementById('preview-image').style.objectFit = 'contain';
+                document.getElementById('image-upload').value = '';
+                document.querySelector('.guide_name_input').value = '';
+                document.querySelector('.textarea').value = '';
+                document.getElementById('tags').value = '';
+            }
         }
 
         function saveGuide() {
+            const title = document.querySelector(".guide_name_input").value.trim();
+            const description = document.querySelector(".textarea").value.trim();
+
+            const lang = localStorage.getItem('lang') || 'RU';
+            const alertMsg = lang === 'RU'
+                ? 'Пожалуйста, заполните название и описание объявления'
+                : 'Please fill in the title and description';
+
+            if (!title || !description) {
+                alert(alertMsg);
+                return;
+            }
+
             const formData = new FormData();
-            formData.append("title", document.querySelector(".guide_name_input").value);
-            formData.append("description", document.querySelector(".textarea").value);
+            formData.append("title", title);
+            formData.append("description", description);
 
             const tagsInput = document.getElementById("tags").value;
             formData.append("tags", tagsInput);
@@ -128,7 +167,7 @@
             });
         }
     </script>
-<script src="{% static 'js/search.js' %}"></script>
+    <script src="{% static 'js/search.js' %}"></script>
+    <script src="{% static 'js/toggle_language.js' %}"></script>
 </body>
 </html>
-

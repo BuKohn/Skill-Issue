@@ -10,24 +10,27 @@
     <nav class="header-container">
         <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
         <div class="nav-group nav-group-left">
-            <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
-            <a class="nav-links" href="#">объявления</a>
+            <a class="nav-links" href="{% url 'guides_list' %}" data-lang-ru="руководства" data-lang-en="guides">руководства</a>
+            <a class="nav-links" href="#" data-lang-ru="объявления" data-lang-en="announcements">объявления</a>
         </div>
         <div class="nav-group nav-group-right">
             <div class="search-container">
-                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput"
+                           data-placeholder-ru="поиск руководств, анкет и профилей"
+                           data-placeholder-en="search guides, profiles and announcements">
                     <div class="search-dropdown" id="searchDropdown">
                     </div>
             </div>
-            <a class="nav-links" href="#">избранное</a>
+            <a class="nav-links" href="#" data-lang-ru="избранное" data-lang-en="favorites">избранное</a>
+            <a class="nav-links" id="language-toggle" href="#" onclick="toggleLanguage(event)" title="Сменить язык">RU</a>
             <div id="menu-container" class="menu-container">
                 {% if user.is_authenticated %}
-                    <a class="nav-links" href="{% url 'logout_page' %}">выйти</a>
+                    <a class="nav-links" href="{% url 'logout_page' %}" data-lang-ru="выйти" data-lang-en="log out">выйти</a>
                 {% else %}
-                    <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+                    <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                     <div class="context-menu">
-                        <a href="{% url 'register_page' %}">зарегистрироваться</a>
-                        <a href="{% url 'login_page' %}">войти</a>
+                        <a href="{% url 'register_page' %}" data-lang-ru="зарегистрироваться" data-lang-en="register">зарегистрироваться</a>
+                        <a href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                     </div>
                 {% endif %}
             </div>
@@ -47,9 +50,15 @@
             <a class="simple-text profile-username" style="font-size: 1.5rem; padding: 20px 20px 0 0">{{ profile.user.username }}</a>
             <hr style="color: black; width: 100%;">
             <a class="simple-text profile-description" style="font-size: 1.3rem; padding: 0 20px 20px 0">
-                {{ profile.bio|default:"Описание отсутствует" }}
+                {% if profile.bio %}
+                    {{ profile.bio }}
+                {% else %}
+                    <span data-lang-ru="Описание отсутствует" data-lang-en="No description">Описание отсутствует</span>
+                {% endif %}
             </a>
-            <a class="simple-text profile-rating" style="font-size: 1rem; margin-top: auto; padding: 20px 20px 5px 0">
+            <a class="simple-text profile-rating" style="font-size: 1rem; margin-top: auto; padding: 20px 20px 5px 0"
+               data-lang-ru="Рейтинг: {{ profile.rating|default:"0"|floatformat:0 }}/5"
+               data-lang-en="Rating: {{ profile.rating|default:"0"|floatformat:0 }}/5">
                 Рейтинг: {{ profile.rating|default:"0"|floatformat:0 }}/5
             </a>
         </div>
@@ -58,11 +67,11 @@
     <hr style="color:black; width:96%;">
 
     <div class="profile-row-container" style="gap:20px; padding:25px 20px 0 20px;">
-        <button class="profile-button" id="bttn-1">руководства</button>
-        <button class="profile-button" id="bttn-2">объявления</button>
+        <button class="profile-button" id="bttn-1" data-lang-ru="руководства" data-lang-en="guides">руководства</button>
+        <button class="profile-button" id="bttn-2" data-lang-ru="объявления" data-lang-en="announcements">объявления</button>
         {% if user == profile.user %}
         <form action="{% url 'profile_edit' %}" method="get" style="margin:0; margin-left:auto;">
-            <button class="profile-button" id="bttn-3">редактировать</button>
+            <button class="profile-button" id="bttn-3" data-lang-ru="редактировать" data-lang-en="edit">редактировать</button>
         </form>
         {% endif %}
     </div>
@@ -82,7 +91,7 @@
                 </a>
             {% endfor %}
         {% else %}
-            <a style="margin:auto;">У пользователя нет руководств</a>
+            <a style="margin:auto;" data-lang-ru="У пользователя нет руководств" data-lang-en="User has no guides">У пользователя нет руководств</a>
         {% endif %}
     </div>
     <div id="announcements-container" class="profile-row-container" style="padding:10px 20px; gap:20px;">
@@ -100,11 +109,13 @@
                 </a>
             {% endfor %}
         {% else %}
-            <a style="margin:auto;">У пользователя нет объявлений</a>
+            <a style="margin:auto;" data-lang-ru="У пользователя нет объявлений" data-lang-en="User has no announcements">У пользователя нет объявлений</a>
         {% endif %}
     </div>
     <hr style="color:black; width:96%; margin:20px auto;">
-    <a class="simple-text" style="line-height:20px;">Отзывы о {{ profile.user.username }}</a>
+    <a class="simple-text" style="line-height:20px;"
+       data-lang-ru="Отзывы о {{ profile.user.username }}"
+       data-lang-en="Reviews about {{ profile.user.username }}">Отзывы о {{ profile.user.username }}</a>
 
     <div id="reviews-container" class="profile-column-container" style="gap:20px;">
         {% if reviews %}
@@ -125,19 +136,25 @@
                 </div>
             {% endfor %}
         {% else %}
-            <a style="margin:auto;">Пока нет отзывов</a>
+            <a style="margin:auto;" data-lang-ru="Пока нет отзывов" data-lang-en="No reviews yet">Пока нет отзывов</a>
         {% endif %}
     </div>
 
     <hr style="color:black; width:96%; margin:20px auto;">
     {% if user.is_authenticated and user != profile.user %}
-    <a class="simple-text">Напишите свой отзыв</a>
+    <a class="simple-text" data-lang-ru="Напишите свой отзыв" data-lang-en="Write your review">Напишите свой отзыв</a>
     <form method="POST" class="profile-column-container">
         {% csrf_token %}
-        <textarea class="textarea_profile" name="text" placeholder="Начните печатать здесь"></textarea>
-        <a id="error" hidden class="simple-text" style="font-size:1rem; margin:10px auto; color:red;">Отзыв не может быть пустым!</a>
+        <textarea class="textarea_profile" name="text" placeholder="Начните печатать здесь"
+                  data-placeholder-ru="Начните печатать здесь"
+                  data-placeholder-en="Start typing here"></textarea>
+        <a id="error" hidden class="simple-text" style="font-size:1rem; margin:10px auto; color:red;"
+           data-lang-ru="Отзыв не может быть пустым!"
+           data-lang-en="Review cannot be empty!">Отзыв не может быть пустым!</a>
         <div class="profile-row-container" style="margin:auto; gap:10px;">
-            <button id="response_bttn" class="profile-button" style="width:20%; margin-bottom:20px; height:40px; border:none; box-shadow:0 1px 3px #424242;" type="submit">Отправить</button>
+            <button id="response_bttn" class="profile-button" style="width:20%; margin-bottom:20px; height:40px; border:none; box-shadow:0 1px 3px #424242;" type="submit"
+                    data-lang-ru="Отправить"
+                    data-lang-en="Send">Отправить</button>
         </div>
     </form>
     {% endif %}
@@ -148,7 +165,9 @@
         <table class="simple-text" style="width:100%; height:100%; color:lightgray; font-size:1rem;">
             <tr>
                 <td colspan="3" style="width:33%;">
-                    <a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration:none; color:lightgray; margin-top:5px; font-size:1.25rem;">Сибирский Федеральный Университет</a>
+                    <a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration:none; color:lightgray; margin-top:5px; font-size:1.25rem;"
+                       data-lang-ru="Сибирский Федеральный Университет"
+                       data-lang-en="Siberian Federal University">Сибирский Федеральный Университет</a>
                 </td>
                 <td style="text-align:right;">
                     <p class="nav-group-right" style="margin-top:5px; font-size:1.25rem;">@skill_issue 2025</p>
@@ -197,8 +216,11 @@
         }
 
         function textarea_check(event) {
+            const lang = localStorage.getItem('lang') || 'RU';
+            const errorMsg = lang === 'RU' ? "Отзыв не может быть пустым!" : "Review cannot be empty!";
             if (!textarea.value.trim()) {
                 event.preventDefault();
+                error_text.textContent = errorMsg;
                 error_text.removeAttribute('hidden');
             } else {
                 error_text.setAttribute('hidden', 'true');
@@ -211,7 +233,13 @@
             const response = await authManager.apiRequest("/api/me/");
             if(response.ok){
                 const user = await response.json();
-                menuContainer.innerHTML = `<a class="nav-links" href="#" id="logout-btn" style="margin-right:25px;">выйти</a>`;
+                menuContainer.innerHTML = `<a class="nav-links" href="#" id="logout-btn" style="margin-right:25px;" data-lang-ru="выйти" data-lang-en="log out">выйти</a>`;
+                // Применяем язык к новым элементам
+                setTimeout(() => {
+                    if (typeof applyLanguage === 'function') {
+                        applyLanguage(currentLang);
+                    }
+                }, 100);
                 
                 const logoutBtn = document.getElementById("logout-btn");
                 if (logoutBtn) {
@@ -230,5 +258,6 @@
 </script>
 <script src="{% static 'js/auth.js' %}"></script>
 <script src="{% static 'js/search.js' %}"></script>
+<script src="{% static 'js/toggle_language.js' %}"></script>
 </body>
 </html>

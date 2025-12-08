@@ -9,21 +9,24 @@
         <nav class="header-container">
             <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
             <div class="nav-group nav-group-left">
-                <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
-                <a class="nav-links">объявления</a>
+                <a class="nav-links" href="{% url 'guides_list' %}" data-lang-ru="руководства" data-lang-en="guides">руководства</a>
+                <a class="nav-links" data-lang-ru="объявления" data-lang-en="announcements">объявления</a>
             </div>
             <div class="nav-group nav-group-right">
                 <div class="search-container">
-                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput"
+                           data-placeholder-ru="поиск руководств, анкет и профилей"
+                           data-placeholder-en="search guides, announcements and profiles">
                     <div class="search-dropdown" id="searchDropdown">
                     </div>
                 </div>
-                <a class="nav-links">избранное</a>
+                <a class="nav-links" data-lang-ru="избранное" data-lang-en="favorites">избранное</a>
+                <a class="nav-links" id="language-toggle" href="#" onclick="toggleLanguage(event)" title="Сменить язык">RU</a>
                 <div class="menu-container">
-                    <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+                    <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                     <div class="context-menu">
-                        <a href="{% url 'register_page' %}">зарегистрироваться</a>
-                        <a href="{% url 'login_page' %}">войти</a>
+                        <a href="{% url 'register_page' %}" data-lang-ru="зарегистрироваться" data-lang-en="register">зарегистрироваться</a>
+                        <a href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                     </div>
                 </div>
             </div>
@@ -31,52 +34,66 @@
     </header>
 
     <div class="body-background">
-        <h1 id="pageTitle" class="simple-text" style="margin-top: 20px; font-size: 1.5rem;">
+        <h1 id="pageTitle" class="simple-text" style="margin-top: 20px; font-size: 1.5rem;"
+            data-lang-ru="{% if guide %}Отредактируйте руководство{% else %}Начните создавать своё руководство!{% endif %}"
+            data-lang-en="{% if guide %}Edit the guide{% else %}Start creating your guide!{% endif %}">
             {% if guide %}Отредактируйте руководство{% else %}Начните создавать своё руководство!{% endif %}
         </h1>
-        <a class="simple-text" style="margin-top: 0; font-size: 0.8rem; color:#424242; margin-bottom: 20px">
+        <a class="simple-text" style="margin-top: 0; font-size: 0.8rem; color:#424242; margin-bottom: 20px"
+           data-lang-ru="Поддерживается разметка текста с помощью markdown"
+           data-lang-en="Markdown formatting is supported">
             Поддерживается разметка текста с помощью markdown
         </a>
 
         <div class="editor-container">
-            <input id="titleInput" type="text" class="guide_name_input" placeholder="Введите название руководства"
-       value="{% if guide %}{{ guide.title|escape }}{% endif %}">
+            <input id="titleInput" type="text" class="guide_name_input"
+                   placeholder="Введите название руководства"
+                   data-placeholder-ru="Введите название руководства"
+                   data-placeholder-en="Enter guide title"
+                   value="{% if guide %}{{ guide.title|escape }}{% endif %}">
             
-            <input id="tagsInput" type="text" class="guide_name_input" placeholder="Введите теги через запятую (например: Python, Django, программирование)"
-       value="{% if guide %}{{ guide.tags|join:', ' }}{% endif %}" style="margin-top: 10px;">
+            <input id="tagsInput" type="text" class="guide_name_input"
+                   placeholder="Введите теги через запятую (например: Python, Django, программирование)"
+                   data-placeholder-ru="Введите теги через запятую (например: Python, Django, программирование)"
+                   data-placeholder-en="Enter tags separated by commas (e.g. Python, Django, programming)"
+                   value="{% if guide %}{{ guide.tags|join:', ' }}{% endif %}"
+                   style="margin-top: 10px;">
 
             <div class="editor-section">
                 <div class="editor-header">
                     <div class="toolbar">
-                        <button class="toolbar-btn" onclick="insertText('**', '**')" title="Жирный текст">**B**</button>
-                        <button class="toolbar-btn" onclick="insertText('*', '*')" title="Курсив">*I*</button>
-                        <button class="toolbar-btn" onclick="insertText('# ', '')" title="Заголовок 1">H1</button>
-                        <button class="toolbar-btn" onclick="insertText('## ', '')" title="Заголовок 2">H2</button>
-                        <button class="toolbar-btn" onclick="insertText('- ', '')" title="Список">-</button>
-                        <button class="toolbar-btn" onclick="insertText('```\n', '\n```')" title="Блок кода">```</button>
-                        <button class="toolbar-btn" onclick="insertText('> ', '')" title="Цитата">></button>
+                        <button class="toolbar-btn" onclick="insertText('**', '**')" title="Жирный текст" data-lang-ru-title="Жирный текст" data-lang-en-title="Bold">**B**</button>
+                        <button class="toolbar-btn" onclick="insertText('*', '*')" title="Курсив" data-lang-ru-title="Курсив" data-lang-en-title="Italic">*I*</button>
+                        <button class="toolbar-btn" onclick="insertText('# ', '')" title="Заголовок 1" data-lang-ru-title="Заголовок 1" data-lang-en-title="Heading 1">H1</button>
+                        <button class="toolbar-btn" onclick="insertText('## ', '')" title="Заголовок 2" data-lang-ru-title="Заголовок 2" data-lang-en-title="Heading 2">H2</button>
+                        <button class="toolbar-btn" onclick="insertText('- ', '')" title="Список" data-lang-ru-title="Список" data-lang-en-title="List">-</button>
+                        <button class="toolbar-btn" onclick="insertText('```\n', '\n```')" title="Блок кода" data-lang-ru-title="Блок кода" data-lang-en-title="Code block">```</button>
+                        <button class="toolbar-btn" onclick="insertText('> ', '')" title="Цитата" data-lang-ru-title="Цитата" data-lang-en-title="Quote">></button>
                         <input type="file" id="imageInput" class="file-input" accept="image/*" onchange="handleImageUpload()">
-                        <label for="imageInput" class="file-label">Изображение</label>
+                        <label for="imageInput" class="file-label" data-lang-ru="Изображение" data-lang-en="Image">Изображение</label>
                     </div>
                 </div>
-                <textarea id="markdownEditor" placeholder="Начните писать ваше руководство здесь...">
+                <textarea id="markdownEditor"
+                          placeholder="Начните писать ваше руководство здесь..."
+                          data-placeholder-ru="Начните писать ваше руководство здесь..."
+                          data-placeholder-en="Start writing your guide here...">
                     {% if guide %}{{ guide.content|escape }}{% endif %}
                 </textarea>
             </div>
 
             <div class="preview-section">
                 <div class="preview-header">
-                    <h3 style="line-height: 0; margin-top:5px">Предпросмотр</h3>
+                    <h3 style="line-height: 0; margin-top:5px" data-lang-ru="Предпросмотр" data-lang-en="Preview">Предпросмотр</h3>
                 </div>
                 <div id="preview" class="preview-content">
-                    <em style="color: #666;">Предпросмотр появится здесь...</em>
+                    <em style="color: #666;" data-lang-ru="Предпросмотр появится здесь..." data-lang-en="Preview will appear here...">Предпросмотр появится здесь...</em>
                 </div>
             </div>
         </div>
 
         <div class="actions">
-            <button class="profile-button" onclick="clearEditor()">Очистить</button>
-            <button class="profile-button" onclick="saveGuide()">Сохранить руководство</button>
+            <button class="profile-button" onclick="clearEditor()" data-lang-ru="Очистить" data-lang-en="Clear">Очистить</button>
+            <button class="profile-button" onclick="saveGuide()" data-lang-ru="Сохранить руководство" data-lang-en="Save guide">Сохранить руководство</button>
         </div>
     </div>
 
@@ -84,13 +101,20 @@
         <div class="footer-container">
             <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem">
                 <tr>
-                    <td colspan="3" style="width:33%;"><a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem ">Сибирский Федеральный Университет</a>
+                    <td colspan="3" style="width:33%;"><a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem "
+                           data-lang-ru="Сибирский Федеральный Университет"
+                           data-lang-en="Siberian Federal University">Сибирский Федеральный Университет</a>
+                    </td>
                     <td style="text-align:right"><p class="nav-group-right" style="margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">@skill_issue 2025</p>
+                    </td>
                 </tr>
                 <tr>
                     <td><p style="text-align:left">@bukohm</p>
+                    </td>
                     <td><p style="text-align:center">@hoolkayyy</p>
+                    </td>
                     <td><p style="text-align:right">@K1rkaSs</p>
+                    </td>
                 </tr>
             </table>
         </div>
@@ -111,7 +135,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const guideId = urlParams.get('id');
 
     if (guideId) {
-        pageTitle.textContent = "Отредактируйте руководство";
+        const lang = localStorage.getItem('lang') || 'RU';
+        pageTitle.textContent = lang === 'RU' ? "Отредактируйте руководство" : "Edit the guide";
 
         fetch(`/api/guides/${guideId}/`)
             .then(response => {
@@ -121,7 +146,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 titleInput.value = data.title;
                 editor.value = data.content;
-                // Загружаем теги
                 if (data.tags && Array.isArray(data.tags)) {
                     tagsInput.value = data.tags.join(', ');
                 }
@@ -193,7 +217,13 @@ function updatePreview() {
 }
 
 function markdownToHtml(markdown) {
-    if (!markdown.trim()) return '<em style="color: #666;">Предпросмотр появится здесь...</em>';
+    if (!markdown.trim()) {
+        const lang = localStorage.getItem('lang') || 'RU';
+        const placeholder = lang === 'RU'
+            ? 'Предпросмотр появится здесь...'
+            : 'Preview will appear here...';
+        return `<em style="color: #666;">${placeholder}</em>`;
+    }
 
     let html = markdown;
 
@@ -227,7 +257,11 @@ function markdownToHtml(markdown) {
 }
 
 function clearEditor() {
-    if (confirm('Вы уверены, что хотите очистить редактор?')) {
+    const lang = localStorage.getItem('lang') || 'RU';
+    const confirmMsg = lang === 'RU'
+        ? 'Вы уверены, что хотите очистить редактор?'
+        : 'Are you sure you want to clear the editor?';
+    if (confirm(confirmMsg)) {
         editor.value = '';
         titleInput.value = '';
         tagsInput.value = '';
@@ -242,8 +276,13 @@ async function saveGuide() {
     const content = editor.value;
     const tags = tagsInput.value.trim();
 
+    const lang = localStorage.getItem('lang') || 'RU';
+    const alertMsg = lang === 'RU'
+        ? "Введите название и текст"
+        : "Please enter title and content";
+
     if (!guideTitle || !content.trim()) {
-        alert("Введите название и текст");
+        alert(alertMsg);
         return;
     }
 
@@ -269,10 +308,16 @@ async function saveGuide() {
     });
 
     if (response.ok) {
-        alert("Руководство успешно сохранено!");
+        const successMsg = lang === 'RU'
+            ? "Руководство успешно сохранено!"
+            : "Guide saved successfully!";
+        alert(successMsg);
         window.location.href = guideId ? `/guides/${guideId}/` : "{% url 'guides_list' %}";
     } else {
-        alert("Ошибка при сохранении руководства");
+        const errorMsg = lang === 'RU'
+            ? "Ошибка при сохранении руководства"
+            : "Failed to save guide";
+        alert(errorMsg);
     }
 }
 
@@ -291,5 +336,6 @@ editor.addEventListener('keydown', function(e) {
 editor.addEventListener('input', updatePreview);
 </script>
 <script src="{% static 'js/search.js' %}"></script>
+<script src="{% static 'js/toggle_language.js' %}"></script>
 </body>
 </html>

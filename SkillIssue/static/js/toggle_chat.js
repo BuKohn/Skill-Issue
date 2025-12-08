@@ -16,7 +16,9 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentReceiverId = null;
     let contactsCache = {};
 
-
+    /* ─────────────────────────────────────────────
+       ОТКРЫТЬ ОКНО ЧАТА
+    ───────────────────────────────────────────── */
     button.addEventListener('click', function () {
         modal.style.right = '20px';
         loadContacts();
@@ -26,9 +28,9 @@ document.addEventListener('DOMContentLoaded', function () {
        ЗАКРЫТЬ ОКНО ЧАТА
     ───────────────────────────────────────────── */
     if (closeButton) {
-        closeButton.addEventListener('click', function () {
-            modal.style.right = '-400px';
-        });
+    closeButton.addEventListener('click', function () {
+        modal.style.right = '-400px';
+    });
     }
 
     /* ─────────────────────────────────────────────
@@ -90,16 +92,16 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             chatList.appendChild(contactEl);
-        });
+    });
     }
 
     /* ─────────────────────────────────────────────
        КНОПКА "НАЗАД"
     ───────────────────────────────────────────── */
     if (backToChats) {
-        backToChats.addEventListener('click', function () {
-            chatDialog.style.display = 'none';
-            chatContacts.style.display = 'flex';
+    backToChats.addEventListener('click', function () {
+        chatDialog.style.display = 'none';
+        chatContacts.style.display = 'flex';
             currentReceiverId = null;
             loadContacts();
         });
@@ -199,11 +201,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
         messagesContainer.appendChild(messageDiv);
         
+        // Проверяем, что сообщение действительно добавлено
+        const addedMessage = messagesContainer.querySelector(`.message.${type}:last-child`);
+        if (!addedMessage) {
+            console.error('Сообщение не было добавлено в DOM!');
+        } else {
+            console.log('Сообщение успешно добавлено в DOM:', addedMessage);
+        }
+        
         // Прокручиваем вниз
         requestAnimationFrame(() => {
             if (messagesContainer) {
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                console.log('Прокрутка выполнена, scrollTop:', messagesContainer.scrollTop, 'scrollHeight:', messagesContainer.scrollHeight);
             }
+        });
+        
+        console.log('Сообщение добавлено в интерфейс:', { 
+            type, 
+            text, 
+            time, 
+            containerExists: !!messagesContainer,
+            containerChildren: messagesContainer.children.length 
         });
     }
 
@@ -229,16 +248,21 @@ document.addEventListener('DOMContentLoaded', function () {
     ───────────────────────────────────────────── */
     // Используем делегирование событий на modal, чтобы обработчик работал всегда
     if (modal) {
+        console.log('Инициализация обработчика формы сообщения');
         
         modal.addEventListener('submit', async function(e) {
+            console.log('Событие submit перехвачено:', e.target);
             
             // Проверяем, что это наша форма сообщения
             if (e.target.id !== 'message-form') {
+                console.log('Это не форма сообщения, игнорируем');
                 return;
             }
             
             e.preventDefault();
             e.stopPropagation();
+            
+            console.log('Форма отправки сообщения вызвана');
             
             const input = document.getElementById('message-input');
             if (!input) {
@@ -253,6 +277,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const text = input.value.trim();
             if (!text) {
+                console.log('Текст сообщения пуст');
                 return false;
             }
 
@@ -270,6 +295,8 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             try {
+                console.log('Отправка сообщения:', { receiver_id: currentReceiverId, message: text });
+                
                 const res = await authManager.apiRequest('/api/chat/send/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -279,6 +306,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     })
                 });
 
+                console.log('Ответ сервера:', res.status, res.statusText);
+
                 if (!res.ok) {
                     const errorData = await res.json().catch(() => ({}));
                     console.error('Ошибка отправки:', errorData);
@@ -286,6 +315,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 const data = await res.json();
+                console.log('Сообщение отправлено, данные:', data);
                 
                 // Очищаем поле ввода
                 input.value = '';
@@ -309,6 +339,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const messageText = data.message || text;
                 const messageTime = data.created_at ? formatTime(data.created_at) : formatTime(new Date().toISOString());
                 
+                console.log('Добавляем сообщение в интерфейс:', { messageText, messageTime, containerExists: !!messagesContainer });
                 addMessage('sent', messageText, messageTime);
                 
                 // Обновляем список контактов
@@ -333,6 +364,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (btn && btn.closest('#message-form')) {
                 e.preventDefault();
                 e.stopPropagation();
+                
+                console.log('Клик по кнопке отправки перехвачен');
                 
                 const form = btn.closest('#message-form');
                 const input = form ? form.querySelector('#message-input') : null;
@@ -378,7 +411,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 alert('Войдите, чтобы использовать чат');
                 return;
             }
-
+            
             openChatWithUser(userId, username);
         });
     }

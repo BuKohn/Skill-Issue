@@ -10,21 +10,24 @@
         <nav class="header-container">
             <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
             <div class="nav-group nav-group-left">
-                <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
-                <a class="nav-links">анкеты</a>
+                <a class="nav-links" href="{% url 'guides_list' %}" data-lang-ru="руководства" data-lang-en="guides">руководства</a>
+                <a class="nav-links" data-lang-ru="анкеты" data-lang-en="profiles">анкеты</a>
             </div>
             <div class="nav-group nav-group-right">
                 <div class="search-container">
-                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput"
+                           data-placeholder-ru="поиск руководств, анкет и профилей"
+                           data-placeholder-en="search guides, profiles and announcements">
                     <div class="search-dropdown" id="searchDropdown">
                     </div>
                 </div>
-                <a class="nav-links">избранное</a>
+                <a class="nav-links" data-lang-ru="избранное" data-lang-en="favorites">избранное</a>
+                <a class="nav-links" id="language-toggle" href="#" onclick="toggleLanguage(event)" title="Сменить язык">RU</a>
                 <div class="menu-container">
-                    <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+                    <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                     <div class="context-menu">
-                        <a href="{% url 'register_page' %}">зарегистрироваться</a>
-                        <a href="{% url 'login_page' %}">войти</a>
+                        <a href="{% url 'register_page' %}" data-lang-ru="зарегистрироваться" data-lang-en="register">зарегистрироваться</a>
+                        <a href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                     </div>
                 </div>
             </div>
@@ -33,18 +36,20 @@
 
     <div class="register_container">
         <form id="login_form" style="margin: auto; margin-top: 40px;" class="register_panel" novalidate>
-            <p class="simple-text" style="margin: auto; font-size: 2rem">Уже зарегистрированы?</p>
-            <p class="simple-text" style="margin: auto; margin-top: -20px; font-size: 1rem">Напомните, кто вы?</p>
+            <p class="simple-text" style="margin: auto; font-size: 2rem" data-lang-ru="Уже зарегистрированы?" data-lang-en="Already registered?">Уже зарегистрированы?</p>
+            <p class="simple-text" style="margin: auto; margin-top: -20px; font-size: 1rem" data-lang-ru="Напомните, кто вы?" data-lang-en="Remind us who you are?">Напомните, кто вы?</p>
 
-            <input class="register_input" type="text" id="login_username" placeholder="введите username" style="margin: auto">
-            <input class="register_input" type="password" id="login_password" placeholder="введите пароль" style="margin: auto">
+            <input class="register_input" type="text" id="login_username" placeholder="введите username" style="margin: auto"
+                   data-placeholder-ru="введите username" data-placeholder-en="enter username">
+            <input class="register_input" type="password" id="login_password" placeholder="введите пароль" style="margin: auto"
+                   data-placeholder-ru="введите пароль" data-placeholder-en="enter password">
 
             <div style="height: 20px; margin-top: -30px; margin-bottom: -20px">
                 <p id="login_error" class="simple-text" style="font-size:0.8rem"></p>
             </div>
 
-            <button type="submit" class="register_button">войти</button>
-            <a href="{% url 'register_page' %}" class="simple-text" style="color: dimgray; font-size: 1rem; margin-top: -20px">зарегистрироваться</a>
+            <button type="submit" class="register_button" data-lang-ru="войти" data-lang-en="log in">войти</button>
+            <a href="{% url 'register_page' %}" class="simple-text" style="color: dimgray; font-size: 1rem; margin-top: -20px" data-lang-ru="зарегистрироваться" data-lang-en="register">зарегистрироваться</a>
         </form>
     </div>
 
@@ -53,7 +58,8 @@
             <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem">
                 <tr>
                     <td colspan="3" style="width:33%;">
-                        <a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem">Сибирский Федеральный Университет</a>
+                        <a href="https://www.sfu.ru/ru" class="nav-group-left" style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem"
+                           data-lang-ru="Сибирский Федеральный Университет" data-lang-en="Siberian Federal University">Сибирский Федеральный Университет</a>
                     <td style="text-align:right">
                         <p class="nav-group-right" style="margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">@skill_issue 2025</p>
                 </tr>
@@ -68,6 +74,7 @@
 </body>
 
 <script src="{% static 'js/auth.js' %}"></script>
+<script src="{% static 'js/toggle_language.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('login_form');

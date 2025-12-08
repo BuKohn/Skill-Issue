@@ -17,13 +17,11 @@
                 <div class="search-container">
                     <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput"
                            data-placeholder-ru="поиск руководств, анкет и профилей"
-                           data-placeholder-en="search guides, announcements and profiles">
+                           data-placeholder-en="search guides, profiles and announcements">
                     <div class="search-dropdown" id="searchDropdown"></div>
                 </div>
                 <a class="nav-links" data-lang-ru="избранное" data-lang-en="favorites">избранное</a>
-                <a class="nav-links" id="language-toggle" href="#" onclick="toggleLanguage(event)" title="Сменить язык">
-                    RU
-                </a>
+                <a class="nav-links" id="language-toggle" href="#" onclick="toggleLanguage(event)" title="Сменить язык">RU</a>
                 <div class="menu-container">
                     {% if user.is_authenticated %}
                         <a class="nav-links" href="{% url 'logout_page' %}" data-lang-ru="выйти" data-lang-en="log out">выйти</a>
@@ -72,8 +70,7 @@
                     data-user-id="{{ announcement.author.id }}" 
                     data-username="{{ announcement.author.username }}"
                     style="height: 40px; width: 200px; border:none; box-shadow: 0px 1px 3px #424242;"
-                    data-lang-ru="Написать в чат"
-                    data-lang-en="Write in chat">Написать в чат</button>
+                    data-lang-ru="Написать в чат" data-lang-en="Write to chat">Написать в чат</button>
         </div>
         {% endif %}
 
@@ -147,14 +144,13 @@
                data-lang-en="Comment cannot be empty!">Комментарий не может быть пустым!</a>
 
             <button id="response-btn" class="profile-button" style="width: 20%; margin-bottom: 20px; height: 40px; margin: auto; border: none; box-shadow: 0px 1px 3px #424242;" type="submit"
-                    data-lang-ru="Отправить"
-                    data-lang-en="Send">Отправить</button>
+                    data-lang-ru="Отправить" data-lang-en="Send">Отправить</button>
         </form>
         {% elif not user.is_authenticated %}
         <hr style="color: black; width: 96%; margin: auto; margin-bottom: 20px; margin-top: 20px;">
         <div class="profile-column-container" style="justify-content: center; padding: 20px;">
             <a class="simple-text" style="font-size: 1rem; color: #666; text-align: center;">
-                <a href="{% url 'login_page' %}" style="color: #00BFFF;" data-lang-ru="Войдите" data-lang-en="Log in">Войдите</a><span data-lang-ru=", чтобы оставить комментарий" data-lang-en=", to leave a comment">, чтобы оставить комментарий</span>
+                <span data-lang-ru="Войдите" data-lang-en="Log in">Войдите</span>, <span data-lang-ru="чтобы оставить комментарий" data-lang-en="to leave a comment">чтобы оставить комментарий</span>
             </a>
         </div>
         {% endif %}
@@ -240,6 +236,7 @@
 
     <script src="{% static 'js/auth.js' %}"></script>
     <script src="{% static 'js/search.js' %}"></script>
+    <script src="{% static 'js/toggle_language.js' %}"></script>
     <script src="{% static 'js/toggle_chat.js' %}"></script>
     <script src="{% static 'js/toggle_language.js' %}"></script>
     <script>

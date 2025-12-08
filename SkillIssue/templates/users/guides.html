@@ -9,23 +9,26 @@
         <nav class="header-container">
             <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
             <div class="nav-group nav-group-left">
-                <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
-                <a class="nav-links" href="{% url 'announcements_list' %}">объявления</a>
+                <a class="nav-links" href="{% url 'guides_list' %}" data-lang-ru="руководства" data-lang-en="guides">руководства</a>
+                <a class="nav-links" href="{% url 'announcements_list' %}" data-lang-ru="объявления" data-lang-en="announcements">объявления</a>
             </div>
             <div class="nav-group nav-group-right">
                 <div class="search-container">
-                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput"
+                           data-placeholder-ru="поиск руководств, анкет и профилей"
+                           data-placeholder-en="search guides, profiles and announcements">
                     <div class="search-dropdown" id="searchDropdown">
                     </div>
                 </div>
-                <a class="nav-links" href="#">избранное</a>
+                <a class="nav-links" href="#" data-lang-ru="избранное" data-lang-en="favorites">избранное</a>
+                <a class="nav-links" id="language-toggle" href="#" onclick="toggleLanguage(event)" title="Сменить язык">RU</a>
                 <div class="menu-container">
                     {% if user.is_authenticated %}
-                        <a class="nav-links" href="{% url 'logout_page' %}">выйти</a>
+                        <a class="nav-links" href="{% url 'logout_page' %}" data-lang-ru="выйти" data-lang-en="log out">выйти</a>
                     {% else %}
-                        <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+                        <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                         <div class="context-menu">
-                            <a href="{% url 'register_page' %}">зарегистрироваться</a>
+                            <a href="{% url 'register_page' %}" data-lang-ru="зарегистрироваться" data-lang-en="register">зарегистрироваться</a>
                         </div>
                     {% endif %}
                 </div>
@@ -34,9 +37,9 @@
     </header>
 
     <div class="body-background">
-        <h1 class="simple-text" style="margin-top: 20px; font-size: 1.5rem;">Руководства</h1>
+        <h1 class="simple-text" style="margin-top: 20px; font-size: 1.5rem;" data-lang-ru="Руководства" data-lang-en="Guides">Руководства</h1>
         <hr style="width: 96%; margin: 10px auto;">
-        <p class="simple-text" style="font-size: 1.1rem;">Просматривайте руководства других пользователей и узнавайте много нового!</p>
+        <p class="simple-text" style="font-size: 1.1rem;" data-lang-ru="Просматривайте руководства других пользователей и узнавайте много нового!" data-lang-en="Browse guides from other users and learn something new!">Просматривайте руководства других пользователей и узнавайте много нового!</p>
         <hr style="width: 75%; margin: 10px auto;">
 
         <!-- ФОРМА ПОИСКА ПО РУКОВОДСТВАМ -->
@@ -46,42 +49,50 @@
                        name="search"
                        placeholder="поиск по названию"
                        class="search-guides"
-                       value="{{ request.GET.search }}">
+                       value="{{ request.GET.search }}"
+                       data-placeholder-ru="поиск по названию"
+                       data-placeholder-en="search by title">
 
                 <input type="text"
                        name="tags"
                        placeholder="теги через запятую"
                        class="search-guides"
-                       value="">
+                       value=""
+                       data-placeholder-ru="теги через запятую"
+                       data-placeholder-en="tags separated by comma">
 
                 <div class="filter-container" style="position: relative;">
                     <button type="button" class="filter-toggle" style="padding: 8px 16px; min-width: 170px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
-                        <span id="current-filter">Все</span>
+                        <span id="current-filter" data-lang-ru="Все" data-lang-en="All">Все</span>
                         <span style="margin-left: 8px;">▼</span>
                     </button>
 
                     <div class="filter-dropdown" 
                      style="display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; background: white; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-width: 150px; z-index: 100;">
-                        <button type="button" class="filter-item" data-value="today" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;">
+                        <button type="button" class="filter-item" data-value="today" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;"
+                                data-lang-ru="За сегодня" data-lang-en="Today">
                             За сегодня
                         </button>
-                        <button type="button" class="filter-item" data-value="week" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;">
+                        <button type="button" class="filter-item" data-value="week" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;"
+                                data-lang-ru="За неделю" data-lang-en="This week">
                             За неделю
                         </button>
-                        <button type="button" class="filter-item" data-value="month" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;">
+                        <button type="button" class="filter-item" data-value="month" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;"
+                                data-lang-ru="За месяц" data-lang-en="This month">
                             За месяц
                         </button>
                     </div>
                 </div>
             </div>
-        <button type="submit" class="profile-button" style="margin-top: 20px; width: 200px;">найти</button>
+        <button type="submit" class="profile-button" style="margin-top: 20px; width: 200px;"
+                data-lang-ru="найти" data-lang-en="search">найти</button>
     </form>
 
         <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;">
             {% if request.GET.search %}
-                Результаты поиска "{{ request.GET.search }}"
+                <span data-lang-ru="Результаты поиска &quot;{{ request.GET.search }}&quot;" data-lang-en="Search results for &quot;{{ request.GET.search }}&quot;">Результаты поиска "{{ request.GET.search }}"</span>
             {% else %}
-                Популярное
+                <span data-lang-ru="Популярное" data-lang-en="Popular">Популярное</span>
             {% endif %}
         </h2>
 
@@ -108,9 +119,9 @@
             {% else %}
                 <p style="text-align:center; font-style: italic; margin: 20px 0;">
                     {% if request.GET.search %}
-                        Руководства по запросу "{{ request.GET.search }}" не найдены
+                        <span data-lang-ru="Руководства по запросу &quot;{{ request.GET.search }}&quot; не найдены" data-lang-en="No guides found for &quot;{{ request.GET.search }}&quot;">Руководства по запросу "{{ request.GET.search }}" не найдены</span>
                     {% else %}
-                        Популярных руководств пока нет
+                        <span data-lang-ru="Популярных руководств пока нет" data-lang-en="No popular guides yet">Популярных руководств пока нет</span>
                     {% endif %}
                 </p>
             {% endif %}
@@ -118,7 +129,7 @@
         </div>
 
         {% if not request.GET.search %}
-        <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;">Лучшее за всё время</h2>
+        <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;" data-lang-ru="Лучшее за всё время" data-lang-en="Best of all time">Лучшее за всё время</h2>
         <div class="scroll-area" style="display: flex; justify-content: center; overflow: visible; width: 95%; margin: auto; padding: 20px; min-height: fit-content;">
             <div class="profile-row-container" style="display: flex; gap: 20px; align-content: flex-start; flex-direction: row; flex-wrap: wrap; justify-content: center;">
             {% if top_guides %}
@@ -140,7 +151,9 @@
                 </div>
                 {% endfor %}
             {% else %}
-                <p style="text-align:center; font-style: italic; margin: 20px 0;">Лучших руководств пока нет</p>
+                <p style="text-align:center; font-style: italic; margin: 20px 0;">
+                    <span data-lang-ru="Лучших руководств пока нет" data-lang-en="No best guides yet">Лучших руководств пока нет</span>
+                </p>
             {% endif %}
             </div>
         </div>
@@ -219,7 +232,8 @@
                 <tr>
                     <td colspan="3" style="width:33%;">
                         <a href="https://www.sfu.ru/ru" class="nav-group-left"
-                           style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">
+                           style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;"
+                           data-lang-ru="Сибирский Федеральный Университет" data-lang-en="Siberian Federal University">
                            Сибирский Федеральный Университет
                         </a>
                     </td>
@@ -237,6 +251,7 @@
     </footer>
 <script src="{% static 'js/search.js' %}"></script>
 <script src="{% static 'js/filter.js' %}"></script>
+<script src="{% static 'js/toggle_language.js' %}"></script>
 <script src="{% static 'js/auth.js' %}"></script>
 <script src="{% static 'js/toggle_chat.js' %}"></script>
 </body>

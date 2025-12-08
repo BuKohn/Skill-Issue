@@ -1526,3 +1526,46 @@ class ChatSendMessageView(APIView):
 
         serializer = ChatMessageSerializer(message, context={"request": request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@swagger_auto_schema(
+    operation_description="Сохранить выбранный язык пользователя в cookies",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'language': openapi.Schema(type=openapi.TYPE_STRING, description='Код языка (RU или EN)'),
+        },
+        required=['language']
+    ),
+    responses={
+        200: openapi.Response(description="Язык успешно сохранен"),
+        400: "Неверный формат данных"
+    },
+    tags=['Язык']
+)
+def set_language(request):
+    """
+    Сохраняет выбранный язык пользователя в cookies.
+    Cookie будет храниться 1 год.
+    """
+    language = request.data.get('language', '').upper()
+    
+    if language not in ['RU', 'EN']:
+        return Response(
+            {'error': 'Неверный код языка. Используйте RU или EN'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    response = Response({'success': True, 'language': language})
+    # Устанавливаем cookie на 1 год (365 дней)
+    response.set_cookie(
+        'lang',
+        language,
+        max_age=365 * 24 * 60 * 60,  # 1 год в секундах
+        httponly=False,  # Доступен для JavaScript
+        samesite='Lax',
+        secure=False  # True для HTTPS
+    )
+    
+    return response

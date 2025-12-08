@@ -9,23 +9,26 @@
     <nav class="header-container">
         <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
         <div class="nav-group nav-group-left">
-            <a class="nav-links" href="{% url 'guides_list' %}">руководства</a>
-            <a class="nav-links" href="#">объявления</a>
+            <a class="nav-links" href="{% url 'guides_list' %}" data-lang-ru="руководства" data-lang-en="guides">руководства</a>
+            <a class="nav-links" href="#" data-lang-ru="объявления" data-lang-en="announcements">объявления</a>
         </div>
         <div class="nav-group nav-group-right">
             <div class="search-container">
-                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput">
+                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput"
+                           data-placeholder-ru="поиск руководств, анкет и профилей"
+                           data-placeholder-en="search guides, announcements and profiles">
                     <div class="search-dropdown" id="searchDropdown">
                     </div>
             </div>
-            <a class="nav-links" href="#">избранное</a>
+            <a class="nav-links" href="#" data-lang-ru="избранное" data-lang-en="favorites">избранное</a>
+            <a class="nav-links" id="language-toggle" href="#" onclick="toggleLanguage(event)" title="Сменить язык">RU</a>
             <div class="menu-container">
                 {% if user.is_authenticated %}
-                    <a class="nav-links" href="{% url 'logout_page' %}">выйти</a>
+                    <a class="nav-links" href="{% url 'logout_page' %}" data-lang-ru="выйти" data-lang-en="log out">выйти</a>
                 {% else %}
-                    <a class="nav-links" href="{% url 'login_page' %}">войти</a>
+                    <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                     <div class="context-menu">
-                        <a href="{% url 'register_page' %}">зарегистрироваться</a>
+                        <a href="{% url 'register_page' %}" data-lang-ru="зарегистрироваться" data-lang-en="register">зарегистрироваться</a>
                     </div>
                 {% endif %}
             </div>
@@ -34,20 +37,24 @@
 </header>
 
 <div class="body-background">
-    <h1 class="simple-text" style="margin-top: 20px; font-size: 1.5rem;">Руководства</h1>
+    <h1 class="simple-text" style="margin-top: 20px; font-size: 1.5rem;" data-lang-ru="Руководства" data-lang-en="Guides">Руководства</h1>
     <hr style="width: 96%; margin: 10px auto;">
-    <p class="simple-text" style="font-size: 1.1rem;">Просматривайте руководства других пользователей и узнавайте много нового!</p>
+    <p class="simple-text" style="font-size: 1.1rem;" data-lang-ru="Просматривайте руководства других пользователей и узнавайте много нового!" data-lang-en="Browse other users' guides and learn something new!">Просматривайте руководства других пользователей и узнавайте много нового!</p>
     <hr style="width: 75%; margin: 10px auto;">
 
     <div class="profile-row-container" style="display: flex; justify-content: center; gap:5%; margin-top:20px">
         <form method="GET" action="{% url 'guides_search' %}" style="display: flex; gap: 10px;">
-            <input name="query" placeholder="поиск" class="search-guides" value="{{ request.GET.query }}">
-            <input name="tags" placeholder="теги через запятую" class="search-guides" value="{{ request.GET.tags }}">
-            <button type="submit" class="profile-button">найти</button>
+            <input name="query" placeholder="поиск" class="search-guides" value="{{ request.GET.query }}"
+                   data-placeholder-ru="поиск"
+                   data-placeholder-en="search">
+            <input name="tags" placeholder="теги через запятую" class="search-guides" value="{{ request.GET.tags }}"
+                   data-placeholder-ru="теги через запятую"
+                   data-placeholder-en="tags separated by commas">
+            <button type="submit" class="profile-button" data-lang-ru="найти" data-lang-en="search">найти</button>
         </form>
     </div>
 
-    <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;">Результат поиска</h2>
+    <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;" data-lang-ru="Результат поиска" data-lang-en="Search results">Результат поиска</h2>
     <div class="profile-column-container">
         {% if search_results %}
             {% for guide in search_results %}
@@ -64,7 +71,9 @@
             </div>
             {% endfor %}
         {% else %}
-            <p style="text-align:center; font-style: italic; margin: 20px 0;">По вашему запросу ничего не найдено</p>
+            <p style="text-align:center; font-style: italic; margin: 20px 0;"
+               data-lang-ru="По вашему запросу ничего не найдено"
+               data-lang-en="Nothing found for your query">По вашему запросу ничего не найдено</p>
         {% endif %}
     </div>
 
@@ -76,7 +85,9 @@
                 <tr>
                     <td colspan="3" style="width:33%;">
                         <a href="https://www.sfu.ru/ru" class="nav-group-left"
-                           style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">
+                           style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;"
+                           data-lang-ru="Сибирский Федеральный Университет"
+                           data-lang-en="Siberian Federal University">
                            Сибирский Федеральный Университет
                         </a>
                     </td>
@@ -93,5 +104,6 @@
         </div>
 </footer>
 <script src="{% static 'js/search.js' %}"></script>
+<script src="{% static 'js/toggle_language.js' %}"></script>
 </body>
 </html>
