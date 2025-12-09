@@ -201,5 +201,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 </script>
+<script>
+function toggleLanguage(event) {
+    event.preventDefault();
+    const langBtn = document.getElementById('language-toggle');
+    
+    if (langBtn.textContent.trim() === 'RU') {
+        langBtn.textContent = 'EN';
+        // Здесь можно было бы подгружать английские переводы
+        alert('Переключено на английский (заглушка)');
+    } else {
+        langBtn.textContent = 'RU';
+        alert('Переключено на русский (заглушка)');
+    }
+}
+</script>
 </body>
 </html>
