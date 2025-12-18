@@ -67,8 +67,8 @@
                         <span style="margin-left: 8px;">▼</span>
                     </button>
 
-                    <div class="filter-dropdown" 
-                     style="display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; background: white; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-width: 150px; z-index: 100;">
+                    <div class="filter-dropdown"
+                         style="display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; background: white; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-width: 150px; z-index: 100;">
                         <button type="button" class="filter-item" data-value="today" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;"
                                 data-lang-ru="За сегодня" data-lang-en="Today">
                             За сегодня
@@ -84,28 +84,30 @@
                     </div>
                 </div>
             </div>
-        <button type="submit" class="profile-button" style="margin-top: 20px; width: 200px;"
-                data-lang-ru="найти" data-lang-en="search">найти</button>
-    </form>
+            <button type="submit" class="profile-button" style="margin-top: 20px; width: 200px;"
+                    data-lang-ru="найти" data-lang-en="search">
+                найти
+            </button>
+        </form>
 
         <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;">
             {% if request.GET.search %}
-                <span data-lang-ru="Результаты поиска &quot;{{ request.GET.search }}&quot;" data-lang-en="Search results for &quot;{{ request.GET.search }}&quot;">Результаты поиска "{{ request.GET.search }}"</span>
+            <span data-lang-ru="Результаты поиска &quot;{{ request.GET.search }}&quot;" data-lang-en="Search results for &quot;{{ request.GET.search }}&quot;">Результаты поиска "{{ request.GET.search }}"</span>
             {% else %}
-                <span data-lang-ru="Популярное" data-lang-en="Popular">Популярное</span>
+            <span data-lang-ru="Популярное" data-lang-en="Popular">Популярное</span>
             {% endif %}
         </h2>
 
         <div class="scroll-area" style="display: flex; justify-content: center; overflow: visible; width: 95%; margin: auto; padding: 20px; min-height: fit-content;">
             <div class="profile-row-container" style="display: flex; gap: 20px; align-content: flex-start; flex-direction: row; flex-wrap: wrap; justify-content: center;">
-            {% if popular_guides %}
+                {% if popular_guides %}
                 {% for guide in popular_guides %}
                 <div class="guide-element">
                     <a href="{% url 'guide_detail' guide.id %}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; width: 100%; height: 100%;">
                         {% if guide.image %}
-                            <img src="{{ guide.image.url }}" class="image-element" alt="{{ guide.title }}">
+                        <img src="{{ guide.image.url }}" class="image-element" alt="{{ guide.title }}">
                         {% else %}
-                            <img src="{% static 'images/default-avatar.jpg' %}" class="image-element" alt="{{ guide.title }}">
+                        <img src="{% static 'images/default-avatar.jpg' %}" class="image-element" alt="{{ guide.title }}">
                         {% endif %}
                         <span class="text-element">{{ guide.title }}</span>
                         <hr style="width: 75%; margin: 0 auto;">
@@ -116,15 +118,15 @@
                     </a>
                 </div>
                 {% endfor %}
-            {% else %}
+                {% else %}
                 <p style="text-align:center; font-style: italic; margin: 20px 0;">
                     {% if request.GET.search %}
-                        <span data-lang-ru="Руководства по запросу &quot;{{ request.GET.search }}&quot; не найдены" data-lang-en="No guides found for &quot;{{ request.GET.search }}&quot;">Руководства по запросу "{{ request.GET.search }}" не найдены</span>
+                    <span data-lang-ru="Руководства по запросу &quot;{{ request.GET.search }}&quot; не найдены" data-lang-en="No guides found for &quot;{{ request.GET.search }}&quot;">Руководства по запросу "{{ request.GET.search }}" не найдены</span>
                     {% else %}
-                        <span data-lang-ru="Популярных руководств пока нет" data-lang-en="No popular guides yet">Популярных руководств пока нет</span>
+                    <span data-lang-ru="Популярных руководств пока нет" data-lang-en="No popular guides yet">Популярных руководств пока нет</span>
                     {% endif %}
                 </p>
-            {% endif %}
+                {% endif %}
             </div>
         </div>
 
@@ -132,14 +134,14 @@
         <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;" data-lang-ru="Лучшее за всё время" data-lang-en="Best of all time">Лучшее за всё время</h2>
         <div class="scroll-area" style="display: flex; justify-content: center; overflow: visible; width: 95%; margin: auto; padding: 20px; min-height: fit-content;">
             <div class="profile-row-container" style="display: flex; gap: 20px; align-content: flex-start; flex-direction: row; flex-wrap: wrap; justify-content: center;">
-            {% if top_guides %}
+                {% if top_guides %}
                 {% for guide in top_guides %}
                 <div class="guide-element">
                     <a href="{% url 'guide_detail' guide.id %}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; width: 100%; height: 100%;">
                         {% if guide.image %}
-                            <img src="{{ guide.image.url }}" class="image-element" alt="{{ guide.title }}">
+                        <img src="{{ guide.image.url }}" class="image-element" alt="{{ guide.title }}">
                         {% else %}
-                            <img src="{% static 'images/default-avatar.jpg' %}" class="image-element" alt="{{ guide.title }}">
+                        <img src="{% static 'images/default-avatar.jpg' %}" class="image-element" alt="{{ guide.title }}">
                         {% endif %}
                         <span class="text-element">{{ guide.title }}</span>
                         <hr style="width: 75%; margin: 0 auto;">
@@ -150,14 +152,20 @@
                     </a>
                 </div>
                 {% endfor %}
-            {% else %}
+                {% else %}
                 <p style="text-align:center; font-style: italic; margin: 20px 0;">
                     <span data-lang-ru="Лучших руководств пока нет" data-lang-en="No best guides yet">Лучших руководств пока нет</span>
                 </p>
-            {% endif %}
+                {% endif %}
             </div>
         </div>
         {% endif %}
+        <a class="simple-text" style="margin: 10px 0; margin-top:40px" data-lang-ru="Или напишите своё собственное!" data-lang-en="Or write your own!">Или напишите своё собственное!</a>
+
+        <form action="{% url 'create' %}">
+            <input class="profile-button" style="width: 200px; height: 40px;" type="submit"
+                   value="Перейти" data-lang-ru="Перейти" data-lang-en="Go" />
+        </form>
     </div>
 
     <!-- Чат -->
