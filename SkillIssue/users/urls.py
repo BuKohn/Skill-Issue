@@ -39,7 +39,7 @@ urlpatterns = [
     path("api/profile/reviews/create/", views.ReviewCreateView.as_view(), name="review-create"),
     path('api/profile/<str:username>/guides/', views.profile_guides_api, name='profile_guides_api'),
 
-    # --- API для руководств ---
+    # --- API для рейтинга руководств ---
     path('api/guides/<int:guide_id>/rate/', GuideRateAPIView.as_view(), name='guide-rate'),
     path('api/reviews/create/', ReviewCreateView.as_view(), name='review_create'),
     path('api/reviews/<int:pk>/update/', ReviewUpdateView.as_view(), name='review-update'),
@@ -69,7 +69,7 @@ urlpatterns = [
     path('announcements/<int:announcement_id>/edit/', views.edit_announcement, name='edit_announcement'),
     path('announcements/<int:announcement_id>/update/', views.update_announcement, name='update_announcement'),
 
-    # --- API для фильтрации (должны быть ПЕРЕД router.urls) ---
+    # --- API для фильтрации ---
     path('api/announcements/filter/', views.filter_announcements, name='filter_announcements'),
     path('api/guides/filter/', views.filter_guides, name='filter_guides'),
 

@@ -20,11 +20,14 @@
                            data-placeholder-en="search guides, profiles and announcements">
                     <div class="search-dropdown" id="searchDropdown"></div>
                 </div>
-                <a class="nav-links" data-lang-ru="избранное" data-lang-en="favorites">избранное</a>
                 <a class="nav-links" id="language-toggle" href="#" onclick="toggleLanguage(event)" title="Сменить язык">RU</a>
                 <div class="menu-container">
                     {% if user.is_authenticated %}
-                        <a class="nav-links" href="{% url 'logout_page' %}" data-lang-ru="выйти" data-lang-en="log out">выйти</a>
+                        <a class="nav-links"
+                           href="{% url 'profile_page' user.username %}"
+                           data-lang-ru="профиль"
+                           data-lang-en="profile"
+                           style="margin-right: 24px;">профиль</a>
                     {% else %}
                         <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                         <div class="context-menu">

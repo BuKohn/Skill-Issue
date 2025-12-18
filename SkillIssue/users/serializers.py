@@ -38,15 +38,20 @@ class UserProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username", read_only=True)
     rating = serializers.FloatField(read_only=True)
     reviews = ReviewSerializer(many=True, read_only=True)
-    guides = serializers.SerializerMethodField()  # <-- добавляем guides
+    guides = serializers.SerializerMethodField()
+    announcements = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
-        fields = ["username", "avatar", "bio", "rating", "reviews", "guides"]
+        fields = ["username", "avatar", "bio", "rating", "reviews", "guides", "announcements"]
 
     def get_guides(self, obj):
         guides = Guide.objects.filter(author=obj.user).order_by('-created_at')
         return GuideSerializer(guides, many=True).data
+
+    def get_announcements(self, obj):
+        announcements = Announcement.objects.filter(author=obj.user).order_by('-created_at')
+        return AnnouncementSerializer(announcements, many=True).data
 
 
 class GuideSerializer(serializers.ModelSerializer):

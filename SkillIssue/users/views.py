@@ -7,6 +7,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.middleware.csrf import get_token
 from django.views.generic import ListView
+from rest_framework.decorators import action
 from rest_framework import status, permissions, generics, viewsets, serializers
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
@@ -15,6 +16,7 @@ from rest_framework.permissions import BasePermission
 from rest_framework.decorators import api_view
 import markdown
 from rest_framework.parsers import MultiPartParser, FormParser
+from .daos import GuideDAO
 from django.db.models import Avg
 from django.db.models import Q
 from django.utils.safestring import mark_safe
@@ -105,7 +107,6 @@ class GuideListView(ListView):
         search_query = self.request.GET.get('search')
 
         if not search_query:
-            # Показываем "Лучшее за всё время" только когда нет поиска
             context['top_guides'] = Guide.objects.order_by('-rating')[:6]
 
         return context
@@ -122,10 +123,6 @@ class AnnouncementListView(ListView):
         if search_query:
             queryset = queryset.filter(title__icontains=search_query)
         return queryset
-
-
-
-
 
 @login_required
 def create_guide(request):
@@ -245,7 +242,7 @@ def profile_edit(request):
 
     return render(request, "users/profile_edit.html", {"profile": profile, "user": request.user})
 
-
+@login_required
 def edit_announcement(request, announcement_id):
     announcement = get_object_or_404(Announcement, id=announcement_id)
 
@@ -265,7 +262,7 @@ def edit_announcement(request, announcement_id):
     }
     return render(request, 'users/announcement_edit.html', context)
 
-
+@login_required
 def update_announcement(request, announcement_id):
     if request.method == 'POST':
         announcement = get_object_or_404(Announcement, id=announcement_id)
@@ -668,26 +665,6 @@ class ReviewCreateView(generics.CreateAPIView):
             return Response({"error": e.detail[0]}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class GuideCreateAPI(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @swagger_auto_schema(
-        operation_description="Создать новое руководство (гайд)",
-        request_body=GuideSerializer,
-        responses={
-            201: GuideSerializer,
-            400: "Ошибка валидации данных"
-        },
-        tags=['Руководства']
-    )
-    def post(self, request):
-        serializer = GuideSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(author=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 class IsAuthorOrReadOnly(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
@@ -708,6 +685,29 @@ class GuideViewSet(viewsets.ModelViewSet):
     queryset = Guide.objects.all().order_by('-rating', '-created_at')
     serializer_class = GuideSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
+
+    @action(detail=False, methods=['get'], url_path='dao-guides')
+    def get_guides_from_dao(self, request):
+        """
+        Метод, использующий DAO для получения списка руководств.
+        Аналог @GetMapping("students").
+        """
+        guides = GuideDAO.get_all()
+        serializer = GuideSerializer(guides, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='dto-guides')
+    def get_dto_guides(self, request):
+        dtos = GuideDAO.get_guides_dto()
+        return Response([
+            {
+                "id": d.id,
+                "title": d.title,
+                "author": d.author_username,
+                "rating": d.rating
+            }
+            for d in dtos
+        ])
 
     @swagger_auto_schema(
         operation_description="Получить список всех руководств, отсортированных по рейтингу",

@@ -123,7 +123,12 @@ class AuthManager {
     // Выход из системы
     logout() {
         this.clearTokens();
-        window.location.href = '/login-page/';
+        fetch('/logout/', {
+            method: 'GET',
+            credentials: 'include'
+        }).finally(() => {
+            window.location.href = '/';
+        });
     }
 }
 

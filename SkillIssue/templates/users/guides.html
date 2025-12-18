@@ -20,11 +20,14 @@
                     <div class="search-dropdown" id="searchDropdown">
                     </div>
                 </div>
-                <a class="nav-links" href="#" data-lang-ru="избранное" data-lang-en="favorites">избранное</a>
                 <a class="nav-links" id="language-toggle" href="#" onclick="toggleLanguage(event)" title="Сменить язык">RU</a>
                 <div class="menu-container">
                     {% if user.is_authenticated %}
-                        <a class="nav-links" href="{% url 'logout_page' %}" data-lang-ru="выйти" data-lang-en="log out">выйти</a>
+                        <a class="nav-links"
+                           href="{% url 'profile_page' user.username %}"
+                           data-lang-ru="профиль"
+                           data-lang-en="profile"
+                           style="margin-right: 24px;">профиль</a>
                     {% else %}
                         <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                         <div class="context-menu">
@@ -84,9 +87,39 @@
                     </div>
                 </div>
             </div>
-        <button type="submit" class="profile-button" style="margin-top: 20px; width: 200px;"
-                data-lang-ru="найти" data-lang-en="search">найти</button>
-    </form>
+            <button type="submit" class="profile-button" style="margin-top: 20px; width: 200px;"
+                    data-lang-ru="найти" data-lang-en="search">найти</button>
+        </form>
+
+        <!-- Блок создания руководства сразу под фильтрами -->
+        {% if user.is_authenticated %}
+        <a class="simple-text" style="margin: 20px 0 10px 0;"
+           data-lang-ru="Или создайте своё собственное руководство!"
+           data-lang-en="Or create your own guide!">
+            Или создайте своё собственное руководство!
+        </a>
+        <form action="{% url 'create_guide' %}">
+            <input class="profile-button"
+                   style="width: 200px; height: 40px; margin-bottom: 20px;"
+                   type="submit"
+                   value="Перейти"
+                   data-lang-ru="Перейти"
+                   data-lang-en="Go"/>
+        </form>
+        {% else %}
+        <div class="simple-text" style="margin: 20px 0; text-align: center;">
+            <span data-lang-ru="Чтобы создать своё руководство, "
+                  data-lang-en="To create your own guide, ">Чтобы создать своё руководство, </span>
+            <a href="{% url 'login_page' %}"
+               data-lang-ru="войдите"
+               data-lang-en="log in">войдите</a>
+            <span data-lang-ru=" или "
+                  data-lang-en=" or "> или </span>
+            <a href="{% url 'register_page' %}"
+               data-lang-ru="зарегистрируйтесь"
+               data-lang-en="register">зарегистрируйтесь</a>.
+        </div>
+        {% endif %}
 
         <h2 class="simple-text" style="font-size: 1.25rem; text-align: left; padding-left: 20px; margin-top:40px;">
             {% if request.GET.search %}
@@ -205,9 +238,9 @@
                         background: linear-gradient(135deg, #00BFFF 0%, #0099CC 100%);
                         color: white;
                         border: none;
-                        border-radius: 20px;
+                    border-radius: 20px;
                         padding: 10px 24px;
-                        font-size: 0.95rem;
+                    font-size: 0.95rem;
                         font-weight: 600;
                         cursor: pointer;
                         box-shadow: 0 2px 8px rgba(0, 191, 255, 0.3);
@@ -254,5 +287,6 @@
 <script src="{% static 'js/toggle_language.js' %}"></script>
 <script src="{% static 'js/auth.js' %}"></script>
 <script src="{% static 'js/toggle_chat.js' %}"></script>
+<script src="{% static 'js/profile_menu.js' %}"></script>
 </body>
 </html>

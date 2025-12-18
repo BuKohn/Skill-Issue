@@ -20,14 +20,14 @@
                     <div class="search-dropdown" id="searchDropdown">
                     </div>
                 </div>
-                <a class="nav-links" data-lang-ru="избранное" data-lang-en="favorites">избранное</a>
                 <a class="nav-links" id="language-toggle" href="#" onclick="toggleLanguage(event)" title="Сменить язык">RU</a>
                 <div class="menu-container">
                     {% if user.is_authenticated %}
-                        <a class="nav-links" href="#">{{ user.username }}</a>
-                        <div class="context-menu">
-                            <a href="{% url 'logout_page' %}" data-lang-ru="выйти" data-lang-en="log out">выйти</a>
-                        </div>
+                        <a class="nav-links"
+                           href="{% url 'profile_page' user.username %}"
+                           data-lang-ru="профиль"
+                           data-lang-en="profile"
+                           style="margin-right: 24px;">профиль</a>
                     {% else %}
                         <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                         <div class="context-menu">
@@ -125,12 +125,27 @@
             </div>
         </div>
 
-        <a class="simple-text" style="margin: 10px 0; margin-top:40px" data-lang-ru="Или напишите своё собственное!" data-lang-en="Or write your own!">Или напишите своё собственное!</a>
+        {% if user.is_authenticated %}
+        <a class="simple-text" style="margin: 20px 0 10px 0" data-lang-ru="Или напишите своё собственное!" data-lang-en="Or write your own!">Или напишите своё собственное!</a>
 
         <form action="{% url 'create' %}">
-            <input class="profile-button" style="width: 200px; height: 40px;" type="submit" 
+            <input class="profile-button" style="width: 200px; height: 40px; margin-bottom: 20px;" type="submit" 
                    value="Перейти" data-lang-ru="Перейти" data-lang-en="Go"/>
         </form>
+        {% else %}
+        <div class="simple-text" style="margin: 20px 0; text-align: center;">
+            <span data-lang-ru="Чтобы создать своё объявление, "
+                  data-lang-en="To create your own announcement, ">Чтобы создать своё объявление, </span>
+            <a href="{% url 'login_page' %}"
+               data-lang-ru="войдите"
+               data-lang-en="log in">войдите</a>
+            <span data-lang-ru=" или "
+                  data-lang-en=" or "> или </span>
+            <a href="{% url 'register_page' %}"
+               data-lang-ru="зарегистрируйтесь"
+               data-lang-en="register">зарегистрируйтесь</a>.
+        </div>
+        {% endif %}
     </div>
 
     <!-- Чат -->
@@ -178,9 +193,9 @@
                         background: linear-gradient(135deg, #00BFFF 0%, #0099CC 100%);
                         color: white;
                         border: none;
-                        border-radius: 20px;
+                    border-radius: 20px;
                         padding: 10px 24px;
-                        font-size: 0.95rem;
+                    font-size: 0.95rem;
                         font-weight: 600;
                         cursor: pointer;
                         box-shadow: 0 2px 8px rgba(0, 191, 255, 0.3);
