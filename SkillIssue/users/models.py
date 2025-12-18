@@ -136,3 +136,39 @@ class EmailVerificationCode(models.Model):
         """Проверка истечения срока действия кода"""
         from django.utils import timezone
         return timezone.now() > self.expires_at
+
+ACTION_CHOICES = [
+    ('CREATE', 'Создание'),
+    ('UPDATE', 'Обновление'),
+    ('DELETE', 'Удаление'),
+]
+
+TARGET_TYPE_CHOICES = [
+    ('GUIDE', 'Руководство'),
+    ('ANNOUNCEMENT', 'Объявление'),
+]
+
+
+class UserActivity(models.Model):
+    """
+    Модель для хранения истории действий пользователя.
+    Фиксирует создание, обновление и удаление руководств и объявлений.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='activities')
+    action = models.CharField(max_length=10, choices=ACTION_CHOICES, verbose_name="Действие")
+    target_type = models.CharField(max_length=15, choices=TARGET_TYPE_CHOICES, verbose_name="Тип объекта")
+
+    target_title = models.CharField(max_length=255, verbose_name="Название объекта")
+
+    guide = models.ForeignKey(Guide, on_delete=models.SET_NULL, null=True, blank=True)
+    announcement = models.ForeignKey(Announcement, on_delete=models.SET_NULL, null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата и время")
+
+    class Meta:
+        verbose_name = "Активность пользователя"
+        verbose_name_plural = "История активности"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.get_action_display()} {self.get_target_type_display()}: '{self.target_title}' ({self.user.username})"
