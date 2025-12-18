@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Skill Issue</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <!--<link rel="stylesheet" href="{% static 'css/styles.css' %}">-->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header class="header" id="header">
@@ -41,6 +42,38 @@
         <p class="logo" style="color: black; font-size: 2.5rem">Skill Issue</p>
         <hr style="width: 40%; color: ghostwhite">
         <p class="simple-text" style="margin-top: 5px" data-lang-ru="проект для поиска и обмена навыками" data-lang-en="project for finding and sharing skills">проект для поиска и обмена навыками</p>
+        <div class="carousel-container">
+            <div class="carousel" id="carousel">
+                <div class="carousel-slide">
+                    <img src="{% static 'images/slide1.jpg' %}">
+                    <div class="slide-caption">
+                        <div class="slide-title" data-lang-ru="Основы Python" data-lang-en="Python Basics">Основы Python</div>
+                        <div class="slide-author" data-lang-ru="Автор: Иван Петров" data-lang-en="Author: Ivan Petrov">Автор: Иван Петров</div>
+                    </div>
+                </div>
+                <div class="carousel-slide">
+                    <img src="{% static 'images/slide2.jpg' %}">
+                    <div class="slide-caption">
+                        <div class="slide-title" data-lang-ru="Веб-дизайн" data-lang-en="Web Design">Веб-дизайн</div>
+                        <div class="slide-author" data-lang-ru="Автор: Мария Сидорова" data-lang-en="Author: Maria Sidorova">Автор: Мария Сидорова</div>
+                    </div>
+                </div>
+                <div class="carousel-slide">
+                    <img src="{% static 'images/slide3.jpg' %}">
+                    <div class="slide-caption">
+                        <div class="slide-title" data-lang-ru="Git и GitHub" data-lang-en="Git & GitHub">Git и GitHub</div>
+                        <div class="slide-author" data-lang-ru="Автор: Алексей Козлов" data-lang-en="Author: Alexey Kozlov">Автор: Алексей Козлов</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Управление -->
+            <button class="carousel-btn prev" onclick="moveSlide(-1)" aria-label="Previous slide">&lt;</button>
+            <button class="carousel-btn next" onclick="moveSlide(1)" aria-label="Next slide">&gt;</button>
+
+            <!-- Индикаторы (опционально) -->
+            <div class="carousel-indicators" id="carouselIndicators"></div>
+        </div>
     </div>
 
     <!-- Чат -->
@@ -193,6 +226,57 @@ document.addEventListener("DOMContentLoaded", async () => {
         }, 100);
     }
 });
+</script>
+<script>
+function toggleLanguage(event) {
+    event.preventDefault();
+    const langBtn = document.getElementById('language-toggle');
+    
+    if (langBtn.textContent.trim() === 'RU') {
+        langBtn.textContent = 'EN';
+        // Здесь можно было бы подгружать английские переводы
+        alert('Переключено на английский (заглушка)');
+    } else {
+        langBtn.textContent = 'RU';
+        alert('Переключено на русский (заглушка)');
+    }
+}
+</script>
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.carousel-slide');
+    const totalSlides = slides.length;
+    const carousel = document.getElementById('carousel');
+    const indicatorsContainer = document.getElementById('carouselIndicators');
+
+    for (let i = 0; i < totalSlides; i++) {
+        const indicator = document.createElement('div');
+        indicator.classList.add('indicator');
+        if (i === 0) indicator.classList.add('active');
+        indicator.addEventListener('click', () => goToSlide(i));
+        indicatorsContainer.appendChild(indicator);
+    }
+
+     function updateCarousel() {
+        carousel.style.transform = `translateX(-${currentSlide * 100}%)`;
+        const indicators = document.querySelectorAll('.indicator');
+        indicators.forEach((ind, idx) => {
+        ind.classList.toggle('active', idx === currentSlide);
+        });
+    }
+
+     function goToSlide(index) {
+        if (index < 0) index = totalSlides - 1;
+        if (index >= totalSlides) index = 0;
+        currentSlide = index;
+        updateCarousel();
+    }
+
+        function moveSlide(direction) {
+            goToSlide(currentSlide + direction);
+    }
+
+    setInterval(() => moveSlide(1), 5000);
 </script>
 </body>
 </html>
