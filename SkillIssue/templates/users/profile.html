@@ -11,7 +11,7 @@
         <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
         <div class="nav-group nav-group-left">
             <a class="nav-links" href="{% url 'guides_list' %}" data-lang-ru="руководства" data-lang-en="guides">руководства</a>
-            <a class="nav-links" href="#" data-lang-ru="объявления" data-lang-en="announcements">объявления</a>
+            <a class="nav-links" href="{% url 'announcements_list' %}" data-lang-ru="объявления" data-lang-en="announcements">объявления</a>
         </div>
         <div class="nav-group nav-group-right">
             <div class="search-container">
@@ -21,11 +21,23 @@
                     <div class="search-dropdown" id="searchDropdown">
                     </div>
             </div>
-            <a class="nav-links" href="#" data-lang-ru="избранное" data-lang-en="favorites">избранное</a>
             <a class="nav-links" id="language-toggle" href="#" onclick="toggleLanguage(event)" title="Сменить язык">RU</a>
             <div id="menu-container" class="menu-container">
                 {% if user.is_authenticated %}
-                    <a class="nav-links" href="{% url 'logout_page' %}" data-lang-ru="выйти" data-lang-en="log out">выйти</a>
+                    <a class="nav-links"
+                       href="{% url 'profile_page' user.username %}"
+                       data-lang-ru="профиль"
+                       data-lang-en="profile"
+                       style="margin-right: 24px;">профиль</a>
+                    <div class="context-menu">
+                        <a href="{% url 'profile_page' user.username %}"
+                           data-lang-ru="профиль"
+                           data-lang-en="profile">профиль</a>
+                        <a href="#"
+                           class="logout-btn"
+                           data-lang-ru="выйти"
+                           data-lang-en="log out">выйти</a>
+                    </div>
                 {% else %}
                     <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
                     <div class="context-menu">
@@ -234,7 +246,6 @@
             if(response.ok){
                 const user = await response.json();
                 menuContainer.innerHTML = `<a class="nav-links" href="#" id="logout-btn" style="margin-right:25px;" data-lang-ru="выйти" data-lang-en="log out">выйти</a>`;
-                // Применяем язык к новым элементам
                 setTimeout(() => {
                     if (typeof applyLanguage === 'function') {
                         applyLanguage(currentLang);
