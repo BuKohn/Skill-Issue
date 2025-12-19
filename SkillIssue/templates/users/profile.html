@@ -116,6 +116,28 @@
         {% endif %}
     </div>
 
+    <div style="margin: 20px auto; width: 95%;">
+        <a class="simple-text" style="font-size: 1.3rem; margin-bottom: 10px; display: block;">
+            История активности
+        </a>
+        <div id="activity-container">
+            {% if request.user.activities.exists %}
+                {% for act in request.user.activities.all %}
+                    <div class="activity-item">
+                        <span style="color: #666;">{{ act.created_at|date:"H:i" }}</span>
+                        <strong>{{ act.get_action_display }}</strong>
+                        <span>{{ act.get_target_type_display|lower }}</span>
+                        "<em>{{ act.target_title }}</em>"
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; color: #888; font-style: italic; padding: 20px 0;">
+                    Нет активности
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
     <hr style="color:black; width:96%; margin:20px auto;">
     <a class="simple-text" style="line-height:20px; margin-bottom: 20px"
        data-lang-ru="Отзывы о {{ profile.user.username }}"

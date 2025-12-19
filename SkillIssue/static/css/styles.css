@@ -258,8 +258,9 @@ a {
     gap: 20px;
     align-content: flex-start;
     flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
 }
-
 .profile-column-container {
     display: flex;
     align-content: flex-start;
@@ -875,6 +876,42 @@ textarea {
     color: #0088cc !important;
 }
 
+#activity-container{
+    height: 300px;
+    overflow-y: auto;
+    background-color: ghostwhite;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px #424242;
+    padding: 15px 20px;
+    font-family: 'Cascadia Code';
+    font-size: 0.95rem;
+    color: #333;
+    line-height: 1.5;
+    scrollbar-width: thin;
+    scrollbar-color: #ccc ghostwhite;
+}
+
+.activity-item {
+    margin-bottom: 12px;
+    border-left: 3px solid #00BFFF;
+    padding-left: 10px;
+}
+
+#activity-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+#activity-container::-webkit-scrollbar-track {
+    background: ghostwhite;
+}
+
+#activity-container::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+#activity-container::-webkit-scrollbar-thumb:hover {
+    background: #999;
 .carousel-container {
     position: relative;
     width: 95%;
