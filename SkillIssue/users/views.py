@@ -32,7 +32,7 @@ import string
 
 from .models import Profile, GuideRating, Review, Guide, ProfileReview, Announcement, AnnouncementComment, EmailVerificationCode, ChatMessage
 from .serializers import RegisterSerializer, UserProfileSerializer, ReviewSerializer, GuideSerializer, \
-    AnnouncementSerializer, ChatMessageSerializer, ChatContactSerializer
+    AnnouncementSerializer, ChatMessageSerializer, ChatContactSerializer, ProfileCommentSerializer
 from .forms import GuideForm
 
 
@@ -1019,6 +1019,101 @@ class ReviewDeleteView(APIView):
             "profile_average_rating": profile.rating
         })
 
+
+class ProfileCommentCreateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['username', 'comment'],
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username профиля'),
+                'comment': openapi.Schema(type=openapi.TYPE_STRING, description='Текст комментария'),
+            },
+        ),
+        responses={201: ProfileCommentSerializer}
+    )
+    def post(self, request):
+        username = request.data.get("username", "").strip()
+        comment_text = request.data.get("comment", "").strip()
+
+        if not username:
+            return Response({"error": "Не указан username профиля"}, status=status.HTTP_400_BAD_REQUEST)
+        if not comment_text:
+            return Response({"error": "Комментарий не может быть пустым"}, status=status.HTTP_400_BAD_REQUEST)
+
+        profile = get_object_or_404(Profile, user__username=username)
+
+        review, created = ProfileReview.objects.update_or_create(
+            reviewer=request.user,
+            profile=profile,
+            defaults={"comment": comment_text}
+        )
+
+        serializer = ProfileCommentSerializer(review, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ProfileCommentUpdateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Редактирование комментария к профилю",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['text'],
+            properties={
+                'text': openapi.Schema(type=openapi.TYPE_STRING, description='Новый текст комментария'),
+            },
+        ),
+        responses={
+            200: ProfileCommentSerializer,
+            403: "Нет прав на редактирование",
+            404: "Комментарий не найден",
+            400: "Комментарий не может быть пустым"
+        }
+    )
+    def put(self, request, pk):
+        comment = get_object_or_404(ProfileReview, id=pk)
+
+        if comment.reviewer != request.user:
+            return Response({"error": "Нет прав на редактирование"}, status=status.HTTP_403_FORBIDDEN)
+
+        text = request.data.get("text", "").strip()
+        if not text:
+            return Response({"error": "Комментарий не может быть пустым"}, status=status.HTTP_400_BAD_REQUEST)
+
+        comment.comment = text
+        comment.is_edited = True
+        comment.save()
+
+        serializer = ProfileCommentSerializer(comment, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# --- Удаление комментария ---
+class ProfileCommentDeleteView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Удаление комментария к профилю",
+        responses={
+            204: "Комментарий удален",
+            403: "Нет прав на удаление",
+            404: "Комментарий не найден"
+        }
+    )
+    def delete(self, request, pk):
+        comment = get_object_or_404(ProfileReview, id=pk)
+
+        if comment.reviewer != request.user:
+            return Response({"error": "Нет прав на удаление"}, status=status.HTTP_403_FORBIDDEN)
+
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class AnnouncementCommentCreateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -1170,6 +1265,109 @@ class AnnouncementCommentDeleteView(APIView):
             "message": "Комментарий удалён",
             "announcement_id": announcement_id
         })
+
+
+@swagger_auto_schema(
+    method='get',
+    operation_description="Получить популярные руководства и объявления для карусели на главной странице",
+    responses={
+        200: openapi.Response(
+            description="Список популярных элементов",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'guides': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                'title': openapi.Schema(type=openapi.TYPE_STRING),
+                                'image': openapi.Schema(type=openapi.TYPE_STRING),
+                                'author': openapi.Schema(type=openapi.TYPE_STRING),
+                                'rating': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                'url': openapi.Schema(type=openapi.TYPE_STRING),
+                            }
+                        )
+                    ),
+                    'announcements': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                'title': openapi.Schema(type=openapi.TYPE_STRING),
+                                'image': openapi.Schema(type=openapi.TYPE_STRING),
+                                'author': openapi.Schema(type=openapi.TYPE_STRING),
+                                'url': openapi.Schema(type=openapi.TYPE_STRING),
+                            }
+                        )
+                    ),
+                }
+            )
+        ),
+        500: "Внутренняя ошибка сервера"
+    },
+    tags=['Главная страница']
+)
+@api_view(['GET'])
+def popular_items(request):
+    """Получить популярные руководства и объявления для карусели"""
+    try:
+        # Получаем популярные руководства (топ 5 по рейтингу)
+        popular_guides = Guide.objects.order_by('-rating', '-created_at')[:5]
+        guides_data = []
+        for guide in popular_guides:
+            request_obj = request
+            image_url = None
+            if guide.image:
+                if request_obj:
+                    image_url = request_obj.build_absolute_uri(guide.image.url)
+                else:
+                    image_url = guide.image.url
+            
+            guides_data.append({
+                'id': guide.id,
+                'title': guide.title,
+                'image': image_url or None,
+                'author': guide.author.username,
+                'rating': guide.rating,
+                'url': f'/guides/{guide.id}/',
+                'type': 'guide'
+            })
+        
+        # Получаем популярные объявления (последние 5)
+        popular_announcements = Announcement.objects.order_by('-created_at')[:5]
+        announcements_data = []
+        for announcement in popular_announcements:
+            request_obj = request
+            image_url = None
+            if announcement.image:
+                if request_obj:
+                    image_url = request_obj.build_absolute_uri(announcement.image.url)
+                else:
+                    image_url = announcement.image.url
+            
+            announcements_data.append({
+                'id': announcement.id,
+                'title': announcement.title,
+                'image': image_url or None,
+                'author': announcement.author.username,
+                'url': f'/announcements/{announcement.id}/',
+                'type': 'announcement'
+            })
+        
+        # Объединяем и перемешиваем (можно отсортировать по дате создания)
+        all_items = guides_data + announcements_data
+        # Сортируем по дате создания (новые первыми)
+        # Для этого нужно добавить created_at в данные
+        return Response({
+            'guides': guides_data,
+            'announcements': announcements_data,
+            'items': all_items[:6]  # Максимум 6 элементов для карусели
+        })
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @swagger_auto_schema(

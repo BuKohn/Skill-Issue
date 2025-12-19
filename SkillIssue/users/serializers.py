@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Profile, Review, Guide, Announcement, ChatMessage
+from .models import Profile, Review, Guide, Announcement, ChatMessage, ProfileReview
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -104,3 +104,23 @@ class ChatContactSerializer(serializers.Serializer):
     last_message = serializers.CharField(allow_blank=True)
     last_message_at = serializers.DateTimeField(allow_null=True)
     unread_count = serializers.IntegerField()
+
+
+class ProfileCommentSerializer(serializers.ModelSerializer):
+    author = serializers.CharField(source='reviewer.username', read_only=True)
+    author_avatar = serializers.SerializerMethodField()
+    profile = serializers.CharField(source='profile.user.username', read_only=True)
+    created_at = serializers.DateTimeField(format='%d.%m.%Y %H:%M', read_only=True)
+    is_edited = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = ProfileReview
+        fields = ['id', 'comment', 'author', 'author_avatar', 'profile', 'created_at', 'is_edited']
+
+    def get_author_avatar(self, obj):
+        if hasattr(obj.reviewer, 'profile') and obj.reviewer.profile.avatar:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.reviewer.profile.avatar.url)
+            return obj.reviewer.profile.avatar.url
+        return None

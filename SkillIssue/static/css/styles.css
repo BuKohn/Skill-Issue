@@ -900,7 +900,7 @@ textarea {
 
 .carousel-slide img {
     width: 100%;
-    max-height: 300px;
+    max-height: 400px;
     object-fit: cover;
     border-radius: 8px;
 }
