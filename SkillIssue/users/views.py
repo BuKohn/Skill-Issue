@@ -7,6 +7,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.middleware.csrf import get_token
 from django.views.generic import ListView
+from rest_framework.decorators import action
 from rest_framework import status, permissions, generics, viewsets, serializers
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
@@ -15,6 +16,7 @@ from rest_framework.permissions import BasePermission
 from rest_framework.decorators import api_view
 import markdown
 from rest_framework.parsers import MultiPartParser, FormParser
+from .daos import GuideDAO
 from django.db.models import Avg
 from django.db.models import Q
 from django.utils.safestring import mark_safe
@@ -30,7 +32,7 @@ import string
 
 from .models import Profile, GuideRating, Review, Guide, ProfileReview, Announcement, AnnouncementComment, EmailVerificationCode, ChatMessage
 from .serializers import RegisterSerializer, UserProfileSerializer, ReviewSerializer, GuideSerializer, \
-    AnnouncementSerializer, ChatMessageSerializer, ChatContactSerializer
+    AnnouncementSerializer, ChatMessageSerializer, ChatContactSerializer, ProfileCommentSerializer
 from .forms import GuideForm
 
 
@@ -105,7 +107,6 @@ class GuideListView(ListView):
         search_query = self.request.GET.get('search')
 
         if not search_query:
-            # Показываем "Лучшее за всё время" только когда нет поиска
             context['top_guides'] = Guide.objects.order_by('-rating')[:6]
 
         return context
@@ -122,10 +123,6 @@ class AnnouncementListView(ListView):
         if search_query:
             queryset = queryset.filter(title__icontains=search_query)
         return queryset
-
-
-
-
 
 @login_required
 def create_guide(request):
@@ -245,7 +242,7 @@ def profile_edit(request):
 
     return render(request, "users/profile_edit.html", {"profile": profile, "user": request.user})
 
-
+@login_required
 def edit_announcement(request, announcement_id):
     announcement = get_object_or_404(Announcement, id=announcement_id)
 
@@ -265,7 +262,7 @@ def edit_announcement(request, announcement_id):
     }
     return render(request, 'users/announcement_edit.html', context)
 
-
+@login_required
 def update_announcement(request, announcement_id):
     if request.method == 'POST':
         announcement = get_object_or_404(Announcement, id=announcement_id)
@@ -668,26 +665,6 @@ class ReviewCreateView(generics.CreateAPIView):
             return Response({"error": e.detail[0]}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class GuideCreateAPI(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @swagger_auto_schema(
-        operation_description="Создать новое руководство (гайд)",
-        request_body=GuideSerializer,
-        responses={
-            201: GuideSerializer,
-            400: "Ошибка валидации данных"
-        },
-        tags=['Руководства']
-    )
-    def post(self, request):
-        serializer = GuideSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(author=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 class IsAuthorOrReadOnly(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
@@ -708,6 +685,29 @@ class GuideViewSet(viewsets.ModelViewSet):
     queryset = Guide.objects.all().order_by('-rating', '-created_at')
     serializer_class = GuideSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
+
+    @action(detail=False, methods=['get'], url_path='dao-guides')
+    def get_guides_from_dao(self, request):
+        """
+        Метод, использующий DAO для получения списка руководств.
+        Аналог @GetMapping("students").
+        """
+        guides = GuideDAO.get_all()
+        serializer = GuideSerializer(guides, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='dto-guides')
+    def get_dto_guides(self, request):
+        dtos = GuideDAO.get_guides_dto()
+        return Response([
+            {
+                "id": d.id,
+                "title": d.title,
+                "author": d.author_username,
+                "rating": d.rating
+            }
+            for d in dtos
+        ])
 
     @swagger_auto_schema(
         operation_description="Получить список всех руководств, отсортированных по рейтингу",
@@ -1019,6 +1019,101 @@ class ReviewDeleteView(APIView):
             "profile_average_rating": profile.rating
         })
 
+
+class ProfileCommentCreateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['username', 'comment'],
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username профиля'),
+                'comment': openapi.Schema(type=openapi.TYPE_STRING, description='Текст комментария'),
+            },
+        ),
+        responses={201: ProfileCommentSerializer}
+    )
+    def post(self, request):
+        username = request.data.get("username", "").strip()
+        comment_text = request.data.get("comment", "").strip()
+
+        if not username:
+            return Response({"error": "Не указан username профиля"}, status=status.HTTP_400_BAD_REQUEST)
+        if not comment_text:
+            return Response({"error": "Комментарий не может быть пустым"}, status=status.HTTP_400_BAD_REQUEST)
+
+        profile = get_object_or_404(Profile, user__username=username)
+
+        review, created = ProfileReview.objects.update_or_create(
+            reviewer=request.user,
+            profile=profile,
+            defaults={"comment": comment_text}
+        )
+
+        serializer = ProfileCommentSerializer(review, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ProfileCommentUpdateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Редактирование комментария к профилю",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['text'],
+            properties={
+                'text': openapi.Schema(type=openapi.TYPE_STRING, description='Новый текст комментария'),
+            },
+        ),
+        responses={
+            200: ProfileCommentSerializer,
+            403: "Нет прав на редактирование",
+            404: "Комментарий не найден",
+            400: "Комментарий не может быть пустым"
+        }
+    )
+    def put(self, request, pk):
+        comment = get_object_or_404(ProfileReview, id=pk)
+
+        if comment.reviewer != request.user:
+            return Response({"error": "Нет прав на редактирование"}, status=status.HTTP_403_FORBIDDEN)
+
+        text = request.data.get("text", "").strip()
+        if not text:
+            return Response({"error": "Комментарий не может быть пустым"}, status=status.HTTP_400_BAD_REQUEST)
+
+        comment.comment = text
+        comment.is_edited = True
+        comment.save()
+
+        serializer = ProfileCommentSerializer(comment, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# --- Удаление комментария ---
+class ProfileCommentDeleteView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Удаление комментария к профилю",
+        responses={
+            204: "Комментарий удален",
+            403: "Нет прав на удаление",
+            404: "Комментарий не найден"
+        }
+    )
+    def delete(self, request, pk):
+        comment = get_object_or_404(ProfileReview, id=pk)
+
+        if comment.reviewer != request.user:
+            return Response({"error": "Нет прав на удаление"}, status=status.HTTP_403_FORBIDDEN)
+
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class AnnouncementCommentCreateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -1170,6 +1265,109 @@ class AnnouncementCommentDeleteView(APIView):
             "message": "Комментарий удалён",
             "announcement_id": announcement_id
         })
+
+
+@swagger_auto_schema(
+    method='get',
+    operation_description="Получить популярные руководства и объявления для карусели на главной странице",
+    responses={
+        200: openapi.Response(
+            description="Список популярных элементов",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'guides': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                'title': openapi.Schema(type=openapi.TYPE_STRING),
+                                'image': openapi.Schema(type=openapi.TYPE_STRING),
+                                'author': openapi.Schema(type=openapi.TYPE_STRING),
+                                'rating': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                'url': openapi.Schema(type=openapi.TYPE_STRING),
+                            }
+                        )
+                    ),
+                    'announcements': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                'title': openapi.Schema(type=openapi.TYPE_STRING),
+                                'image': openapi.Schema(type=openapi.TYPE_STRING),
+                                'author': openapi.Schema(type=openapi.TYPE_STRING),
+                                'url': openapi.Schema(type=openapi.TYPE_STRING),
+                            }
+                        )
+                    ),
+                }
+            )
+        ),
+        500: "Внутренняя ошибка сервера"
+    },
+    tags=['Главная страница']
+)
+@api_view(['GET'])
+def popular_items(request):
+    """Получить популярные руководства и объявления для карусели"""
+    try:
+        # Получаем популярные руководства (топ 5 по рейтингу)
+        popular_guides = Guide.objects.order_by('-rating', '-created_at')[:5]
+        guides_data = []
+        for guide in popular_guides:
+            request_obj = request
+            image_url = None
+            if guide.image:
+                if request_obj:
+                    image_url = request_obj.build_absolute_uri(guide.image.url)
+                else:
+                    image_url = guide.image.url
+            
+            guides_data.append({
+                'id': guide.id,
+                'title': guide.title,
+                'image': image_url or None,
+                'author': guide.author.username,
+                'rating': guide.rating,
+                'url': f'/guides/{guide.id}/',
+                'type': 'guide'
+            })
+        
+        # Получаем популярные объявления (последние 5)
+        popular_announcements = Announcement.objects.order_by('-created_at')[:5]
+        announcements_data = []
+        for announcement in popular_announcements:
+            request_obj = request
+            image_url = None
+            if announcement.image:
+                if request_obj:
+                    image_url = request_obj.build_absolute_uri(announcement.image.url)
+                else:
+                    image_url = announcement.image.url
+            
+            announcements_data.append({
+                'id': announcement.id,
+                'title': announcement.title,
+                'image': image_url or None,
+                'author': announcement.author.username,
+                'url': f'/announcements/{announcement.id}/',
+                'type': 'announcement'
+            })
+        
+        # Объединяем и перемешиваем (можно отсортировать по дате создания)
+        all_items = guides_data + announcements_data
+        # Сортируем по дате создания (новые первыми)
+        # Для этого нужно добавить created_at в данные
+        return Response({
+            'guides': guides_data,
+            'announcements': announcements_data,
+            'items': all_items[:6]  # Максимум 6 элементов для карусели
+        })
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @swagger_auto_schema(

@@ -109,6 +109,8 @@ class ProfileReview(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='reviews')
     comment = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_edited = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('reviewer', 'profile')
