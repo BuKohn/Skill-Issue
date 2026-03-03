@@ -72,33 +72,43 @@
                        data-placeholder-ru="теги через запятую"
                        data-placeholder-en="tags separated by comma">
 
-                <div class="filter-container" style="position: relative;">
-                    <button type="button" class="filter-toggle" style="padding: 8px 16px; min-width: 170px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
-                        <span id="current-filter" data-lang-ru="Все" data-lang-en="All">Все</span>
-                        <span style="margin-left: 8px;">▼</span>
-                    </button>
+                <!-- Контейнер фильтров - все элементы на одной линии -->
+                <div style="display: flex; align-items: flex-end; gap: 15px; flex-wrap: nowrap; margin-bottom: 20px;">
 
-                    <div class="filter-dropdown"
-                         style="display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; background: white; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-width: 150px; z-index: 100;">
-                        <button type="button" class="filter-item" data-value="today" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;"
-                                data-lang-ru="За сегодня" data-lang-en="Today">
-                            За сегодня
-                        </button>
-                        <button type="button" class="filter-item" data-value="week" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;"
-                                data-lang-ru="За неделю" data-lang-en="This week">
-                            За неделю
-                        </button>
-                        <button type="button" class="filter-item" data-value="month" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;"
-                                data-lang-ru="За месяц" data-lang-en="This month">
-                            За месяц
-                        </button>
+                    <!-- 1. Ползунок выбора периода (текст под ползунком) -->
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <input type="range" min="1" max="180" value="30" id="daysRangeSlider" style="width: 140px; cursor: pointer; margin: 0;">
+                        <span id="daysRangeValue" style="font-size: 0.8em; color: #666; margin-top: 4px; white-space: nowrap;">30 дней</span>
                     </div>
+
+                    <!-- 2. Контекстное меню (без изменений структуры) -->
+                    <div class="filter-container" style="position: relative;">
+                        <button type="button" class="filter-toggle" style="padding: 8px 8px; width: 50px; height: 35px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
+                            <span id="current-filter" data-lang-ru="Все" data-lang-en="All">Все</span>
+                            <span style="margin-left: 4px;">▼</span>
+                        </button>
+
+                        <div class="filter-dropdown"
+                             style="display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; background: white; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-width: 150px; z-index: 100;">
+                            <button type="button" class="filter-item" data-value="today" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;"
+                                    data-lang-ru="За сегодня" data-lang-en="Today">
+                                За сегодня
+                            </button>
+                            <button type="button" class="filter-item" data-value="week" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;"
+                                    data-lang-ru="За неделю" data-lang-en="This week">
+                                За неделю
+                            </button>
+                            <button type="button" class="filter-item" data-value="month" style="display: block; width: 100%; padding: 10px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer;"
+                                    data-lang-ru="За месяц" data-lang-en="This month">
+                                За месяц
+                            </button>
+                        </div>
+                    </div>
+                    <button style="padding: 8px 16px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 0.9em; white-space: nowrap;">
+                        найти
+                    </button>
                 </div>
             </div>
-            <button type="submit" class="profile-button" style="margin-top: 20px; width: 200px;"
-                    data-lang-ru="найти" data-lang-en="search">
-                найти
-            </button>
         </form>
 
         <!-- Блок создания руководства сразу под фильтрами -->
@@ -318,5 +328,6 @@
 <script src="{% static 'js/toggle_chat.js' %}"></script>
 <script src="{% static 'js/profile_menu.js' %}"></script>
 <script src="{% static 'js/theme.js' %}"></script>
+<script src="{% static 'js/daysfilter.js' %}"></script>
 </body>
 </html>
