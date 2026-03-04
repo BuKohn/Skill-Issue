@@ -64,12 +64,17 @@ h3 {
 }
 
 .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     background-color: var(--bg-header);
     height: 40px;
     box-shadow: 0px 1px 5px var(--accent-color);
     display: flex;
     justify-content: center;
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    z-index: 1000;
 }
 
 .header-container {

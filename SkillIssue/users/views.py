@@ -1407,6 +1407,25 @@ def popular_items(request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(['GET'])
+def statistics(request):
+    """Получить статистику платформы"""
+    try:
+        guides_count = Guide.objects.count()
+        announcements_count = Announcement.objects.count()
+        users_count = User.objects.filter(is_active=True).count()
+        ratings_count = Review.objects.count() + ProfileReview.objects.count()
+        
+        return Response({
+            'guides': guides_count,
+            'announcements': announcements_count,
+            'users': users_count,
+            'ratings': ratings_count
+        })
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 @swagger_auto_schema(
     method='get',
     operation_description="Получить все элементы для поиска (профили, объявления, руководства)",

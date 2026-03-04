@@ -1,8 +1,10 @@
 {% load static %}
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Skill Issue</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill Issue — Платформа для обмена навыками</title>
     <script>
         (function() {
             const savedTheme = localStorage.getItem('theme') || 'light';
@@ -10,428 +12,449 @@
         })();
     </script>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
 </head>
 <body>
-    <header class="header" id="header">
-        <nav class="header-container">
-            <a class="logo" href="{% url 'main_page' %}">Skill Issue</a>
-            <div class="nav-group nav-group-left">
-                <a class="nav-links" href="{% url 'guides_list' %}" data-lang-ru="руководства" data-lang-en="guides">руководства</a>
-                <a class="nav-links" href="{% url 'announcements_list' %}" data-lang-ru="объявления" data-lang-en="announcements">объявления</a>
-                <a class="nav-links" href="{% url 'favorites_page' %}" data-lang-ru="избранное" data-lang-en="favorites">избранное</a>
-            </div>
-            <div class="nav-group nav-group-right">
-                <div class="search-container">
-                    <input class="search" placeholder="поиск руководств, анкет и профилей" id="searchInput"
-                           data-placeholder-ru="поиск руководств, анкет и профилей"
-                           data-placeholder-en="search guides, profiles and announcements">
-                    <div class="search-dropdown" id="searchDropdown">
-                    </div>
-                </div>
-                <button id="theme-toggle" onclick="window.toggleTheme(event)" title="Переключить тему">🌙</button>
-                <a class="nav-links" id="language-toggle" href="#" onclick="toggleLanguage(event)" title="Сменить язык">RU</a>
-                <div class="menu-container" id="menu-container">
-                    <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
-                    <div class="context-menu">
-                        <a href="{% url 'register_page' %}" data-lang-ru="зарегистрироваться" data-lang-en="register">зарегистрироваться</a>
-                        <a href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
-                    </div>
-                </div>
-            </div>
-        </nav>
-    </header>
+    {% include 'users/header.html' %}
 
-    <div class="body-background">
-        <img src="{% static 'images/logo.png' %}" alt="Skill Issue logo"
-             style="width: 40%; height: auto; margin-top: 50px;">
-        <br><br>
-        <hr style="width: 50%; color: var(--bg-primary)">
-        <p class="logo" style="font-size: 2.5rem; color: var(--accent-color) !important;">Skill Issue</p>
-        <hr style="width: 40%; color: var(--bg-primary)">
-        <p class="simple-text" style="margin-top: 5px" data-lang-ru="проект для поиска и обмена навыками" data-lang-en="project for finding and sharing skills">проект для поиска и обмена навыками</p>
-        <div class="carousel-container">
-            <div class="carousel" id="carousel">
-                <!-- Слайды будут загружены динамически через JavaScript -->
-            </div>
-
-            <!-- Управление -->
-            <button class="carousel-btn prev" onclick="moveSlide(-1)" aria-label="Previous slide">&lt;</button>
-            <button class="carousel-btn next" onclick="moveSlide(1)" aria-label="Next slide">&gt;</button>
-
-            <!-- Индикаторы (опционально) -->
-            <div class="carousel-indicators" id="carouselIndicators"></div>
-        </div>
-    </div>
-
-    <!-- Чат -->
-    <button type="button" id="floating-button" title="Открыть чат">
-        💬
-    </button>
-
-    <div id="chat-modal" >
-        <div id="chat-contacts">
-            <div id="chat-header">
-                <span>Чаты</span>
-                <button id="chat-close-button">&times;</button>
-            </div>
-            <!--СПИСОК КОНТАКТОВ-->
-            <div id="chat-list">
+    <section class="hero-section fade-in-up">
+        <div class="hero-content">
+            <img src="{% static 'images/logo.png' %}" alt="Skill Issue" class="hero-logo">
+            <h1 class="hero-title" data-lang-ru="Обменивайтесь навыками" data-lang-en="Share Your Skills">
+                Обменивайтесь навыками
+            </h1>
+            <p class="hero-subtitle" data-lang-ru="Платформа для поиска и обмена знаниями. Создавайте руководства, находите единомышленников и развивайтесь вместе." data-lang-en="A platform for finding and sharing knowledge. Create guides, find like-minded people and grow together.">
+                Платформа для поиска и обмена знаниями. Создавайте руководства, находите единомышленников и развивайтесь вместе.
+            </p>
+            <div class="hero-cta">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'guides_list' %}" class="btn-primary" data-lang-ru="Начать изучение" data-lang-en="Start Learning">
+                        Начать изучение →
+                    </a>
+                    <a href="{% url 'create_guide' %}" class="btn-secondary" data-lang-ru="Создать руководство" data-lang-en="Create Guide">
+                        Создать руководство
+                    </a>
+                {% else %}
+                    <a href="{% url 'register_page' %}" class="btn-primary" data-lang-ru="Начать бесплатно" data-lang-en="Get Started Free">
+                        Начать бесплатно →
+                    </a>
+                    <a href="{% url 'guides_list' %}" class="btn-secondary" data-lang-ru="Посмотреть примеры" data-lang-en="View Examples">
+                        Посмотреть примеры
+                    </a>
+                {% endif %}
             </div>
         </div>
+    </section>
 
-        <div id="chat-dialog" style="display: none;">
-            <div id="dialog-header">
-                <button id="back-to-chats">&lt;</button>
-                <img id="dialog-avatar" src="{% static 'images/default-avatar.jpg' %}" alt="Avatar">
-                <a id="profile-link" href="#">Никнейм</a>
+    <section class="features-section">
+        <div class="section-header">
+            <h2 class="section-title" data-lang-ru="Почему Skill Issue?" data-lang-en="Why Skill Issue?">
+                Почему Skill Issue?
+            </h2>
+            <p class="section-description" data-lang-ru="Всё, что нужно для эффективного обучения и обмена знаниями" data-lang-en="Everything you need for effective learning and knowledge sharing">
+                Всё, что нужно для эффективного обучения и обмена знаниями
+            </p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card fade-in-up">
+                <div class="feature-icon">📚</div>
+                <h3 class="feature-title" data-lang-ru="Руководства" data-lang-en="Guides">
+                    Руководства
+                </h3>
+                <p class="feature-description" data-lang-ru="Создавайте подробные руководства с поддержкой Markdown, изображений и форматирования" data-lang-en="Create detailed guides with Markdown support, images and formatting">
+                    Создавайте подробные руководства с поддержкой Markdown, изображений и форматирования
+                </p>
             </div>
-
-            <div id="messages-container" style="flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px;"></div>
-
-            <div style="padding: 15px 20px; background: var(--bg-secondary); border-top: 1px solid var(--border-color);">
-            <!-- превью изображения -->
-                <div id="image-preview-container" style="display: none; margin-bottom: 10px; position: relative; max-width: 100%;">
-                    <img id="image-preview" src="" alt="Предпросмотр"
-                         style="max-width: 100%; max-height: 200px; border-radius: 8px; display: block; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
-                    <button id="remove-image"
-                            style="position: absolute; top: -8px; right: -8px; background: #ff4d4d; color: white; border: 2px solid white; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10;">
-                        &times;
-                    </button>
-                </div>
-                <input type="file" id="image-upload" accept="image/png, image/jpeg, image/jpg" style="display: none;">
-
-                <form id="message-form" style="display: flex; gap: 10px; align-items: center; flex-wrap: nowrap;">
-                    <input type="text" id="message-input" placeholder="Написать сообщение..."
-                           style="flex: 1; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 20px; outline: none; font-size: 0.95rem; background: var(--bg-primary); color: var(--text-primary);" autocomplete="off">
-                    <button type="button" id="attach-button" style="
-                        background: linear-gradient(135deg, #00BFFF 0%, #0099CC 100%);
-                        color: white;
-                        border: none;
-                        width: 45px;
-                        height: 36px;
-                    border-radius: 20px;
-                        padding: 0px 0px;
-                    font-size: 0.95rem;
-                        cursor: pointer;
-                        box-shadow: 0 2px 8px rgba(0, 191, 255, 0.3);
-                        transition: all 0.3s ease;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                    " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0, 191, 255, 0.4)';"
-                       onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(0, 191, 255, 0.3)';">
-                    📎
-                    </button>
-
-                    <button type="submit" style="
-                        background: linear-gradient(135deg, #00BFFF 0%, #0099CC 100%);
-                        color: white;
-                        border: none;
-                        width: 45px;
-                        height: 38px;
-                    border-radius: 20px;
-                        padding: 0px 3px;
-                    font-size: 0.95rem;
-                        cursor: pointer;
-                        box-shadow: 0 2px 8px rgba(0, 191, 255, 0.3);
-                        transition: all 0.3s ease;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                    " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0, 191, 255, 0.4)';"
-                       onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(0, 191, 255, 0.3)';">
-                         ↵
-                    </button>
-                </form>
+            <div class="feature-card fade-in-up">
+                <div class="feature-icon">💬</div>
+                <h3 class="feature-title" data-lang-ru="Объявления" data-lang-en="Announcements">
+                    Объявления
+                </h3>
+                <p class="feature-description" data-lang-ru="Находите единомышленников для совместного обучения и обмена опытом" data-lang-en="Find like-minded people for collaborative learning and experience sharing">
+                    Находите единомышленников для совместного обучения и обмена опытом
+                </p>
+            </div>
+            <div class="feature-card fade-in-up">
+                <div class="feature-icon">⭐</div>
+                <h3 class="feature-title" data-lang-ru="Избранное" data-lang-en="Favorites">
+                    Избранное
+                </h3>
+                <p class="feature-description" data-lang-ru="Сохраняйте понравившиеся материалы для быстрого доступа" data-lang-en="Save your favorite materials for quick access">
+                    Сохраняйте понравившиеся материалы для быстрого доступа
+                </p>
+            </div>
+            <div class="feature-card fade-in-up">
+                <div class="feature-icon">🔍</div>
+                <h3 class="feature-title" data-lang-ru="Умный поиск" data-lang-en="Smart Search">
+                    Умный поиск
+                </h3>
+                <p class="feature-description" data-lang-ru="Быстрый поиск по названиям, тегам и авторам с фильтрацией" data-lang-en="Quick search by titles, tags and authors with filtering">
+                    Быстрый поиск по названиям, тегам и авторам с фильтрацией
+                </p>
+            </div>
+            <div class="feature-card fade-in-up">
+                <div class="feature-icon">💡</div>
+                <h3 class="feature-title" data-lang-ru="Рейтинги" data-lang-en="Ratings">
+                    Рейтинги
+                </h3>
+                <p class="feature-description" data-lang-ru="Оценивайте качество материалов и помогайте другим найти лучшее" data-lang-en="Rate material quality and help others find the best">
+                    Оценивайте качество материалов и помогайте другим найти лучшее
+                </p>
+            </div>
+            <div class="feature-card fade-in-up">
+                <div class="feature-icon">🌐</div>
+                <h3 class="feature-title" data-lang-ru="Многоязычность" data-lang-en="Multilingual">
+                    Многоязычность
+                </h3>
+                <p class="feature-description" data-lang-ru="Поддержка русского и английского языков для удобства всех пользователей" data-lang-en="Russian and English support for all users' convenience">
+                    Поддержка русского и английского языков для удобства всех пользователей
+                </p>
             </div>
         </div>
-    </div>
-    <!-- Конец чата -->
+    </section>
 
-    <footer class="footer">
-        <div class="footer-container">
-            <table class="simple-text" style="width: 100%; height: 100%; color: lightgray; font-size: 1rem">
-                <tr>
-                    <td colspan="3" style="width:33%;">
-                        <a href="https://www.sfu.ru/ru" class="nav-group-left"
-                           style="text-decoration: none; color: lightgray; margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;"
-                           data-lang-ru="Сибирский Федеральный Университет" data-lang-en="Siberian Federal University">
-                           Сибирский Федеральный Университет
-                        </a>
-                    </td>
-                    <td style="text-align:right;">
-                        <p class="nav-group-right" style="margin-bottom: auto; margin-top: 5px; font-size: 1.25rem;">@skill_issue 2025</p>
-                    </td>
-                </tr>
-                <tr>
-                    <td><p style="text-align:left">@bukohm</p></td>
-                    <td><p style="text-align:center">@hoolkayyy</p></td>
-                    <td><p style="text-align:right">@K1rkaSs</p></td>
-                </tr>
-            </table>
-        </div>
-    </footer>
-
-<script src="{% static 'js/auth.js' %}"></script>
-<script src="{% static 'js/search.js' %}"></script>
-<script src="{% static 'js/toggle_chat.js' %}"></script>
-<script src="{% static 'js/toggle_language.js' %}"></script>
-<script src="{% static 'js/filter.js' %}"></script>
-<script src="{% static 'js/theme.js' %}"></script>
-<script>
-document.addEventListener("DOMContentLoaded", async () => {
-    const menuContainer = document.querySelector(".menu-container");
-
-    try {
-        // Используем authManager для запроса с JWT токеном
-        const response = await authManager.apiRequest("/api/me/");
-
-        if (response.ok) {
-            const user = await response.json();
-            menuContainer.innerHTML = `
-                <a class="nav-links" href="/users/${user.username}/" style="margin-right: 20px;" data-lang-ru="профиль" data-lang-en="profile">профиль</a>
-            `;
-            setTimeout(() => {
-                if (typeof applyLanguage === 'function') {
-                    applyLanguage(currentLang);
-                }
-            }, 100);
-
-            const logoutBtn = document.getElementById("logout-btn");
-            if (logoutBtn) {
-                logoutBtn.addEventListener("click", async (e) => {
-                    e.preventDefault();
-                    authManager.logout();
-                });
-            }
-        } else {
-            menuContainer.innerHTML = `
-                <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
-                <div class="context-menu">
-                    <a href="{% url 'register_page' %}" data-lang-ru="зарегистрироваться" data-lang-en="register">зарегистрироваться</a>
-                    <a href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
+    <section class="popular-section">
+        <div class="popular-container">
+            <div class="section-header">
+                <h2 class="section-title" data-lang-ru="Популярные материалы" data-lang-en="Popular Content">
+                    Популярные материалы
+                </h2>
+                <p class="section-description" data-lang-ru="Лучшие руководства и объявления от нашего сообщества" data-lang-en="Best guides and announcements from our community">
+                    Лучшие руководства и объявления от нашего сообщества
+                </p>
+            </div>
+            <div class="modern-carousel-container">
+                <div class="modern-carousel" id="modernCarousel">
                 </div>
-            `;
-            setTimeout(() => {
-                if (typeof applyLanguage === 'function') {
-                    applyLanguage(currentLang);
-                }
-            }, 100);
+                <button class="modern-carousel-controls prev" onclick="moveModernSlide(-1)" aria-label="Previous">
+                    ‹
+                </button>
+                <button class="modern-carousel-controls next" onclick="moveModernSlide(1)" aria-label="Next">
+                    ›
+                </button>
+                <div class="modern-carousel-indicators" id="modernIndicators"></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number" id="guidesCount">0</div>
+                <p class="stat-label" data-lang-ru="Руководств" data-lang-en="Guides">Руководств</p>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="announcementsCount">0</div>
+                <p class="stat-label" data-lang-ru="Объявлений" data-lang-en="Announcements">Объявлений</p>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="usersCount">0</div>
+                <p class="stat-label" data-lang-ru="Пользователей" data-lang-en="Users">Пользователей</p>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="ratingsCount">0</div>
+                <p class="stat-label" data-lang-ru="Оценок" data-lang-en="Ratings">Оценок</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2 class="cta-title" data-lang-ru="Готовы начать?" data-lang-en="Ready to Start?">
+                Готовы начать?
+            </h2>
+            <p class="cta-description" data-lang-ru="Присоединяйтесь к сообществу и начните делиться своими знаниями уже сегодня" data-lang-en="Join the community and start sharing your knowledge today">
+                Присоединяйтесь к сообществу и начните делиться своими знаниями уже сегодня
+            </p>
+            <div class="cta-buttons">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'create_guide' %}" class="btn-white" data-lang-ru="Создать первое руководство" data-lang-en="Create Your First Guide">
+                        Создать первое руководство →
+                    </a>
+                {% else %}
+                    <a href="{% url 'register_page' %}" class="btn-white" data-lang-ru="Зарегистрироваться" data-lang-en="Sign Up">
+                        Зарегистрироваться →
+                    </a>
+                    <a href="{% url 'login_page' %}" class="btn-outline-white" data-lang-ru="Войти" data-lang-en="Log In">
+                        Войти
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    {% include 'users/chat.html' %}
+    {% include 'users/footer.html' %}
+
+    <script src="{% static 'js/auth.js' %}"></script>
+    <script src="{% static 'js/search.js' %}"></script>
+    <script src="{% static 'js/toggle_chat.js' %}"></script>
+    <script src="{% static 'js/toggle_language.js' %}"></script>
+    <script src="{% static 'js/filter.js' %}"></script>
+    <script src="{% static 'js/theme.js' %}"></script>
+    <script>
+        let modernCurrentSlide = 0;
+        let modernTotalSlides = 0;
+        let modernCarousel = null;
+        let modernIndicatorsContainer = null;
+
+        function moveModernSlide(direction) {
+            goToModernSlide(modernCurrentSlide + direction);
         }
-    } catch (err) {
-        console.error("Ошибка при проверке авторизации", err);
-        menuContainer.innerHTML = `
-            <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
-            <div class="context-menu">
-                <a href="{% url 'register_page' %}" data-lang-ru="зарегистрироваться" data-lang-en="register">зарегистрироваться</a>
-                <a href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
-            </div>
-        `;
-        setTimeout(() => {
-            if (typeof applyLanguage === 'function') {
-                applyLanguage(currentLang);
-            }
-        }, 100);
-    }
-});
-</script>
-<script>
-    // Глобальные переменные для карусели
-    let currentSlide = 0;
-    let totalSlides = 0;
-    let slides = [];
-    let carousel = null;
-    let indicatorsContainer = null;
 
-    // Глобальные функции для работы карусели
-    function moveSlide(direction) {
-        goToSlide(currentSlide + direction);
-    }
-
-    function goToSlide(index) {
-        if (totalSlides === 0) return;
-        if (index < 0) index = totalSlides - 1;
-        if (index >= totalSlides) index = 0;
-        currentSlide = index;
-        updateCarousel();
-    }
-
-     function updateCarousel() {
-        if (!carousel || totalSlides === 0) return;
-        carousel.style.transform = `translateX(-${currentSlide * 100}%)`;
-        const indicators = document.querySelectorAll('.indicator');
-        indicators.forEach((ind, idx) => {
-        ind.classList.toggle('active', idx === currentSlide);
-        });
-    }
-
-    // Экранирование HTML
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    // Загрузка популярных элементов из API
-    async function loadPopularItems() {
-        if (!carousel || !indicatorsContainer) {
-            carousel = document.getElementById('carousel');
-            indicatorsContainer = document.getElementById('carouselIndicators');
+        function goToModernSlide(index) {
+            if (modernTotalSlides === 0) return;
+            if (index < 0) index = modernTotalSlides - 1;
+            if (index >= modernTotalSlides) index = 0;
+            modernCurrentSlide = index;
+            updateModernCarousel();
         }
-        
-        if (!carousel || !indicatorsContainer) {
-            console.error('Элементы карусели не найдены');
-            return;
+
+        function updateModernCarousel() {
+            if (!modernCarousel || modernTotalSlides === 0) return;
+            modernCarousel.style.transform = `translateX(-${modernCurrentSlide * 100}%)`;
+            const indicators = document.querySelectorAll('.modern-indicator');
+            indicators.forEach((ind, idx) => {
+                ind.classList.toggle('active', idx === modernCurrentSlide);
+            });
         }
-        
-        try {
-            const response = await fetch('/api/popular-items/');
-            if (!response.ok) {
-                throw new Error('Failed to load popular items');
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function loadModernPopularItems() {
+            if (!modernCarousel || !modernIndicatorsContainer) {
+                modernCarousel = document.getElementById('modernCarousel');
+                modernIndicatorsContainer = document.getElementById('modernIndicators');
             }
-            const data = await response.json();
-            
-            // Используем объединенный список из API или объединяем сами
-            const allItems = data.items || [...(data.guides || []), ...(data.announcements || [])];
-            
-            // Если нет элементов, используем дефолтные
-            if (allItems.length === 0) {
-                loadDefaultSlides();
+
+            if (!modernCarousel || !modernIndicatorsContainer) {
                 return;
             }
-            
-            // Ограничиваем до 6 элементов
-            const itemsToShow = allItems.slice(0, 6);
-            totalSlides = itemsToShow.length;
-            
-            // Очищаем карусель
-            carousel.innerHTML = '';
-            indicatorsContainer.innerHTML = '';
-            
-            // Создаем слайды
-            itemsToShow.forEach((item, index) => {
-                const slide = document.createElement('div');
-                slide.className = 'carousel-slide';
-                slide.style.cursor = 'pointer';
-                
-                // Делаем слайд кликабельным
-                slide.addEventListener('click', () => {
-                    window.location.href = item.url;
-                });
-                
-                const imageUrl = item.image || "{% static 'images/default-announcement.png' %}";
-                const imageAlt = item.title || 'Image';
-                
-                slide.innerHTML = `
-                    <img src="${imageUrl}" alt="${imageAlt}" onerror="this.src='{% static 'images/default-announcement.png' %}'">
-                    <div class="slide-caption">
-                        <div class="slide-title">${escapeHtml(item.title)}</div>
-                        <div class="slide-author">
-                            ${item.type === 'guide' 
-                                ? `<span data-lang-ru="Автор: ${escapeHtml(item.author)}" data-lang-en="Author: ${escapeHtml(item.author)}">Автор: ${escapeHtml(item.author)}</span>`
-                                : `<span data-lang-ru="Автор: ${escapeHtml(item.author)}" data-lang-en="Author: ${escapeHtml(item.author)}">Автор: ${escapeHtml(item.author)}</span>`
-                            }
-                            ${item.rating !== undefined ? ` <span style="color: gold;">★ ${item.rating}</span>` : ''}
+
+            try {
+                const response = await fetch('/api/popular-items/');
+                if (!response.ok) throw new Error('Failed to load popular items');
+                const data = await response.json();
+
+                const allItems = data.items || [...(data.guides || []), ...(data.announcements || [])];
+
+                if (allItems.length === 0) {
+                    loadModernDefaultSlides();
+                    return;
+                }
+
+                const itemsToShow = allItems.slice(0, 6);
+                modernTotalSlides = itemsToShow.length;
+
+                modernCarousel.innerHTML = '';
+                modernIndicatorsContainer.innerHTML = '';
+
+                itemsToShow.forEach((item, index) => {
+                    const slide = document.createElement('div');
+                    slide.className = 'modern-carousel-slide';
+                    slide.style.cursor = 'pointer';
+
+                    slide.addEventListener('click', () => {
+                        window.location.href = item.url;
+                    });
+
+                    const imageUrl = item.image || "{% static 'images/default-announcement.png' %}";
+                    const imageAlt = item.title || 'Image';
+
+                    slide.innerHTML = `
+                        <img src="${imageUrl}" alt="${imageAlt}" onerror="this.src='{% static 'images/default-announcement.png' %}'">
+                        <div class="modern-slide-overlay">
+                            <h3 class="modern-slide-title">${escapeHtml(item.title)}</h3>
+                            <div class="modern-slide-meta">
+                                <span>${escapeHtml(item.author)}</span>
+                                ${item.rating !== undefined ? `<span>★ ${item.rating}</span>` : ''}
+                            </div>
                         </div>
+                    `;
+
+                    modernCarousel.appendChild(slide);
+
+                    const indicator = document.createElement('div');
+                    indicator.className = 'modern-indicator';
+                    if (index === 0) indicator.classList.add('active');
+                    indicator.addEventListener('click', () => goToModernSlide(index));
+                    modernIndicatorsContainer.appendChild(indicator);
+                });
+
+                updateModernCarousel();
+
+                if (typeof applyLanguage === 'function') {
+                    setTimeout(() => {
+                        applyLanguage(currentLang || 'RU');
+                    }, 100);
+                }
+            } catch (error) {
+                loadModernDefaultSlides();
+            }
+        }
+
+        function loadModernDefaultSlides() {
+            if (!modernCarousel || !modernIndicatorsContainer) {
+                modernCarousel = document.getElementById('modernCarousel');
+                modernIndicatorsContainer = document.getElementById('modernIndicators');
+            }
+
+            if (!modernCarousel || !modernIndicatorsContainer) return;
+
+            const defaultSlides = [
+                {
+                    image: "{% static 'images/default-announcement.png' %}",
+                    title: "Основы Python",
+                    author: "Иван Петров",
+                    url: "#"
+                },
+                {
+                    image: "{% static 'images/default-avatar.jpg' %}",
+                    title: "Веб-дизайн",
+                    author: "Мария Сидорова",
+                    url: "#"
+                },
+                {
+                    image: "{% static 'images/default-avatar.jpg' %}",
+                    title: "Git и GitHub",
+                    author: "Алексей Козлов",
+                    url: "#"
+                }
+            ];
+
+            modernTotalSlides = defaultSlides.length;
+            modernCarousel.innerHTML = '';
+            modernIndicatorsContainer.innerHTML = '';
+
+            defaultSlides.forEach((item, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'modern-carousel-slide';
+                slide.innerHTML = `
+                    <img src="${item.image}">
+                    <div class="modern-slide-overlay">
+                        <h3 class="modern-slide-title">${item.title}</h3>
+                        <div class="modern-slide-meta">${item.author}</div>
                     </div>
                 `;
-                
-                carousel.appendChild(slide);
-                
-                // Создаем индикатор
+                modernCarousel.appendChild(slide);
+
                 const indicator = document.createElement('div');
-                indicator.classList.add('indicator');
+                indicator.className = 'modern-indicator';
                 if (index === 0) indicator.classList.add('active');
-                indicator.addEventListener('click', () => goToSlide(index));
-                indicatorsContainer.appendChild(indicator);
+                indicator.addEventListener('click', () => goToModernSlide(index));
+                modernIndicatorsContainer.appendChild(indicator);
             });
-            
-            slides = document.querySelectorAll('.carousel-slide');
-            updateCarousel();
-            
-            // Применяем языковые настройки
-            if (typeof applyLanguage === 'function') {
-                setTimeout(() => {
-                    applyLanguage(currentLang || 'RU');
-                }, 100);
-            }
-        } catch (error) {
-            console.error('Error loading popular items:', error);
-            loadDefaultSlides();
-        }
-    }
 
-    // Функция для загрузки дефолтных слайдов (если API не работает)
-    function loadDefaultSlides() {
-        if (!carousel || !indicatorsContainer) {
-            carousel = document.getElementById('carousel');
-            indicatorsContainer = document.getElementById('carouselIndicators');
+            updateModernCarousel();
         }
-        
-        if (!carousel || !indicatorsContainer) {
-            console.error('Элементы карусели не найдены');
-            return;
-        }
-        
-        const defaultSlides = [
-            {
-                image: "{% static 'images/default-announcement.png' %}",
-                title: "Основы Python",
-                author: "Иван Петров",
-                url: "#"
-            },
-            {
-                image: "{% static 'images/default-avatar.jpg' %}",
-                title: "Веб-дизайн",
-                author: "Мария Сидорова",
-                url: "#"
-            },
-            {
-                image: "{% static 'images/default-avatar.jpg' %}",
-                title: "Git и GitHub",
-                author: "Алексей Козлов",
-                url: "#"
+
+        async function loadAndAnimateStats() {
+            try {
+                const response = await fetch('/api/statistics/');
+                if (!response.ok) throw new Error('Failed to load statistics');
+                const data = await response.json();
+
+                const stats = [
+                    { id: 'guidesCount', target: data.guides || 0 },
+                    { id: 'announcementsCount', target: data.announcements || 0 },
+                    { id: 'usersCount', target: data.users || 0 },
+                    { id: 'ratingsCount', target: data.ratings || 0 }
+                ];
+
+                stats.forEach(stat => {
+                    const element = document.getElementById(stat.id);
+                    if (!element) return;
+
+                    let current = 0;
+                    const target = stat.target;
+                    const duration = 2000;
+                    const steps = 60;
+                    const increment = target / steps;
+                    const stepDuration = duration / steps;
+
+                    const timer = setInterval(() => {
+                        current += increment;
+                        if (current >= target) {
+                            current = target;
+                            clearInterval(timer);
+                        }
+                        element.textContent = Math.floor(current);
+                    }, stepDuration);
+                });
+            } catch (error) {
+                console.error('Error loading statistics:', error);
             }
-        ];
-        
-        totalSlides = defaultSlides.length;
-        carousel.innerHTML = '';
-        indicatorsContainer.innerHTML = '';
-        
-        defaultSlides.forEach((item, index) => {
-            const slide = document.createElement('div');
-            slide.className = 'carousel-slide';
-            slide.innerHTML = `
-                <img src="${item.image}">
-                <div class="slide-caption">
-                    <div class="slide-title" data-lang-ru="${item.title}" data-lang-en="${item.title}">${item.title}</div>
-                    <div class="slide-author" data-lang-ru="Автор: ${item.author}" data-lang-en="Author: ${item.author}">Автор: ${item.author}</div>
-                </div>
-            `;
-            carousel.appendChild(slide);
-            
-            const indicator = document.createElement('div');
-            indicator.classList.add('indicator');
-            if (index === 0) indicator.classList.add('active');
-            indicator.addEventListener('click', () => goToSlide(index));
-            indicatorsContainer.appendChild(indicator);
+        }
+
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in-up');
+                    if (entry.target.classList.contains('stats-section')) {
+                        loadAndAnimateStats();
+                        observer.unobserve(entry.target);
+                    }
+                }
+            });
+        }, observerOptions);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadModernPopularItems();
+
+            setInterval(() => {
+                if (modernTotalSlides > 0) {
+                    moveModernSlide(1);
+                }
+            }, 5000);
+
+            document.querySelectorAll('.features-section, .stats-section, .cta-section').forEach(section => {
+                observer.observe(section);
+            });
+
+            const menuContainer = document.querySelector(".menu-container");
+            if (menuContainer) {
+                authManager.apiRequest("/api/me/")
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        }
+                        throw new Error('Not authenticated');
+                    })
+                    .then(user => {
+                        menuContainer.innerHTML = `
+                            <a class="nav-links" href="/users/${user.username}/" style="margin-right: 20px;" data-lang-ru="профиль" data-lang-en="profile">профиль</a>
+                        `;
+                        setTimeout(() => {
+                            if (typeof applyLanguage === 'function') {
+                                applyLanguage(currentLang);
+                            }
+                        }, 100);
+                    })
+                    .catch(() => {
+                        menuContainer.innerHTML = `
+                            <a class="nav-links" href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
+                            <div class="context-menu">
+                                <a href="{% url 'register_page' %}" data-lang-ru="зарегистрироваться" data-lang-en="register">зарегистрироваться</a>
+                                <a href="{% url 'login_page' %}" data-lang-ru="войти" data-lang-en="log in">войти</a>
+                            </div>
+                        `;
+                        setTimeout(() => {
+                            if (typeof applyLanguage === 'function') {
+                                applyLanguage(currentLang);
+                            }
+                        }, 100);
+                    });
+            }
         });
-        
-        slides = document.querySelectorAll('.carousel-slide');
-        updateCarousel();
-    }
-
-    // Загружаем популярные элементы при загрузке страницы
-    document.addEventListener('DOMContentLoaded', () => {
-        loadPopularItems();
-        
-        // Автоматическая смена слайдов каждые 5 секунд
-        setInterval(() => {
-            if (totalSlides > 0) {
-                moveSlide(1);
-            }
-        }, 5000);
-    });
-</script>
+    </script>
 </body>
 </html>
