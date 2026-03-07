@@ -1,8 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const filterToggle = document.querySelector('.filter-toggle');
-    const filterDropdown = document.querySelector('.filter-dropdown');
-    const filterItems = document.querySelectorAll('.filter-item');
-    const currentFilterText = document.getElementById('current-filter');
+    const slider = document.getElementById('daysRangeSlider');
+    const valueDisplay = document.getElementById('daysRangeValue');
     const filterForm = document.querySelector('form[method="GET"]');
     
     let activeFilter = '';
@@ -14,68 +12,27 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Если это главная страница или нет формы фильтрации, не выполняем код фильтрации
     if (isMainPage || (!isAnnouncementsPage && !isGuidesPage)) {
-        if (isMainPage) {
-            console.log('Главная страница, фильтрация не требуется');
-        }
         return;
     }
     
-    console.log('Определение страницы:', { pathname, isAnnouncementsPage, isGuidesPage });
-    
-    // Показываем/скрываем меню фильтров
-    if (filterToggle) {
-        filterToggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const isVisible = filterDropdown.style.display === 'block';
-            filterDropdown.style.display = isVisible ? 'none' : 'block';
-        });
+    // Функция склонения слов (день, дня, дней)
+    function getDaysText(n) {
+        if (n % 10 === 1 && n % 100 !== 11) return n + ' день';
+        if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) return n + ' дня';
+        return n + ' дней';
     }
     
-    // Скрываем меню при клике вне его
-    document.addEventListener('click', function() {
-        if (filterDropdown) {
-            filterDropdown.style.display = 'none';
-        }
-    });
-    
-    // Обработка выбора фильтра
-    if (filterItems.length > 0) {
-        filterItems.forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.stopPropagation();
-                e.preventDefault();
-                
-                // Удаляем активный класс у всех
-                filterItems.forEach(i => {
-                    i.style.background = 'none';
-                    i.style.fontWeight = 'normal';
-                });
-                
-                // Добавляем активный класс к выбранному
-                this.style.background = '#f0f0f0';
-                this.style.fontWeight = 'bold';
-                
-                // Обновляем текст на кнопке
-                activeFilter = this.getAttribute('data-value') || '';
-                if (currentFilterText) {
-                    currentFilterText.textContent = this.textContent.trim();
-                }
-                
-                // Закрываем меню
-                if (filterDropdown) {
-                    filterDropdown.style.display = 'none';
-                }
+    // Функция обновления текста ползунка
+    function updateSliderValue() {
+        const days = slider.value;
+        valueDisplay.textContent = getDaysText(days);
+        activeFilter = days;
+    }
 
-                // Не запускаем запрос немедленно — применится после нажатия "найти"
-            });
-        });
-    }
-    
-    // Предотвращаем закрытие при клике внутри меню
-    if (filterDropdown) {
-        filterDropdown.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
+    // Обработчик изменения ползунка
+    if (slider && valueDisplay) {
+        slider.addEventListener('input', updateSliderValue);
+        updateSliderValue(); // инициализация
     }
     
     // Перехватываем отправку формы
@@ -83,7 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Форма найдена, добавляем обработчик submit');
         filterForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            console.log('Форма отправлена, вызываем applyFilters');
             applyFilters();
         });
     } else {
@@ -108,18 +64,15 @@ document.addEventListener('DOMContentLoaded', function() {
         // Устанавливаем фильтр по дате
         if (urlParams.has('date_filter')) {
             const dateFilterValue = urlParams.get('date_filter');
-            activeFilter = dateFilterValue;
-            
-            // Обновляем текст кнопки фильтра
-            if (currentFilterText && filterItems.length > 0) {
-                filterItems.forEach(item => {
-                    if (item.getAttribute('data-value') === dateFilterValue) {
-                        currentFilterText.textContent = item.textContent.trim();
-                        item.style.background = '#f0f0f0';
-                        item.style.fontWeight = 'bold';
-                    }
-                });
+
+            if (daysSlider) {
+                daysSlider.value = daysValue;
             }
+            if (sliderValue) {
+                sliderValue.textContent = `${daysValue} ${getDaysText(daysValue)}`;
+            }
+
+            activeFilter = dateFilterValue;
         }
         
         // Применяем фильтры
@@ -128,18 +81,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Функция применения фильтров через API
     function applyFilters() {
-        console.log('Применение фильтров...');
-        console.log('isAnnouncementsPage:', isAnnouncementsPage);
-        console.log('isGuidesPage:', isGuidesPage);
-        
         const searchInput = document.querySelector('input[name="search"]');
         const tagsInput = document.querySelector('input[name="tags"]');
-        
         const search = searchInput ? searchInput.value.trim() : '';
         const tags = tagsInput ? tagsInput.value.trim() : '';
         const dateFilter = activeFilter;
-        
-        console.log('Параметры фильтрации:', { search, tags, dateFilter });
         
         // Определяем API endpoint
         let apiUrl = '';
@@ -157,12 +103,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (search) params.append('search', search);
         if (tags) params.append('tags', tags);
         const allowedDates = ['today', 'week', 'month'];
-        if (dateFilter && allowedDates.includes(dateFilter)) {
+        if (dateFilter && !isNaN(dateFilter) && dateFilter > 0) {
             params.append('date_filter', dateFilter);
         }
         
         const url = apiUrl + (params.toString() ? '?' + params.toString() : '');
-        console.log('URL запроса:', url);
         
         // Показываем индикатор загрузки
         showLoading();
