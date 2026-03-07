@@ -319,10 +319,11 @@ h3 {
 
 .profile-row-container {
     display: flex;
-    gap: 20px;
+    gap: 5%;
     align-content: flex-start;
     flex-direction: row;
-    flex-wrap: wrap;
+    margin-top:20px; 
+    flex-wrap: nowrap;
     justify-content: center;
 }
 .profile-column-container {
@@ -1196,4 +1197,31 @@ button#theme-toggle:focus {
 .comment-edited {
     color: var(--text-tertiary) !important;
     transition: color 0.3s ease;
+}
+
+.filter-container {
+    position: relative;
+}
+
+#filter-search-button {
+    padding: 8px 16px;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+#daysRangeValue {
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 4px;
+    white-space: nowrap;
+}
+
+#daysRangeSlider {
+    width: 140px;
+    cursor: pointer;
+    margin: 0;
 }
