@@ -68,13 +68,13 @@ h3 {
     top: 0;
     left: 0;
     right: 0;
+    z-index: 1000;
     background-color: var(--bg-header);
     height: 40px;
     box-shadow: 0px 1px 5px var(--accent-color);
     display: flex;
     justify-content: center;
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    z-index: 1000;
 }
 
 .header-container {
@@ -319,11 +319,10 @@ h3 {
 
 .profile-row-container {
     display: flex;
-    gap: 5%;
+    gap: 20px;
     align-content: flex-start;
     flex-direction: row;
-    margin-top:20px; 
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     justify-content: center;
 }
 .profile-column-container {
@@ -1197,31 +1196,4 @@ button#theme-toggle:focus {
 .comment-edited {
     color: var(--text-tertiary) !important;
     transition: color 0.3s ease;
-}
-
-.filter-container {
-    position: relative;
-}
-
-#filter-search-button {
-    padding: 8px 16px;
-    background: #f0f0f0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9em;
-    white-space: nowrap;
-}
-
-#daysRangeValue {
-    font-size: 0.8em;
-    color: #666;
-    margin-top: 4px;
-    white-space: nowrap;
-}
-
-#daysRangeSlider {
-    width: 140px;
-    cursor: pointer;
-    margin: 0;
 }

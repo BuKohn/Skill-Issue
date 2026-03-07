@@ -1608,11 +1608,16 @@ def filter_announcements(request):
                 queryset = queryset.filter(id__in=filtered_ids) if filtered_ids else queryset.none()
 
         date_filter = (request.GET.get('date_filter') or '').strip()
-        if date_filter.isdigit():
-            days = int(date_filter)
+        if date_filter in ('today', 'week', 'month'):
             today = timezone.localdate()
-            start_date = today - timedelta(days=days)
-            queryset = queryset.filter(created_at__date__gte=start_date)
+            if date_filter == 'today':
+                queryset = queryset.filter(created_at__date=today)
+            elif date_filter == 'week':
+                start_date = today - timedelta(days=7)
+                queryset = queryset.filter(created_at__date__gte=start_date)
+            elif date_filter == 'month':
+                start_date = today - timedelta(days=30)
+                queryset = queryset.filter(created_at__date__gte=start_date)
 
         queryset = queryset.order_by('-created_at')
         serializer = AnnouncementSerializer(queryset, many=True, context={'request': request})
@@ -1653,11 +1658,16 @@ def filter_guides(request):
                 queryset = queryset.filter(id__in=filtered_ids) if filtered_ids else queryset.none()
 
         date_filter = (request.GET.get('date_filter') or '').strip()
-        if date_filter.isdigit():
-            days = int(date_filter)
+        if date_filter in ('today', 'week', 'month'):
             today = timezone.localdate()
-            start_date = today - timedelta(days=days)
-            queryset = queryset.filter(created_at__date__gte=start_date)
+            if date_filter == 'today':
+                queryset = queryset.filter(created_at__date=today)
+            elif date_filter == 'week':
+                start_date = today - timedelta(days=7)
+                queryset = queryset.filter(created_at__date__gte=start_date)
+            elif date_filter == 'month':
+                start_date = today - timedelta(days=30)
+                queryset = queryset.filter(created_at__date__gte=start_date)
 
         queryset = queryset.order_by('-rating', '-created_at')
         serializer = GuideSerializer(queryset, many=True, context={'request': request})

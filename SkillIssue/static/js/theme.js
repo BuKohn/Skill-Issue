@@ -11,6 +11,7 @@ window.toggleTheme = function(e) {
     html.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
     updateThemeIcon(newTheme);
+    updateLogo(newTheme);
 };
 
 function updateThemeIcon(theme) {
@@ -21,11 +22,23 @@ function updateThemeIcon(theme) {
     }
 }
 
+function updateLogo(theme) {
+    const heroLogo = document.querySelector('.hero-logo');
+    if (heroLogo) {
+        if (theme === 'dark') {
+            heroLogo.src = heroLogo.getAttribute('data-dark-src') || heroLogo.src.replace('logo.png', 'logo-dark.png');
+        } else {
+            heroLogo.src = heroLogo.getAttribute('data-light-src') || heroLogo.src.replace('logo-dark.png', 'logo.png');
+        }
+    }
+}
+
 function initTheme() {
     const savedTheme = localStorage.getItem('theme') || 'light';
     const html = document.documentElement;
     html.setAttribute('data-theme', savedTheme);
     updateThemeIcon(savedTheme);
+    updateLogo(savedTheme);
     
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) {
