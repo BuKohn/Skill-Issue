@@ -16,173 +16,177 @@
 </head>
 <body>
     {% include 'users/header.html' %}
-
-    <section class="hero-section fade-in-up">
-        <div class="hero-content">
-            <img src="{% static 'images/logo.png' %}" alt="Skill Issue" class="hero-logo">
-            <h1 class="hero-title" data-lang-ru="Обменивайтесь навыками" data-lang-en="Share Your Skills">
-                Обменивайтесь навыками
-            </h1>
-            <p class="hero-subtitle" data-lang-ru="Платформа для поиска и обмена знаниями. Создавайте руководства, находите единомышленников и развивайтесь вместе." data-lang-en="A platform for finding and sharing knowledge. Create guides, find like-minded people and grow together.">
-                Платформа для поиска и обмена знаниями. Создавайте руководства, находите единомышленников и развивайтесь вместе.
-            </p>
-            <div class="hero-cta">
-                {% if user.is_authenticated %}
-                    <a href="{% url 'guides_list' %}" class="btn-primary" data-lang-ru="Начать изучение" data-lang-en="Start Learning">
-                        Начать изучение →
-                    </a>
-                    <a href="{% url 'create_guide' %}" class="btn-secondary" data-lang-ru="Создать руководство" data-lang-en="Create Guide">
-                        Создать руководство
-                    </a>
-                {% else %}
-                    <a href="{% url 'register_page' %}" class="btn-primary" data-lang-ru="Начать бесплатно" data-lang-en="Get Started Free">
-                        Начать бесплатно →
-                    </a>
-                    <a href="{% url 'guides_list' %}" class="btn-secondary" data-lang-ru="Посмотреть примеры" data-lang-en="View Examples">
-                        Посмотреть примеры
-                    </a>
-                {% endif %}
-            </div>
-        </div>
-    </section>
-
-    <section class="features-section">
-        <div class="section-header">
-            <h2 class="section-title" data-lang-ru="Почему Skill Issue?" data-lang-en="Why Skill Issue?">
-                Почему Skill Issue?
-            </h2>
-            <p class="section-description" data-lang-ru="Всё, что нужно для эффективного обучения и обмена знаниями" data-lang-en="Everything you need for effective learning and knowledge sharing">
-                Всё, что нужно для эффективного обучения и обмена знаниями
-            </p>
-        </div>
-        <div class="features-grid">
-            <div class="feature-card fade-in-up">
-                <div class="feature-icon">📚</div>
-                <h3 class="feature-title" data-lang-ru="Руководства" data-lang-en="Guides">
-                    Руководства
-                </h3>
-                <p class="feature-description" data-lang-ru="Создавайте подробные руководства с поддержкой Markdown, изображений и форматирования" data-lang-en="Create detailed guides with Markdown support, images and formatting">
-                    Создавайте подробные руководства с поддержкой Markdown, изображений и форматирования
+    <main>
+        <section class="hero-section fade-in-up">
+            <div class="hero-content">
+                <img src="{% static 'images/logo.png' %}" 
+                     data-light-src="{% static 'images/logo.png' %}" 
+                     data-dark-src="{% static 'images/logo-dark.png' %}" 
+                     alt="Skill Issue" class="hero-logo">
+                <h1 class="hero-title" data-lang-ru="Обменивайтесь навыками" data-lang-en="Share Your Skills">
+                    Обменивайтесь навыками
+                </h1>
+                <p class="hero-subtitle" data-lang-ru="Платформа для поиска и обмена знаниями. Создавайте руководства, находите единомышленников и развивайтесь вместе." data-lang-en="A platform for finding and sharing knowledge. Create guides, find like-minded people and grow together.">
+                    Платформа для поиска и обмена знаниями. Создавайте руководства, находите единомышленников и развивайтесь вместе.
                 </p>
-            </div>
-            <div class="feature-card fade-in-up">
-                <div class="feature-icon">💬</div>
-                <h3 class="feature-title" data-lang-ru="Объявления" data-lang-en="Announcements">
-                    Объявления
-                </h3>
-                <p class="feature-description" data-lang-ru="Находите единомышленников для совместного обучения и обмена опытом" data-lang-en="Find like-minded people for collaborative learning and experience sharing">
-                    Находите единомышленников для совместного обучения и обмена опытом
-                </p>
-            </div>
-            <div class="feature-card fade-in-up">
-                <div class="feature-icon">⭐</div>
-                <h3 class="feature-title" data-lang-ru="Избранное" data-lang-en="Favorites">
-                    Избранное
-                </h3>
-                <p class="feature-description" data-lang-ru="Сохраняйте понравившиеся материалы для быстрого доступа" data-lang-en="Save your favorite materials for quick access">
-                    Сохраняйте понравившиеся материалы для быстрого доступа
-                </p>
-            </div>
-            <div class="feature-card fade-in-up">
-                <div class="feature-icon">🔍</div>
-                <h3 class="feature-title" data-lang-ru="Умный поиск" data-lang-en="Smart Search">
-                    Умный поиск
-                </h3>
-                <p class="feature-description" data-lang-ru="Быстрый поиск по названиям, тегам и авторам с фильтрацией" data-lang-en="Quick search by titles, tags and authors with filtering">
-                    Быстрый поиск по названиям, тегам и авторам с фильтрацией
-                </p>
-            </div>
-            <div class="feature-card fade-in-up">
-                <div class="feature-icon">💡</div>
-                <h3 class="feature-title" data-lang-ru="Рейтинги" data-lang-en="Ratings">
-                    Рейтинги
-                </h3>
-                <p class="feature-description" data-lang-ru="Оценивайте качество материалов и помогайте другим найти лучшее" data-lang-en="Rate material quality and help others find the best">
-                    Оценивайте качество материалов и помогайте другим найти лучшее
-                </p>
-            </div>
-            <div class="feature-card fade-in-up">
-                <div class="feature-icon">🌐</div>
-                <h3 class="feature-title" data-lang-ru="Многоязычность" data-lang-en="Multilingual">
-                    Многоязычность
-                </h3>
-                <p class="feature-description" data-lang-ru="Поддержка русского и английского языков для удобства всех пользователей" data-lang-en="Russian and English support for all users' convenience">
-                    Поддержка русского и английского языков для удобства всех пользователей
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <section class="popular-section">
-        <div class="popular-container">
-            <div class="section-header">
-                <h2 class="section-title" data-lang-ru="Популярные материалы" data-lang-en="Popular Content">
-                    Популярные материалы
-                </h2>
-                <p class="section-description" data-lang-ru="Лучшие руководства и объявления от нашего сообщества" data-lang-en="Best guides and announcements from our community">
-                    Лучшие руководства и объявления от нашего сообщества
-                </p>
-            </div>
-            <div class="modern-carousel-container">
-                <div class="modern-carousel" id="modernCarousel">
+                <div class="hero-cta">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'guides_list' %}" class="btn-primary" data-lang-ru="Начать изучение" data-lang-en="Start Learning">
+                            Начать изучение →
+                        </a>
+                        <a href="{% url 'create_guide' %}" class="btn-secondary" data-lang-ru="Создать руководство" data-lang-en="Create Guide">
+                            Создать руководство
+                        </a>
+                    {% else %}
+                        <a href="{% url 'register_page' %}" class="btn-primary" data-lang-ru="Начать бесплатно" data-lang-en="Get Started Free">
+                            Начать бесплатно →
+                        </a>
+                        <a href="{% url 'guides_list' %}" class="btn-secondary" data-lang-ru="Посмотреть примеры" data-lang-en="View Examples">
+                            Посмотреть примеры
+                        </a>
+                    {% endif %}
                 </div>
-                <button class="modern-carousel-controls prev" onclick="moveModernSlide(-1)" aria-label="Previous">
-                    ‹
-                </button>
-                <button class="modern-carousel-controls next" onclick="moveModernSlide(1)" aria-label="Next">
-                    ›
-                </button>
-                <div class="modern-carousel-indicators" id="modernIndicators"></div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="stats-section">
-        <div class="stats-grid">
-            <div class="stat-item">
-                <div class="stat-number" id="guidesCount">0</div>
-                <p class="stat-label" data-lang-ru="Руководств" data-lang-en="Guides">Руководств</p>
+        <section class="features-section">
+            <div class="section-header">
+                <h2 class="section-title" data-lang-ru="Почему Skill Issue?" data-lang-en="Why Skill Issue?">
+                    Почему Skill Issue?
+                </h2>
+                <p class="section-description" data-lang-ru="Всё, что нужно для эффективного обучения и обмена знаниями" data-lang-en="Everything you need for effective learning and knowledge sharing">
+                    Всё, что нужно для эффективного обучения и обмена знаниями
+                </p>
             </div>
-            <div class="stat-item">
-                <div class="stat-number" id="announcementsCount">0</div>
-                <p class="stat-label" data-lang-ru="Объявлений" data-lang-en="Announcements">Объявлений</p>
+            <div class="features-grid">
+                <a href="{% url 'guides_list' %}" class="feature-card feature-card-clickable fade-in-up">
+                    <div class="feature-icon">📚</div>
+                    <h3 class="feature-title" data-lang-ru="Руководства" data-lang-en="Guides">
+                        Руководства
+                    </h3>
+                    <p class="feature-description" data-lang-ru="Создавайте подробные руководства с поддержкой Markdown, изображений и форматирования" data-lang-en="Create detailed guides with Markdown support, images and formatting">
+                        Создавайте подробные руководства с поддержкой Markdown, изображений и форматирования
+                    </p>
+                </a>
+                <a href="{% url 'announcements_list' %}" class="feature-card feature-card-clickable fade-in-up">
+                    <div class="feature-icon">💬</div>
+                    <h3 class="feature-title" data-lang-ru="Объявления" data-lang-en="Announcements">
+                        Объявления
+                    </h3>
+                    <p class="feature-description" data-lang-ru="Находите единомышленников для совместного обучения и обмена опытом" data-lang-en="Find like-minded people for collaborative learning and experience sharing">
+                        Находите единомышленников для совместного обучения и обмена опытом
+                    </p>
+                </a>
+                <a href="{% url 'favorites_page' %}" class="feature-card feature-card-clickable fade-in-up">
+                    <div class="feature-icon">⭐</div>
+                    <h3 class="feature-title" data-lang-ru="Избранное" data-lang-en="Favorites">
+                        Избранное
+                    </h3>
+                    <p class="feature-description" data-lang-ru="Сохраняйте понравившиеся материалы для быстрого доступа" data-lang-en="Save your favorite materials for quick access">
+                        Сохраняйте понравившиеся материалы для быстрого доступа
+                    </p>
+                </a>
+                <div class="feature-card feature-card-static fade-in-up">
+                    <div class="feature-icon">🔍</div>
+                    <h3 class="feature-title" data-lang-ru="Умный поиск" data-lang-en="Smart Search">
+                        Умный поиск
+                    </h3>
+                    <p class="feature-description" data-lang-ru="Быстрый поиск по названиям, тегам и авторам с фильтрацией" data-lang-en="Quick search by titles, tags and authors with filtering">
+                        Быстрый поиск по названиям, тегам и авторам с фильтрацией
+                    </p>
+                </div>
+                <div class="feature-card feature-card-static fade-in-up">
+                    <div class="feature-icon">💡</div>
+                    <h3 class="feature-title" data-lang-ru="Рейтинги" data-lang-en="Ratings">
+                        Рейтинги
+                    </h3>
+                    <p class="feature-description" data-lang-ru="Оценивайте качество материалов и помогайте другим найти лучшее" data-lang-en="Rate material quality and help others find the best">
+                        Оценивайте качество материалов и помогайте другим найти лучшее
+                    </p>
+                </div>
+                <div class="feature-card feature-card-static fade-in-up">
+                    <div class="feature-icon">🌐</div>
+                    <h3 class="feature-title" data-lang-ru="Многоязычность" data-lang-en="Multilingual">
+                        Многоязычность
+                    </h3>
+                    <p class="feature-description" data-lang-ru="Поддержка русского и английского языков для удобства всех пользователей" data-lang-en="Russian and English support for all users' convenience">
+                        Поддержка русского и английского языков для удобства всех пользователей
+                    </p>
+                </div>
             </div>
-            <div class="stat-item">
-                <div class="stat-number" id="usersCount">0</div>
-                <p class="stat-label" data-lang-ru="Пользователей" data-lang-en="Users">Пользователей</p>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number" id="ratingsCount">0</div>
-                <p class="stat-label" data-lang-ru="Оценок" data-lang-en="Ratings">Оценок</p>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="cta-section">
-        <div class="cta-content">
-            <h2 class="cta-title" data-lang-ru="Готовы начать?" data-lang-en="Ready to Start?">
-                Готовы начать?
-            </h2>
-            <p class="cta-description" data-lang-ru="Присоединяйтесь к сообществу и начните делиться своими знаниями уже сегодня" data-lang-en="Join the community and start sharing your knowledge today">
-                Присоединяйтесь к сообществу и начните делиться своими знаниями уже сегодня
-            </p>
-            <div class="cta-buttons">
-                {% if user.is_authenticated %}
-                    <a href="{% url 'create_guide' %}" class="btn-white" data-lang-ru="Создать первое руководство" data-lang-en="Create Your First Guide">
-                        Создать первое руководство →
-                    </a>
-                {% else %}
-                    <a href="{% url 'register_page' %}" class="btn-white" data-lang-ru="Зарегистрироваться" data-lang-en="Sign Up">
-                        Зарегистрироваться →
-                    </a>
-                    <a href="{% url 'login_page' %}" class="btn-outline-white" data-lang-ru="Войти" data-lang-en="Log In">
-                        Войти
-                    </a>
-                {% endif %}
+        <section class="popular-section">
+            <div class="popular-container">
+                <div class="section-header">
+                    <h2 class="section-title" data-lang-ru="Популярные материалы" data-lang-en="Popular Content">
+                        Популярные материалы
+                    </h2>
+                    <p class="section-description" data-lang-ru="Лучшие руководства и объявления от нашего сообщества" data-lang-en="Best guides and announcements from our community">
+                        Лучшие руководства и объявления от нашего сообщества
+                    </p>
+                </div>
+                <div class="modern-carousel-container">
+                    <div class="modern-carousel" id="modernCarousel">
+                    </div>
+                    <button class="modern-carousel-controls prev" onclick="moveModernSlide(-1)" aria-label="Previous">
+                        ‹
+                    </button>
+                    <button class="modern-carousel-controls next" onclick="moveModernSlide(1)" aria-label="Next">
+                        ›
+                    </button>
+                    <div class="modern-carousel-indicators" id="modernIndicators"></div>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
+        <section class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" id="guidesCount">0</div>
+                    <p class="stat-label" data-lang-ru="Руководств" data-lang-en="Guides">Руководств</p>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="announcementsCount">0</div>
+                    <p class="stat-label" data-lang-ru="Объявлений" data-lang-en="Announcements">Объявлений</p>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="usersCount">0</div>
+                    <p class="stat-label" data-lang-ru="Пользователей" data-lang-en="Users">Пользователей</p>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="ratingsCount">0</div>
+                    <p class="stat-label" data-lang-ru="Оценок" data-lang-en="Ratings">Оценок</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <div class="cta-content">
+                <h2 class="cta-title" data-lang-ru="Готовы начать?" data-lang-en="Ready to Start?">
+                    Готовы начать?
+                </h2>
+                <p class="cta-description" data-lang-ru="Присоединяйтесь к сообществу и начните делиться своими знаниями уже сегодня" data-lang-en="Join the community and start sharing your knowledge today">
+                    Присоединяйтесь к сообществу и начните делиться своими знаниями уже сегодня
+                </p>
+                <div class="cta-buttons">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'create_guide' %}" class="btn-white" data-lang-ru="Создать первое руководство" data-lang-en="Create Your First Guide">
+                            Создать первое руководство →
+                        </a>
+                    {% else %}
+                        <a href="{% url 'register_page' %}" class="btn-white" data-lang-ru="Зарегистрироваться" data-lang-en="Sign Up">
+                            Зарегистрироваться →
+                        </a>
+                        <a href="{% url 'login_page' %}" class="btn-outline-white" data-lang-ru="Войти" data-lang-en="Log In">
+                            Войти
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </section>    
+    </main>
+    
     {% include 'users/chat.html' %}
     {% include 'users/footer.html' %}
 
