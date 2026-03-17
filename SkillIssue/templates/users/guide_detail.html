@@ -35,7 +35,7 @@
         {% endif %}
     </div>
 
-    <div class="profile-row-container" style="justify-content: {% if user.is_authenticated and user == guide.author %}space-between{% else %}flex-end{% endif %}; gap: 16px; margin-top: 20px;">
+    <div class="profile-row-container" style="justify-content: center; gap: 16px; margin-top: 20px;">
         {% if user.is_authenticated and user == guide.author %}
         <form action="{% url 'create_guide' %}" method="get" style="margin: 0;">
             <input type="hidden" name="id" value="{{ guide.id }}">
