@@ -154,7 +154,7 @@
                             </span>
                         </div>
 
-                        {% if review.reviewer == user %}
+                        {% if review.reviewer == user and profile.allow_reviews %}
                         <div class="p-review-actions">
                             <button class="p-icon-btn edit-review-btn"
                                     data-review-id="{{ review.id }}"
@@ -183,7 +183,7 @@
                 {% endfor %}
             </div>
 
-            {% if user.is_authenticated and user != profile.user %}
+            {% if user.is_authenticated and user != profile.user and profile.allow_reviews %}
             <div class="profile-review-form">
                 <h3 id="review-form-title"
                     data-lang-ru="Напишите отзыв" data-lang-en="Write a review">Напишите отзыв</h3>
@@ -200,6 +200,12 @@
                     <button class="p-submit-btn" id="review-submit-btn" type="submit"
                             data-lang-ru="Отправить" data-lang-en="Submit">Отправить</button>
                 </form>
+            </div>
+            {% elif not profile.allow_reviews %}
+            <div class="profile-login-hint"
+                 data-lang-ru="Пользователь закрыл возможность отправлять комментарии"
+                 data-lang-en="The user has disabled the ability to send comments">
+                Пользователь закрыл возможность отправлять комментарии
             </div>
             {% elif not user.is_authenticated %}
             <div class="profile-login-hint"

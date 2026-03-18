@@ -218,6 +218,31 @@
                 </div>
             </div>
         </div>
+        
+        <div class="profile-edit-section">
+            <div class="profile-edit-section-title"
+                 data-lang-ru="Дополнительные настройки"
+                 data-lang-en="Extra Settings">Дополнительные настройки
+            </div>
+
+            
+            
+            <div class="profile-edit-group">
+                <input type="hidden" name="allow_reviews" 
+                       id="allow-reviews-input" value="{{ profile.allow_reviews|lower }}">
+
+                <label data-lang-ru="Комментарии к профилю" 
+                       data-lang-en="Profile Reviews">Комментарии к профилю</label>
+                <button type="button" class="toggle-reviews-btn {% if profile.allow_reviews %}p-btn-primary{% else %}p-btn-secondary{% endif %}" 
+                        data-value="true"
+                        data-lang-ru="Включены"
+                        data-lang-en="Enabled">Включены</button>
+                <button type="button" class= "toggle-reviews-btn {% if not profile.allow_reviews %}p-btn-primary{% else %}p-btn-secondary{% endif %}" 
+                        data-value="false"
+                        data-lang-ru="Отключены"
+                        data-lang-en="Disabled">Отключены</button>
+            </div>
+        </div>
 
         <div class="profile-edit-actions">
             <button id="save-button" type="submit" class="p-btn-primary"
@@ -241,6 +266,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('file-input');
     const img = document.getElementById('profile-image');
     const toast = document.getElementById('p-toast');
+    const toggleButtons = document.querySelectorAll('.toggle-reviews-btn');
+    const hiddenInput = document.getElementById('allow-reviews-input');
+
+    if (toggleButtons.length && hiddenInput) {
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const isActive = this.dataset.value === 'true';
+                // Обновляем скрытое поле
+                hiddenInput.value = isActive;
+
+                // Обновляем внешний вид кнопок
+                toggleButtons.forEach(btn => {
+                    const btnIsActive = btn.dataset.value === this.dataset.value;
+                    btn.classList.toggle('p-btn-primary', btnIsActive);
+                    btn.classList.toggle('p-btn-secondary', !btnIsActive);
+                });
+            });
+        });
+    }
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("updated") === "1") {
