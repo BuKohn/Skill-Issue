@@ -1,3 +1,6 @@
+from unittest.mock import DEFAULT
+
+from django.db.models import BooleanField
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import User
@@ -24,6 +27,7 @@ class Profile(models.Model):
         decimal_places=2,
         default=0.00,
     )
+    allow_reviews = BooleanField(default=True, verbose_name="Разрешить отзывы")
 
     def __str__(self):
         return self.user.username

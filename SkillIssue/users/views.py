@@ -257,6 +257,7 @@ def profile_edit(request):
         username = request.POST.get("username", "").strip()
         description = request.POST.get("description", "").strip()
         avatar = request.FILES.get("avatar")
+        allow_reviews = request.POST.get('allow_reviews', 'true').lower() == 'true'
 
         if username:
             request.user.username = username
@@ -265,6 +266,9 @@ def profile_edit(request):
         profile.bio = description
         if avatar:
             profile.avatar = avatar
+
+        profile.allow_reviews = allow_reviews
+
         profile.save()
 
         return redirect(f"{request.path}?updated=1")
@@ -1075,6 +1079,12 @@ class ProfileCommentCreateView(APIView):
             return Response({"error": "Комментарий не может быть пустым"}, status=status.HTTP_400_BAD_REQUEST)
 
         profile = get_object_or_404(Profile, user__username=username)
+
+        if not profile.allow_reviews:
+            return Response(
+                {"error": "Владелец профиля отключил возможность оставлять отзывы"},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         review, created = ProfileReview.objects.update_or_create(
             reviewer=request.user,
