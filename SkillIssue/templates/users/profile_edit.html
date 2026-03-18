@@ -128,15 +128,34 @@
                 <label for="description-input"
                        data-lang-ru="О себе"
                        data-lang-en="About">О себе</label>
-                <input id="description-input" name="description" class="p-form-input"
-                       value="{{ profile.bio|default:'' }}"
-                       placeholder="Расскажите о себе..."
-                       data-placeholder-ru="Расскажите о себе..."
-                       data-placeholder-en="Tell about yourself..."
-                       autocomplete="off">
+                       <div class="md-editor-wrapper">
+                        <div class="md-toolbar">
+                            <button type="button" class="md-btn" onclick="mdInsert('**','**')" title="Жирный" data-title-ru="Жирный" data-title-en="Bold"><strong>B</strong></button>
+                            <button type="button" class="md-btn" onclick="mdInsert('*','*')" title="Курсив" data-title-ru="Курсив" data-title-en="Italic"><em>I</em></button>
+                            <button type="button" class="md-btn" onclick="mdInsert('~~','~~')" title="Зачёркнутый" data-title-ru="Зачёркнутый" data-title-en="Strikethrough"><s>S</s></button>
+                            <button type="button" class="md-btn" onclick="mdInsert('[','](https://)')" title="Ссылка" data-title-ru="Ссылка" data-title-en="Link">🔗</button>
+                            <button type="button" class="md-btn" onclick="mdInsert('\`','\`')" title="Код" data-title-ru="Код" data-title-en="Code"><code style="font-size:0.8em;">&lt;/&gt;</code></button>
+                        <div class="md-toolbar-sep"></div>
+                        <button type="button" class="md-btn" onclick="mdLine('# ','Заголовок')" title="Заголовок H1" data-title-ru="Заголовок H1" data-title-en="Heading H1">H1</button>
+                        <button type="button" class="md-btn" onclick="mdLine('## ','Заголовок')" title="Заголовок H2" data-title-ru="Заголовок H2" data-title-en="Heading H2">H2</button>
+                        <button type="button" class="md-btn" onclick="mdLine('### ','Заголовок')" title="Заголовок H3" data-title-ru="Заголовок H3" data-title-en="Heading H3">H3</button>
+                        <div class="md-toolbar-sep"></div>
+                        <button type="button" class="md-btn" onclick="mdLine('- ','пункт')" title="Список" data-title-ru="Список" data-title-en="Unordered list">&#8801;</button>
+                        <button type="button" class="md-btn" onclick="mdLine('1. ','пункт')" title="Нумерованный список" data-title-ru="Нумерованный список" data-title-en="Ordered list">1.</button>
+                        <button type="button" class="md-btn" onclick="mdLine('- [ ] ','задача')" title="Чекбокс" data-title-ru="Чекбокс" data-title-en="Checkbox">&#9744;</button>
+                            <div class="md-toolbar-sep"></div>
+                            <button type="button" class="md-btn md-preview-toggle" id="toggle-bio-preview" title="Предпросмотр" data-title-ru="Предпросмотр" data-title-en="Preview">👁 <span data-lang-ru="Предпросмотр" data-lang-en="Preview">Предпросмотр</span></button>
+                        </div>
+                        <textarea id="description-input" name="description" class="p-form-textarea"
+                                  placeholder="Расскажите о себе..."
+                                  data-placeholder-ru="Расскажите о себе..."
+                                  data-placeholder-en="Tell about yourself..."
+                                  rows="4">{{ profile.bio|default:'' }}</textarea>
+                        <div class="md-preview" id="bio-preview"></div>
+                    </div>
                 <div class="helper-text"
-                     data-lang-ru="Короткое описание для вашего профиля"
-                     data-lang-en="A short description for your profile">Короткое описание для вашего профиля</div>
+                data-lang-ru="Поддерживается Markdown — **жирный**, *курсив*, [ссылки](url)"
+                data-lang-en="Markdown supported — **bold**, *italic*, [links](url)">Поддерживается Markdown — **жирный**, *курсив*, [ссылки](url)</div>
             </div>
         </div>
 
@@ -350,6 +369,161 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="{% static 'js/search.js' %}"></script>
 <script src="{% static 'js/toggle_language.js' %}"></script>
 <script src="{% static 'js/theme.js' %}"></script>
+
+<script>
+    /* ── Markdown редактор описания ── */
+    (function () {
+        const textarea = document.getElementById('description-input');
+        const preview  = document.getElementById('bio-preview');
+        const toggleBtn = document.getElementById('toggle-bio-preview');
+    
+        if (!textarea || !preview || !toggleBtn) return;
+    
+        function markdownToHtml(md) {
+            if (!md.trim()) return '';
+            md = md.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+            const codeBlocks = [];
+            let h = md.replace(/```([\s\S]*?)```/g, (_, c) => {
+                codeBlocks.push(c.replace(/^[\r\n]/, ''));
+                return '\x02CB' + (codeBlocks.length - 1) + '\x03';
+            });
+
+            const inlines = [];
+            h = h.replace(/`([^`\n]+)`/g, (_, c) => {
+                inlines.push(c);
+                return '\x02IC' + (inlines.length - 1) + '\x03';
+            });
+
+            h = h
+            .replace(/^#{6}\s(.+)$/gim, '<h6>$1</h6>')
+            .replace(/^#{5}\s(.+)$/gim, '<h5>$1</h5>')
+            .replace(/^#{4}\s(.+)$/gim, '<h4>$1</h4>')
+            .replace(/^#{3}\s(.+)$/gim, '<h3>$1</h3>')
+            .replace(/^#{2}\s(.+)$/gim, '<h2>$1</h2>')
+            .replace(/^#{1}\s(.+)$/gim, '<h1>$1</h1>');
+
+            h = h
+                .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+                .replace(/\*\*(.+?)\*\*/g,     '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g,         '<em>$1</em>')
+                .replace(/~~(.+?)~~/g,         '<s>$1</s>');
+
+            h = h.replace(/\[([^\]]+)\]\(([^)]+)\)/g,
+                '<a href="$2" target="_blank" rel="noopener">$1</a>');
+            
+            h = h.replace(/^[-*] \[x\] (.+)$/gim,
+                '<li class="md-check md-checked"><input type="checkbox" checked disabled> $1</li>');
+            h = h.replace(/^[-*] \[ \] (.+)$/gim,
+                '<li class="md-check"><input type="checkbox" disabled> $1</li>');
+
+            h = h.replace(/^\d+\. (.+)$/gim, '<oli>$1</oli>');
+
+            h = h.replace(/^[-*] (.+)$/gim, '<li>$1</li>');
+
+            h = h.replace(/^> (.+)$/gim, '<blockquote>$1</blockquote>');
+
+            h = h.replace(/\n/g, '<br>');
+
+            h = h.replace(/(<li(?:\s[^>]*)?>[\s\S]*?<\/li>(?:<br>)*)+/g,
+                m => '<ul>' + m.replace(/<br>/g, '') + '</ul>');
+
+            h = h.replace(/(<oli>[\s\S]*?<\/oli>(?:<br>)*)+/g,
+                m => '<ol>' + m.replace(/<br>/g, '').replace(/<\/?oli>/g,
+                    t => t === '<oli>' ? '<li>' : '</li>') + '</ol>');
+
+            h = h.replace(/\x02CB(\d+)\x03/g,
+                (_, i) => '<pre><code>' + codeBlocks[+i] + '</code></pre>');
+            h = h.replace(/\x02IC(\d+)\x03/g,
+                (_, i) => '<code>' + inlines[+i] + '</code>');
+
+            return h;
+        }
+    
+        window.mdInsert = function (before, after) {
+            const start = textarea.selectionStart;
+            const end   = textarea.selectionEnd;
+            const sel   = textarea.value.substring(start, end);
+            const replacement = before + (sel || 'текст') + after;
+            textarea.setRangeText(replacement, start, end, 'select');
+        
+            if (!sel) {
+                textarea.setSelectionRange(start + before.length, start + before.length + 'текст'.length);
+            }
+            textarea.focus();
+            renderPreview();
+        };
+        
+        
+        window.mdLine = function (prefix, defaultText) {
+            const val       = textarea.value;
+            const selStart  = textarea.selectionStart;
+            const selEnd    = textarea.selectionEnd;
+
+            const blockStart = val.lastIndexOf('\n', selStart - 1) + 1;
+            let blockEnd = val.indexOf('\n', selEnd);
+            if (blockEnd === -1) blockEnd = val.length;
+
+            const block = val.substring(blockStart, blockEnd);
+            const lines = block.split('\n');
+
+            const isOrdered = /^\d+\.\s$/.test(prefix);
+
+            const allHave = lines.every(l =>
+                isOrdered ? /^\d+\.\s/.test(l) : l.startsWith(prefix)
+            );
+
+            const newLines = lines.map((line, i) => {
+                if (allHave) {
+                    return isOrdered
+                        ? line.replace(/^\d+\.\s/, '')
+                        : line.slice(prefix.length);
+                }
+        
+                if (isOrdered ? /^\d+\.\s/.test(line) : line.startsWith(prefix)) return line;
+                const p = isOrdered ? (i + 1) + '. ' : prefix;
+                return p + (line || (i === 0 ? defaultText || '' : ''));
+            });
+
+            const newBlock = newLines.join('\n');
+            textarea.value = val.substring(0, blockStart) + newBlock + val.substring(blockEnd);
+            textarea.setSelectionRange(blockStart, blockStart + newBlock.length);
+            textarea.focus();
+            renderPreview();
+        };
+
+        let previewVisible = false;
+    
+        function renderPreview() {
+            const html = markdownToHtml(textarea.value);
+            preview.innerHTML = html || '<em style="color:var(--text-tertiary)">Предпросмотр появится здесь...</em>';
+        }
+    
+        function showPreview() {
+            renderPreview();
+            preview.style.display  = 'block';
+            textarea.style.display = 'none';
+            toggleBtn.classList.add('active');
+            previewVisible = true;
+        }
+    
+        function hidePreview() {
+            preview.style.display  = 'none';
+            textarea.style.display = 'block';
+            toggleBtn.classList.remove('active');
+            previewVisible = false;
+            textarea.focus();
+        }
+    
+        toggleBtn.addEventListener('click', function () {
+            previewVisible ? hidePreview() : showPreview();
+        });
+    
+        textarea.addEventListener('input', function () {
+            if (previewVisible) renderPreview();
+        });
+    })();
+</script>
 
 <script>
 (function() {

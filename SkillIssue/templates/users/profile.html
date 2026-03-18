@@ -30,13 +30,13 @@
 
         <div class="profile-hero-info">
             <h1 class="p-username">{{ profile.user.username }}</h1>
-            <p class="p-bio">
-                {% if profile.bio %}
-                    {{ profile.bio }}
-                {% else %}
+            <div class="p-bio p-bio-md"
+                 id="p-bio-content"
+                 data-bio="{{ profile.bio|default:'' }}">
+                {% if not profile.bio %}
                     <span data-lang-ru="Описание отсутствует" data-lang-en="No description" style="opacity:.55;">Описание отсутствует</span>
                 {% endif %}
-            </p>
+            </div>
             <span class="p-rating"
                   data-lang-ru="⭐ Рейтинг: {{ profile.rating|default:"0"|floatformat:0 }}/5"
                   data-lang-en="⭐ Rating: {{ profile.rating|default:"0"|floatformat:0 }}/5">
@@ -466,6 +466,80 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script src="{% static 'js/theme.js' %}"></script>
 <script src="{% static 'js/toggle_chat.js' %}"></script>
+
+<script>
+/* Рендер описания профиля в md  */
+(function () {
+    const bioEl = document.getElementById('p-bio-content');
+    if (!bioEl) return;
+    const raw = bioEl.dataset.bio || '';
+    if (!raw.trim()) return;
+
+    function markdownToHtml(md) {
+        if (!md.trim()) return '';
+
+        md = md.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+        const codeBlocks = [];
+        let h = md.replace(/```([\s\S]*?)```/g, (_, c) => {
+            codeBlocks.push(c.replace(/^[\r\n]/, ''));
+            return '\x02CB' + (codeBlocks.length - 1) + '\x03';
+        });
+
+        const inlines = [];
+        h = h.replace(/`([^`\n]+)`/g, (_, c) => {
+            inlines.push(c);
+            return '\x02IC' + (inlines.length - 1) + '\x03';
+        });
+
+        h = h
+            .replace(/^#{6}\s(.+)$/gim, '<h6>$1</h6>')
+            .replace(/^#{5}\s(.+)$/gim, '<h5>$1</h5>')
+            .replace(/^#{4}\s(.+)$/gim, '<h4>$1</h4>')
+            .replace(/^#{3}\s(.+)$/gim, '<h3>$1</h3>')
+            .replace(/^#{2}\s(.+)$/gim, '<h2>$1</h2>')
+            .replace(/^#{1}\s(.+)$/gim, '<h1>$1</h1>');
+
+        h = h
+            .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+            .replace(/\*\*(.+?)\*\*/g,     '<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g,         '<em>$1</em>')
+            .replace(/~~(.+?)~~/g,         '<s>$1</s>');
+
+        h = h.replace(/\[([^\]]+)\]\(([^)]+)\)/g,
+            '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+        h = h.replace(/^[-*] \[x\] (.+)$/gim,
+            '<li class="md-check md-checked"><input type="checkbox" checked disabled> $1</li>');
+        h = h.replace(/^[-*] \[ \] (.+)$/gim,
+            '<li class="md-check"><input type="checkbox" disabled> $1</li>');
+
+        h = h.replace(/^\d+\. (.+)$/gim, '<oli>$1</oli>');
+
+        h = h.replace(/^[-*] (.+)$/gim, '<li>$1</li>');
+
+        h = h.replace(/^> (.+)$/gim, '<blockquote>$1</blockquote>');
+
+        h = h.replace(/\n/g, '<br>');
+
+        h = h.replace(/(<li(?:\s[^>]*)?>[\s\S]*?<\/li>(?:<br>)*)+/g,
+            m => '<ul>' + m.replace(/<br>/g, '') + '</ul>');
+
+        h = h.replace(/(<oli>[\s\S]*?<\/oli>(?:<br>)*)+/g,
+            m => '<ol>' + m.replace(/<br>/g, '').replace(/<\/?oli>/g,
+                t => t === '<oli>' ? '<li>' : '</li>') + '</ol>');
+
+        h = h.replace(/\x02CB(\d+)\x03/g,
+            (_, i) => '<pre><code>' + codeBlocks[+i] + '</code></pre>');
+        h = h.replace(/\x02IC(\d+)\x03/g,
+            (_, i) => '<code>' + inlines[+i] + '</code>');
+
+        return h;
+    }
+
+    bioEl.innerHTML = markdownToHtml(raw);
+})();
+</script>
 
 <script>
 (function() {
