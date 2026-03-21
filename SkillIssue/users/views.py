@@ -28,12 +28,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.mail import send_mail
 from django.utils import timezone
 from datetime import timedelta
+from django.contrib.auth.hashers import make_password
 import random
 import string
 
 
 from .models import Profile, GuideRating, Review, Guide, ProfileReview, Announcement, AnnouncementComment, \
-                     EmailVerificationCode, ChatMessage, UserActivity, FavoriteAnnouncement, FavoriteGuide
+    EmailVerificationCode, ChatMessage, UserActivity, FavoriteAnnouncement, FavoriteGuide, GuideComment
 from .serializers import RegisterSerializer, UserProfileSerializer, ReviewSerializer, GuideSerializer, \
     AnnouncementSerializer, ChatMessageSerializer, ChatContactSerializer, ProfileCommentSerializer
 from .forms import GuideForm
@@ -46,10 +47,27 @@ def main_page(request):
 def register_page(request):
     return render(request, "users/reg.html")
 
+def reset_password_page(request):
+    return render(request, "users/reset_password_page.html")
+
+def change_password_page(request):
+    return render(request, "users/change_password_page.html")
 
 def login_page(request):
     return render(request, "users/log.html")
 
+def blocked_page(request):
+    if not request.user.is_authenticated:
+        return redirect('login_page')
+
+    if not (hasattr(request.user, 'profile') and request.user.profile.is_blocked):
+        return redirect('main_page')
+
+    context = {
+        'reason': request.user.profile.blocked_reason or "Причина не указана",
+        'blocked_at': request.user.profile.blocked_at,
+    }
+    return render(request, "users/blocked.html", context)
 
 def profile_page(request, username):
     user_obj = get_object_or_404(User, username=username)
@@ -390,7 +408,7 @@ class RegisterView(APIView):
 
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
-    authentication_classes = []  # Отключаем CSRF для JWT логина
+    authentication_classes = []
 
     @swagger_auto_schema(
         operation_description="Авторизация пользователя с использованием JWT токенов",
@@ -403,20 +421,10 @@ class LoginView(APIView):
             }
         ),
         responses={
-            200: openapi.Response(
-                description="Успешная авторизация",
-                schema=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        'access': openapi.Schema(type=openapi.TYPE_STRING, description='JWT Access токен'),
-                        'refresh': openapi.Schema(type=openapi.TYPE_STRING, description='JWT Refresh токен'),
-                        'username': openapi.Schema(type=openapi.TYPE_STRING),
-                        'email': openapi.Schema(type=openapi.TYPE_STRING),
-                    }
-                )
-            ),
+            200: openapi.Response(description="Успешная авторизация"),
             400: "Не указаны логин или пароль",
-            401: "Неверные данные для входа или email не подтвержден"
+            401: "Неверные данные или аккаунт заблокирован",
+            403: "Аккаунт заблокирован"
         },
         tags=['Аутентификация']
     )
@@ -430,18 +438,27 @@ class LoginView(APIView):
         user = authenticate(request, username=username, password=password)
         if user is None:
             return Response({"error": "Неверные данные"}, status=status.HTTP_401_UNAUTHORIZED)
-        
+
         # Проверяем, подтвержден ли email
         if not user.is_active:
-            return Response({"error": "Email не подтвержден. Проверьте почту и подтвердите регистрацию."}, 
-                          status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"error": "Email не подтвержден. Проверьте почту и подтвердите регистрацию."},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        # === ПРОВЕРКА БЛОКИРОВКИ ===
+        if hasattr(user, 'profile') and user.profile.is_blocked:
+            return Response({
+                "error": "Ваш аккаунт заблокирован",
+                "reason": user.profile.blocked_reason or "Причина не указана",
+                "blocked_at": user.profile.blocked_at
+            }, status=status.HTTP_403_FORBIDDEN)
+        # ===========================
 
         # Генерируем JWT токены
         refresh = RefreshToken.for_user(user)
 
-        # Создаем сессионную авторизацию, чтобы /api/me работало и по cookie
+        # Создаем сессионную авторизацию
         login(request, user)
-        
+
         return Response({
             "access": str(refresh.access_token),
             "refresh": str(refresh),
@@ -699,6 +716,218 @@ class ReviewCreateView(generics.CreateAPIView):
         except serializers.ValidationError as e:
             return Response({"error": e.detail[0]}, status=status.HTTP_400_BAD_REQUEST)
 
+class PasswordResetRequestView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Запрос на восстановление пароля. Код будет отправлен на email.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['email'],
+            properties={
+                'email': openapi.Schema(type=openapi.TYPE_STRING, description='Email пользователя'),
+            }
+        ),
+        responses={
+            200: openapi.Response(
+                description="Код восстановления отправлен",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'message': openapi.Schema(type=openapi.TYPE_STRING),
+                    }
+                )
+            ),
+            404: "Пользователь с таким email не найден",
+            400: "Не указан email"
+        },
+        tags=['Аутентификация']
+    )
+    def post(self, request):
+        email = request.data.get('email')
+
+        if not email:
+            return Response({"error": "Укажите email"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Проверяем, существует ли пользователь с таким email
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"error": "Пользователь с таким email не найден"},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # Генерируем код восстановления
+        code = ''.join(random.choices(string.digits, k=6))
+        expires_at = timezone.now() + timedelta(minutes=15)
+
+        # Сохраняем код в базе данных
+        EmailVerificationCode.objects.create(
+            user=user,
+            code=code,
+            email=email,
+            expires_at=expires_at
+        )
+
+        # Отправляем код на email (в консоль для разработки)
+        print(f"Код восстановления пароля для {email}: {code}")
+
+        return Response({
+            "message": "Код восстановления отправлен на email"
+        }, status=status.HTTP_200_OK)
+
+
+class PasswordResetConfirmView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Подтверждение восстановления пароля",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['email', 'code', 'new_password'],
+            properties={
+                'email': openapi.Schema(type=openapi.TYPE_STRING, description='Email пользователя'),
+                'code': openapi.Schema(type=openapi.TYPE_STRING, description='Код восстановления'),
+                'new_password': openapi.Schema(type=openapi.TYPE_STRING, description='Новый пароль'),
+            }
+        ),
+        responses={
+            200: openapi.Response(
+                description="Пароль успешно изменен",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'message': openapi.Schema(type=openapi.TYPE_STRING),
+                    }
+                )
+            ),
+            400: "Неверный код, код истек или слабый пароль",
+            404: "Пользователь не найден"
+        },
+        tags=['Аутентификация']
+    )
+    def post(self, request):
+        email = request.data.get('email')
+        code = request.data.get('code')
+        new_password = request.data.get('new_password')
+
+        if not email or not code or not new_password:
+            return Response({"error": "Заполните все поля"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Проверяем длину пароля
+        if len(new_password) < 8:
+            return Response({"error": "Пароль должен содержать минимум 8 символов"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Находим пользователя
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"error": "Пользователь не найден"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Ищем актуальный код восстановления
+        verification = EmailVerificationCode.objects.filter(
+            user=user,
+            email=email,
+            code=code,
+            is_used=False
+        ).order_by('-created_at').first()
+
+        if not verification:
+            return Response({"error": "Неверный код восстановления"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if verification.is_expired():
+            return Response({"error": "Код восстановления истек. Запросите новый код."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Помечаем код как использованный
+        verification.is_used = True
+        verification.save()
+
+        # Меняем пароль пользователя
+        user.password = make_password(new_password)
+        user.save()
+
+        return Response({
+            "message": "Пароль успешно изменен"
+        }, status=status.HTTP_200_OK)
+
+class ChangePasswordView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Смена пароля авторизованным пользователем",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['old_password', 'new_password'],
+            properties={
+                'old_password': openapi.Schema(type=openapi.TYPE_STRING, description='Старый пароль'),
+                'new_password': openapi.Schema(type=openapi.TYPE_STRING, description='Новый пароль'),
+            }
+        ),
+        responses={
+            200: openapi.Response(
+                description="Пароль успешно изменен",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'message': openapi.Schema(type=openapi.TYPE_STRING),
+                    }
+                )
+            ),
+            400: "Неверный старый пароль или слабый новый пароль",
+            401: "Пользователь не авторизован"
+        },
+        tags=['Аутентификация']
+    )
+    def post(self, request):
+        user = request.user
+
+        old_password = request.data.get('old_password')
+        new_password = request.data.get('new_password')
+
+        if not old_password or not new_password:
+            return Response({"error": "Заполните все поля"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not user.check_password(old_password):
+            return Response({"error": "Неверный старый пароль"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if len(new_password) < 8:
+            return Response({"error": "Новый пароль должен содержать минимум 8 символов"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save()
+
+        update_session_auth_hash(request, user)
+
+        return Response({
+            "message": "Пароль успешно изменен"
+        }, status=status.HTTP_200_OK)
+
+
+@login_required
+@require_POST
+def delete_account(request):
+    user = request.user
+    AnnouncementComment.objects.filter(author=user).delete()
+    GuideComment.objects.filter(author=user).delete()
+    Review.objects.filter(author=user).delete()
+    GuideRating.objects.filter(reviewer=user).delete()
+    ProfileReview.objects.filter(reviewer=user).delete()
+    ProfileReview.objects.filter(profile=user.profile).delete()
+    ChatMessage.objects.filter(sender=user).delete()
+    ChatMessage.objects.filter(receiver=user).delete()
+    EmailVerificationCode.objects.filter(user=user).delete()
+    UserActivity.objects.filter(user=user).delete()
+    FavoriteGuide.objects.filter(user=user).delete()
+    FavoriteAnnouncement.objects.filter(user=user).delete()
+    Announcement.objects.filter(author=user).delete()
+    Guide.objects.filter(author=user).delete()
+    Profile.objects.filter(user=user).delete()
+    user.delete()
+    logout(request)
+
+    return JsonResponse({'success': True, 'message': 'Аккаунт успешно удалён'})
 
 class IsAuthorOrReadOnly(BasePermission):
     def has_object_permission(self, request, view, obj):

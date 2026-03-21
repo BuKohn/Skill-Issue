@@ -7,7 +7,8 @@ from django.conf.urls.static import static
 
 from .views import (GuideRateAPIView, ReviewCreateView, create_announcement_view,
     ReviewUpdateView, ReviewDeleteView, AnnouncementListView, GuideListView, ProfileCommentCreateView,
-                    ProfileCommentUpdateView, ProfileCommentDeleteView)
+                    ProfileCommentUpdateView, ProfileCommentDeleteView, PasswordResetConfirmView,
+                    PasswordResetRequestView, delete_account, ChangePasswordView, blocked_page)
 
 router = DefaultRouter()
 router.register(r'guides', views.GuideViewSet, basename='guides')
@@ -30,6 +31,7 @@ urlpatterns = [
     path("", views.main_page, name="main_page"),
     path("register-page/", views.register_page, name="register_page"),
     path("login-page/", views.login_page, name="login_page"),
+    path("reset-password-page/", views.reset_password_page, name="reset_password_page"),
     path("favorites/", views.favorites_page, name="favorites_page"),
 
     # --- Профили ---
@@ -93,6 +95,18 @@ urlpatterns = [
          name='toggle_favorite_announcement'),
     path('guides/<int:guide_id>/toggle-favorite/', views.toggle_favorite_guide,
          name='toggle_favorite_guide'),
+
+    # --- Восстановление пароля ---
+    path('api/auth/password-reset/request/', PasswordResetRequestView.as_view(), name='password-reset-request'),
+    path('api/auth/password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+    path('api/auth/change-password/', ChangePasswordView.as_view(), name='change-password'),
+    path("change-password-page/", views.change_password_page, name="change_password_page"),
+
+    # --- Удаление профиля ---
+    path('api/account/delete/', views.delete_account, name='delete_account'),
+
+    # --- Блокировка пользователя ---
+    path("blocked/", blocked_page, name="blocked_page"),
 ]
 
 if settings.DEBUG:
