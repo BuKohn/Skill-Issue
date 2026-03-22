@@ -29,6 +29,10 @@ class Profile(models.Model):
     )
     allow_reviews = BooleanField(default=True, verbose_name="Разрешить отзывы")
 
+    is_blocked = models.BooleanField(default=False, verbose_name="Заблокирован")
+    blocked_at = models.DateTimeField(null=True, blank=True, verbose_name="Дата блокировки")
+    blocked_reason = models.TextField(blank=True, null=True, verbose_name="Причина блокировки")
+
     def __str__(self):
         return self.user.username
 

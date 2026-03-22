@@ -244,8 +244,6 @@
                  data-lang-en="Extra Settings">Дополнительные настройки
             </div>
 
-            
-            
             <div class="profile-edit-group">
                 <input type="hidden" name="allow_reviews" 
                        id="allow-reviews-input" value="{{ profile.allow_reviews|lower }}">
@@ -261,6 +259,16 @@
                         data-lang-ru="Отключены"
                         data-lang-en="Disabled">Отключены</button>
             </div>
+
+            <div class="profile-edit-group">
+                <label data-lang-ru="Аккаунт"
+                       data-lang-en="Account">Аккаунт</label>
+                <button type="button" class="delete-acc-btn p-btn-primary" style="background-color:red"
+                       data-lang-ru="Удалить аккаунт"
+                       data-lang-en="Delete Account">Удалить аккаунт</button>
+                <button type="button" class="change-password-btn p-btn-primary" style="background-color:gray"
+                       data-lang-ru="Сменить пароль"
+                       data-lang-en="Change password">Сменить пароль</button>
         </div>
 
         <div class="profile-edit-actions">
@@ -277,6 +285,18 @@
 {% include 'users/footer.html' %}
 
 <div class="p-toast" id="p-toast"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const changePasswordBtn = document.querySelector('.change-password-btn');
+
+    if (changePasswordBtn) {
+        changePasswordBtn.addEventListener('click', function() {
+            window.location.href = '/change-password-page/';
+        });
+    }
+});
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -647,6 +667,80 @@ document.addEventListener('DOMContentLoaded', function() {
         closeModal();
     });
 })();
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteAccountBtn = document.querySelector('.delete-acc-btn');
+
+    if (deleteAccountBtn) {
+        deleteAccountBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Показываем подтверждение
+            const confirmed = confirm(
+                '⚠️ ВНИМАНИЕ!\n\n' +
+                'Вы уверены, что хотите удалить свой аккаунт?\n\n' +
+                'Это действие НЕОБРАТИМО! Все ваши данные будут удалены:\n' +
+                '• Руководства и объявления\n' +
+                '• Комментарии и отзывы\n' +
+                '• Личные сообщения\n' +
+                '• История активности\n\n' +
+                'Нажмите OK для подтверждения или Отмена для отмены.'
+            );
+
+            if (confirmed) {
+                // Дополнительное подтверждение с вводом имени пользователя
+                const username = '{{ user.username }}';
+                const confirmation = prompt(
+                    'Для подтверждения удаления введите ваш никнейм:\n' + username
+                );
+
+                if (confirmation === username) {
+                    // Отправляем запрос на сервер
+                    fetch('/api/account/delete/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Аккаунт успешно удалён. До свидания!');
+                            window.location.href = '/'; // Перенаправление на главную
+                        } else {
+                            alert('Ошибка: ' + (data.error || 'Не удалось удалить аккаунт'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Произошла ошибка при удалении аккаунта. Попробуйте позже.');
+                    });
+                } else if (confirmation !== null) {
+                    alert('Никнейм не совпадает. Удаление отменено.');
+                }
+            }
+        });
+    }
+
+    // Функция для получения CSRF токена
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
 </script>
 
 </body>
