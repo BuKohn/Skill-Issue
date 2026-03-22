@@ -33,6 +33,15 @@ class Profile(models.Model):
     blocked_at = models.DateTimeField(null=True, blank=True, verbose_name="Дата блокировки")
     blocked_reason = models.TextField(blank=True, null=True, verbose_name="Причина блокировки")
 
+    telegram = models.CharField(max_length=255, blank=True, null=True)
+    github = models.CharField(max_length=255, blank=True, null=True)
+    vk = models.CharField(max_length=255, blank=True, null=True)
+    youtube = models.CharField(max_length=255, blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
+
+    banner_style = models.CharField(max_length=255, blank=True, null=True)
+    banner_image = models.ImageField(upload_to='profile_banners/', blank=True, null=True)
+
     def __str__(self):
         return self.user.username
 

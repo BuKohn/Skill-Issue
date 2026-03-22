@@ -268,30 +268,78 @@ def announcement_detail(request, announcement_id):
     return render(request, 'users/announcement_detail.html', context)
 
 
+# users/views.py
 @login_required
 def profile_edit(request):
     profile = request.user.profile
+
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
         description = request.POST.get("description", "").strip()
         avatar = request.FILES.get("avatar")
         allow_reviews = request.POST.get('allow_reviews', 'true').lower() == 'true'
 
-        if username:
+        profile.telegram = request.POST.get('social-telegram', '').strip() or None
+        profile.github = request.POST.get('social-github', '').strip() or None
+        profile.vk = request.POST.get('social-vk', '').strip() or None
+        profile.youtube = request.POST.get('social-youtube', '').strip() or None
+        website = request.POST.get('social-website', '').strip()
+        profile.website = website if website else None
+
+        banner_action = request.POST.get('banner_action', '')
+        banner_value = request.POST.get('banner_value', '').strip()
+
+        if banner_action == 'reset':
+            if profile.banner_image:
+                profile.banner_image.delete(save=False)
+            profile.banner_image = None
+            profile.banner_style = None
+        elif banner_action == 'image' and request.FILES.get('banner_image'):
+            if profile.banner_image:
+                profile.banner_image.delete(save=False)
+            profile.banner_image = request.FILES['banner_image']
+            profile.banner_style = None
+        elif banner_action in ['gradient', 'color'] and banner_value:
+            profile.banner_style = banner_value
+            if profile.banner_image:
+                profile.banner_image.delete(save=False)
+                profile.banner_image = None
+
+        if username and username != request.user.username:
+            if User.objects.filter(username=username).exclude(id=request.user.id).exists():
+                return render(request, "users/profile_edit.html", {"profile": profile, "user": request.user})
             request.user.username = username
             request.user.save()
 
         profile.bio = description
+        profile.allow_reviews = allow_reviews
         if avatar:
             profile.avatar = avatar
 
-        profile.allow_reviews = allow_reviews
-
         profile.save()
-
         return redirect(f"{request.path}?updated=1")
 
-    return render(request, "users/profile_edit.html", {"profile": profile, "user": request.user})
+    socials = {
+        'telegram': profile.telegram or '',
+        'github': profile.github or '',
+        'vk': profile.vk or '',
+        'youtube': profile.youtube or '',
+        'website': profile.website or '',
+    }
+
+    banner_data = {}
+    if profile.banner_image:
+        banner_data = {'type': 'image', 'value': profile.banner_image.url}
+    elif profile.banner_style:
+        banner_type = 'gradient' if 'gradient' in profile.banner_style.lower() else 'color'
+        banner_data = {'type': banner_type, 'value': profile.banner_style}
+
+    return render(request, "users/profile_edit.html", {
+        "profile": profile,
+        "user": request.user,
+        "socials": socials,
+        "banner_data": banner_data,
+    })
 
 @login_required
 def edit_announcement(request, announcement_id):

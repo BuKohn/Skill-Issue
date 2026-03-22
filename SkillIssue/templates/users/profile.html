@@ -17,7 +17,14 @@
 
 <div class="body-background profile-page">
 
-    <div class="profile-banner" id="profile-banner"></div>
+    <div class="profile-banner" id="profile-banner"
+        {% if profile.banner_style and not profile.banner_image %}
+            style="background: {{ profile.banner_style }};"
+        {% endif %}>
+        {% if profile.banner_image %}
+            <img src="{{ profile.banner_image.url }}" class="banner-image" alt="Banner">
+        {% endif %}
+    </div>
 
     <div class="profile-hero" id="profile-info" data-username="{{ profile.user.username }}">
         <div class="profile-avatar-wrapper">
@@ -52,7 +59,38 @@
         {% endif %}
     </div>
 
-    <div class="p-social-links" id="p-social-links"></div>
+    <div class="p-social-links" id="p-social-links">
+        {% if profile.telegram %}
+        <a href="https://t.me/{{ profile.telegram|cut:'@' }}" class="p-social-badge" target="_blank">
+            <svg class="social-label-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+            Telegram
+        </a>
+        {% endif %}
+        {% if profile.github %}
+            <a href="https://github.com/{{ profile.github|cut:'@' }}" class="p-social-badge" target="_blank">
+                <svg class="social-label-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                GitHub
+            </a>
+        {% endif %}
+        {% if profile.vk %}
+        <a href="https://vk.com/{{ profile.vk|cut:'@' }}" class="p-social-badge" target="_blank">
+            <svg class="social-label-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.391 0 15.684 0zm3.692 17.123h-1.744c-.66 0-.864-.525-2.05-1.727-1.033-1-1.49-1.135-1.744-1.135-.356 0-.458.102-.458.593v1.575c0 .424-.135.678-1.253.678-1.846 0-3.896-1.118-5.335-3.202C4.624 10.857 4.03 8.57 4.03 8.096c0-.254.102-.491.593-.491h1.744c.44 0 .61.203.78.678.847 2.49 2.27 4.676 2.853 4.676.22 0 .322-.102.322-.66V9.721c-.068-1.186-.695-1.287-.695-1.71 0-.204.17-.407.44-.407h2.744c.373 0 .508.203.508.643v3.473c0 .372.17.508.271.508.22 0 .407-.136.813-.542 1.254-1.406 2.151-3.574 2.151-3.574.119-.254.322-.491.763-.491h1.744c.525 0 .644.27.525.643-.22 1.017-2.354 4.031-2.354 4.031-.186.305-.254.44 0 .78.186.254.796.779 1.203 1.253.745.847 1.32 1.558 1.473 2.05.17.49-.085.744-.576.744z"/></svg>
+            VK
+        </a>
+        {% endif %}
+        {% if profile.youtube %}
+            <a href="https://youtube.com/{{ profile.youtube }}" class="p-social-badge" target="_blank">
+                <svg class="social-label-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                YouTube
+            </a>
+        {% endif %}
+        {% if profile.website %}
+        <a href="{{ profile.website }}" class="p-social-badge" target="_blank">
+            <svg class="social-label-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
+            Веб-сайт
+        </a>
+        {% endif %}
+    </div>
 
     <div class="profile-content">
 
@@ -540,98 +578,5 @@ document.addEventListener('DOMContentLoaded', function() {
     bioEl.innerHTML = markdownToHtml(raw);
 })();
 </script>
-
-<script>
-(function() {
-    const SOCIALS_KEY = 'profile_socials_{{ profile.user.username }}';
-    const container = document.getElementById('p-social-links');
-    if (!container) return;
-
-    const svgIcon = (path, vb) => '<svg class="social-svg-icon" viewBox="' + (vb||'0 0 24 24') + '" fill="currentColor">' + path + '</svg>';
-
-    const platforms = {
-        telegram: {
-            svg: svgIcon('<path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>'),
-            label: 'Telegram',
-            url: v => v.startsWith('@') ? 'https://t.me/' + v.slice(1) : 'https://t.me/' + v
-        },
-        github: {
-            svg: svgIcon('<path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>'),
-            label: 'GitHub',
-            url: v => 'https://github.com/' + v
-        },
-        vk: {
-            svg: svgIcon('<path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.391 0 15.684 0zm3.692 17.123h-1.744c-.66 0-.864-.525-2.05-1.727-1.033-1-1.49-1.135-1.744-1.135-.356 0-.458.102-.458.593v1.575c0 .424-.135.678-1.253.678-1.846 0-3.896-1.118-5.335-3.202C4.624 10.857 4.03 8.57 4.03 8.096c0-.254.102-.491.593-.491h1.744c.44 0 .61.203.78.678.847 2.49 2.27 4.676 2.853 4.676.22 0 .322-.102.322-.66V9.721c-.068-1.186-.695-1.287-.695-1.71 0-.204.17-.407.44-.407h2.744c.373 0 .508.203.508.643v3.473c0 .372.17.508.271.508.22 0 .407-.136.813-.542 1.254-1.406 2.151-3.574 2.151-3.574.119-.254.322-.491.763-.491h1.744c.525 0 .644.27.525.643-.22 1.017-2.354 4.031-2.354 4.031-.186.305-.254.44 0 .78.186.254.796.779 1.203 1.253.745.847 1.32 1.558 1.473 2.05.17.49-.085.744-.576.744z"/>'),
-            label: 'VK',
-            url: v => 'https://vk.com/' + v
-        },
-        youtube: {
-            svg: svgIcon('<path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>'),
-            label: 'YouTube',
-            url: v => v.startsWith('@') ? 'https://youtube.com/' + v : 'https://youtube.com/@' + v
-        },
-        website: {
-            svg: svgIcon('<circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z" fill="none" stroke="currentColor" stroke-width="2"/>'),
-            label: 'Website',
-            url: v => v.startsWith('http') ? v : 'https://' + v
-        }
-    };
-
-    try {
-        const raw = localStorage.getItem(SOCIALS_KEY);
-        if (!raw) return;
-        const data = JSON.parse(raw);
-        const keys = Object.keys(data).filter(k => data[k]);
-        if (keys.length === 0) return;
-
-        keys.forEach(key => {
-            const p = platforms[key];
-            if (!p) return;
-            const val = data[key];
-            const badge = document.createElement(p.url ? 'a' : 'span');
-            badge.className = 'p-social-badge';
-            badge.innerHTML = p.svg + ' ' + p.label;
-            if (p.url) {
-                badge.href = p.url(val);
-                badge.target = '_blank';
-                badge.rel = 'noopener noreferrer';
-            } else {
-                badge.title = val;
-                badge.style.cursor = 'default';
-            }
-            container.appendChild(badge);
-        });
-    } catch(e) {}
-})();
-</script>
-
-<script>
-(function() {
-    const BANNER_KEY = 'profile_banner_{{ profile.user.username }}';
-    const banner = document.getElementById('profile-banner');
-
-    function applyBanner(data) {
-        if (!data || !banner) return;
-        const existingImg = banner.querySelector('img.banner-image');
-        if (existingImg) existingImg.remove();
-        if (data.type === 'image' && data.value) {
-            const img = document.createElement('img');
-            img.className = 'banner-image';
-            img.src = data.value;
-            img.alt = 'Banner';
-            banner.style.background = 'none';
-            banner.insertBefore(img, banner.firstChild);
-        } else if (data.value) {
-            banner.style.background = data.value;
-        }
-    }
-
-    try {
-        const raw = localStorage.getItem(BANNER_KEY);
-        if (raw) applyBanner(JSON.parse(raw));
-    } catch(e) {}
-})();
-</script>
-
 </body>
 </html>
