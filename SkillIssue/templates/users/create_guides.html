@@ -50,7 +50,7 @@
                            data-placeholder-ru="Введите название руководства"
                            data-placeholder-en="Enter guide title"
                            value="{% if guide %}{{ guide.title|escape }}{% endif %}">
-                    
+
                     <input id="tagsInput" type="text" class="guide_name_input"
                            placeholder="Введите теги через запятую (например: Python, Django, программирование)"
                            data-placeholder-ru="Введите теги через запятую (например: Python, Django, программирование)"
@@ -119,6 +119,28 @@ let guideId = null;
 
 const imageStorage = new Map();
 let imageCounter = 0;
+
+// === ФУНКЦИЯ КОНВЕРТАЦИИ YOUTUBE ССЫЛОК В EMBED ===
+function convertYoutubeLinksToEmbed(content) {
+    // Стандартные YouTube ссылки (youtube.com/watch?v=...)
+    const patternStandard = /https?:\/\/(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/g;
+    // Короткие ссылки (youtu.be/...)
+    const patternShort = /https?:\/\/youtu\.be\/([a-zA-Z0-9_-]+)/g;
+    // Уже embed ссылки (youtube.com/embed/...)
+    const patternEmbed = /https?:\/\/(?:www\.)?youtube\.com\/embed\/([a-zA-Z0-9_-]+)/g;
+
+    function createYoutubeIframe(videoId) {
+        // ❗ ВАЖНО: iframe должен быть в ОДНУ строку, без переносов!
+        return `<div class="youtube-embed-wrapper"><iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe></div>`;
+    }
+
+    content = content.replace(patternEmbed, (match, videoId) => createYoutubeIframe(videoId));
+    content = content.replace(patternStandard, (match, videoId) => createYoutubeIframe(videoId));
+    content = content.replace(patternShort, (match, videoId) => createYoutubeIframe(videoId));
+
+    return content;
+}
+// ====================================================
 
 document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -202,7 +224,6 @@ function getCookie(name) {
     return null;
 }
 
-
 function insertText(before, after) {
     const start = editor.selectionStart;
     const end = editor.selectionEnd;
@@ -225,7 +246,6 @@ function handleImageUpload() {
             const reader = new FileReader();
             reader.onload = function(e) {
                 const imageUrl = e.target.result;
-
                 imageStorage.set(file.name, { url: imageUrl, name: file.name, file: file });
 
                 const markdownImage = `![${file.name}](${file.name})`;
@@ -274,18 +294,18 @@ function markdownToHtml(markdown) {
 
     let html = markdown;
 
+    // 1. Обработка изображений
     html = html.replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, path) => {
-    if (imageStorage.has(path)) {
-        const imageData = imageStorage.get(path);
-        return `<img src="${imageData.url}" alt="${alt || imageData.name}" style="max-width:100%;height:auto;margin:10px 0;border:1px solid #ddd;border-radius:5px;">`;
-    } else if (!path.startsWith("http")) {
-        return `<img src="/media/guides/${path}" alt="${alt}" style="max-width:100%;height:auto;margin:10px 0;border:1px solid #ddd;border-radius:5px;">`;
-    }
-    return `<img src="${path}" alt="${alt}" style="max-width:100%;height:auto;margin:10px 0;border:1px solid #ddd;border-radius:5px;">`;
-});
+        if (imageStorage.has(path)) {
+            const imageData = imageStorage.get(path);
+            return `<img src="${imageData.url}" alt="${alt || imageData.name}" style="max-width:100%;height:auto;margin:10px 0;border:1px solid #ddd;border-radius:5px;">`;
+        } else if (!path.startsWith("http")) {
+            return `<img src="/media/guides/${path}" alt="${alt}" style="max-width:100%;height:auto;margin:10px 0;border:1px solid #ddd;border-radius:5px;">`;
+        }
+        return `<img src="${path}" alt="${alt}" style="max-width:100%;height:auto;margin:10px 0;border:1px solid #ddd;border-radius:5px;">`;
+    });
 
-    html = html.replace(/!\[(.*?)\]\((http[^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;height:auto;margin:10px 0;border:1px solid #ddd;border-radius:5px;">');
-
+    // 2. Обработка заголовков и форматирования
     html = html
         .replace(/^# (.*$)/gim, '<h1>$1</h1>')
         .replace(/^## (.*$)/gim, '<h2>$1</h2>')
@@ -297,8 +317,13 @@ function markdownToHtml(markdown) {
         .replace(/`(.*?)`/g, '<code>$1</code>')
         .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
         .replace(/^- (.*$)/gim, '<ul><li>$1</li></ul>')
-        .replace(/<\/ul>\s*<ul>/g, '')
-        .replace(/\n/g, '<br>');
+        .replace(/<\/ul>\s*<ul>/g, '');
+
+    // 3. ❗ ВАЖНО: YouTube конвертация ДО замены \n на <br>
+    html = convertYoutubeLinksToEmbed(html);
+
+    // 4. Только ПОСЛЕ YouTube конвертации заменяем \n на <br>
+    html = html.replace(/\n/g, '<br>');
 
     return html;
 }

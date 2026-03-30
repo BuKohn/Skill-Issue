@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.middleware.csrf import get_token
+from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView
 from rest_framework.decorators import action
@@ -154,7 +155,9 @@ class AnnouncementListView(ListView):
             queryset = queryset.filter(title__icontains=search_query)
         return queryset
 
+
 @login_required
+@xframe_options_exempt
 def create_guide(request):
     guide_id = request.GET.get('id')
     guide = None
@@ -164,19 +167,18 @@ def create_guide(request):
             return redirect('guides_list')
 
     if request.method == 'POST':
-        # Обрабатываем данные формы
         title = request.POST.get('title', '').strip()
         content = request.POST.get('content', '').strip()
         tags_raw = request.POST.get('tags', '').strip()
         image = request.FILES.get('image')
-        
-        # Обрабатываем теги
+
         tags_list = []
         if tags_raw:
             tags_list = [tag.strip() for tag in tags_raw.split(',') if tag.strip()]
-        
+
+        content = convert_youtube_links_to_embed(content)
+
         if guide:
-            # Редактирование существующего руководства
             update_fields = ['title', 'content', 'tags']
             guide.title = title
             guide.content = content
@@ -187,7 +189,6 @@ def create_guide(request):
             guide.save(update_fields=update_fields)
             guide_obj = guide
         else:
-            # Создание нового руководства
             guide_obj = Guide.objects.create(
                 title=title,
                 content=content,
@@ -196,7 +197,6 @@ def create_guide(request):
                 image=image if image else None
             )
 
-        # Обрабатываем изображения в контенте
         content = guide_obj.content
         for key, file in request.FILES.items():
             if key.startswith('image_'):
@@ -208,7 +208,7 @@ def create_guide(request):
 
                 content = content.replace(f'({file.name})', f'({file_url})')
                 content = content.replace(f'(1761295916746_{file.name})', f'({file_url})')
-        
+
         if content != guide_obj.content:
             guide_obj.content = content
             guide_obj.save()
@@ -220,14 +220,18 @@ def create_guide(request):
     return render(request, 'users/create_guides.html', {'form': form, 'guide': guide})
 
 
+@xframe_options_exempt
 def guide_detail(request, pk):
     guide = get_object_or_404(Guide, pk=pk)
+    html = markdown.markdown(guide.content or " ", extensions=['extra'])
 
-    html = markdown.markdown(guide.content or "", extensions=['extra'])
+    # === ДОБАВЛЕНО: Преобразуем YouTube embed в iframe ===
+    html = convert_youtube_embeds_to_html(html)
+    # =====================================================
 
     html = re.sub(
-        r'<img\s+[^>]*src="(?!https?://|/|/media/)([^"]+)"',
-        r'<img src="/media/guides/\1"',
+        r'  <img\s+[^  >]*src=  "(?!https?://|/|/media/)([^  "]+)  "',
+        r'  <img src=  "/media/guides/\1  "',
         html
     )
 
@@ -1147,6 +1151,58 @@ def create_announcement_view(request):
     return render(request, "users/create_announcement.html")
 
 
+def convert_youtube_links_to_embed(content):
+    """Конвертирует YouTube ссылки в embed формат"""
+    # ✅ Исправленные паттерны с экранированием точек
+    pattern_standard = r'https?://(?:www\.)?youtube\.com/watch\?v=([a-zA-Z0-9_-]+)([^\s"\'<>]*)?'
+    pattern_short = r'https?://youtu\.be/([a-zA-Z0-9_-]+)([^\s"\'<>]*)?'
+
+    def replace_standard(match):
+        video_id = match.group(1)
+        params = match.group(2) or ''
+        # ✅ Конвертируем & в ? для первого параметра
+        if params.startswith('&'):
+            params = '?' + params[1:]
+        elif params and not params.startswith('?'):
+            params = '?' + params
+        return f'https://www.youtube.com/embed/{video_id}{params}'
+
+    def replace_short(match):
+        video_id = match.group(1)
+        params = match.group(2) or ''
+        if params.startswith('&'):
+            params = '?' + params[1:]
+        elif params and not params.startswith('?'):
+            params = '?' + params
+        return f'https://www.youtube.com/embed/{video_id}{params}'
+
+    content = re.sub(pattern_standard, replace_standard, content)
+    content = re.sub(pattern_short, replace_short, content)
+
+    return content
+
+
+def convert_youtube_embeds_to_html(content):
+    """Конвертирует YouTube embed ссылки в iframe"""
+    # ✅ Исправленный паттерн
+    pattern = r'https://www\.youtube\.com/embed/([a-zA-Z0-9_-]+)([^\s"\'<>]*)?'
+
+    def replace_with_iframe(match):
+        video_id = match.group(1)
+        params = match.group(2) or ''
+        # ✅ Добавляем loading="lazy" и referrerpolicy
+        return f'''<div class="youtube-embed-wrapper">
+        <iframe width="560" height="315" 
+        src="https://www.youtube.com/embed/{video_id}{params}" 
+        frameborder="0" 
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+        referrerpolicy="strict-origin-when-cross-origin" 
+        allowfullscreen 
+        loading="lazy">
+        </iframe>
+        </div><br>'''
+
+    return re.sub(pattern, replace_with_iframe, content)
 class AnnouncementViewSet(viewsets.ModelViewSet):
     """
     ViewSet для управления объявлениями.
