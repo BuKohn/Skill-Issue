@@ -2503,37 +2503,69 @@ svg.social-label-icon {
 .p-bio-md h5 { font-size: 0.9rem; }
 .p-bio-md h6 { font-size: 0.85rem; color: var(--text-secondary); }
 
-.youtube-embed-wrapper {
+/* Стили для YouTube Shorts - вертикальный формат */
+.youtube-shorts-wrapper {
     position: relative;
     width: 100%;
-    max-width: 560px;
+    max-width: 360px;
     margin: 20px auto;
     padding: 0;
+    display: block;
+    text-align: center;
+}
+
+.youtube-shorts-wrapper iframe {
+    width: 100%;
+    height: 640px;
+    border: none;
+    border-radius: 8px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .youtube-shorts-wrapper {
+        max-width: 100%;
+        margin: 20px auto;
+    }
+
+    .youtube-shorts-wrapper iframe {
+        height: auto;
+        aspect-ratio: 9/16;
+        min-height: 400px;
+        max-height: 640px;
+    }
+}
+
+/* Для маленьких экранов */
+@media (max-width: 480px) {
+    .youtube-shorts-wrapper iframe {
+        min-height: 320px;
+        max-height: 500px;
+    }
+}
+
+.youtube-embed-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    margin: 20px 0;
+    border-radius: 8px;
+}
+
+.youtube-embed-wrapper.shorts {
+    padding-bottom: 177.77%; /* 9:16 aspect ratio для Shorts */
+    max-width: 315px;
+    margin: 20px auto;
 }
 
 .youtube-embed-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 315px;
-    border: none;
-    border-radius: 8px;
-    display: block;
-}
-
-#preview-content .youtube-embed-wrapper iframe,
-.preview-content .youtube-embed-wrapper iframe {
-    width: 100%;
-    height: 315px;
-    min-height: 200px;
-}
-
-@media (max-width: 768px) {
-    .youtube-embed-wrapper {
-        max-width: 100%;
-    }
-
-    .youtube-embed-wrapper iframe {
-        height: auto;
-        aspect-ratio: 16/9;
-        min-height: 180px;
-    }
+    height: 100%;
+    border: 0;
 }

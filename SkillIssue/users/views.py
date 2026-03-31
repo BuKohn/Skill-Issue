@@ -198,16 +198,29 @@ def create_guide(request):
             )
 
         content = guide_obj.content
+        import os
+        from django.utils import timezone
+
         for key, file in request.FILES.items():
             if key.startswith('image_'):
                 from django.core.files.storage import default_storage
                 from django.core.files.base import ContentFile
 
-                filename = default_storage.save(f'guides/{file.name}', ContentFile(file.read()))
+                timestamp = int(timezone.now().timestamp() * 1000)
+                original_name = file.name
+                name, ext = os.path.splitext(original_name)
+                unique_filename = f'image_{timestamp}{ext}'
+
+                filename = default_storage.save(f'guides/{unique_filename}', ContentFile(file.read()))
                 file_url = default_storage.url(filename)
 
-                content = content.replace(f'({file.name})', f'({file_url})')
-                content = content.replace(f'(1761295916746_{file.name})', f'({file_url})')
+                content = content.replace(f'({original_name})', f'({file_url})')
+
+                content = re.sub(
+                    rf'\(image_\d+_{re.escape(original_name)}\)',
+                    f'({file_url})',
+                    content
+                )
 
         if content != guide_obj.content:
             guide_obj.content = content
@@ -223,19 +236,31 @@ def create_guide(request):
 @xframe_options_exempt
 def guide_detail(request, pk):
     guide = get_object_or_404(Guide, pk=pk)
-    html = markdown.markdown(guide.content or " ", extensions=['extra'])
+    content = guide.content or ""
 
-    # === ДОБАВЛЕНО: Преобразуем YouTube embed в iframe ===
-    html = convert_youtube_embeds_to_html(html)
-    # =====================================================
+    # === 1. Сначала конвертируем YouTube ссылки в embed формат ===
+    content = convert_youtube_links_to_embed(content)
 
+    # === 2. Конвертируем embed URL в iframe HTML (ДО markdown!) ===
+    content = convert_youtube_embeds_to_html(content)
+
+    # === 3. Применяем markdown с safe_mode=False чтобы сохранить HTML ===
+    html = markdown.markdown(
+        content,
+        extensions=['extra', 'codehilite'],
+        output_format='html5'
+    )
+
+    # === 4. Исправляем пути к изображениям ===
     html = re.sub(
-        r'  <img\s+[^  >]*src=  "(?!https?://|/|/media/)([^  "]+)  "',
-        r'  <img src=  "/media/guides/\1  "',
-        html
+        r'src="(?!https?://|/)([^"]+)"',
+        r'src="/media/guides/\1"',
+        html,
+        flags=re.IGNORECASE
     )
 
     guide_content_html = mark_safe(html)
+
     reviews = guide.reviews.select_related("author", "author__profile").order_by("-created_at")
 
     is_favorited = False
@@ -1153,56 +1178,67 @@ def create_announcement_view(request):
 
 def convert_youtube_links_to_embed(content):
     """Конвертирует YouTube ссылки в embed формат"""
-    # ✅ Исправленные паттерны с экранированием точек
-    pattern_standard = r'https?://(?:www\.)?youtube\.com/watch\?v=([a-zA-Z0-9_-]+)([^\s"\'<>]*)?'
-    pattern_short = r'https?://youtu\.be/([a-zA-Z0-9_-]+)([^\s"\'<>]*)?'
+    # Стандартные YouTube ссылки
+    pattern_standard = r'https?://(?:www\.)?youtube\.com/watch\?v=([a-zA-Z0-9_-]+)([^\s"\'<>]*)'
+    # YouTube Shorts
+    pattern_shorts = r'https?://(?:www\.)?youtube\.com/shorts/([a-zA-Z0-9_-]+)([^\s"\'<>]*)'
 
     def replace_standard(match):
         video_id = match.group(1)
         params = match.group(2) or ''
-        # ✅ Конвертируем & в ? для первого параметра
         if params.startswith('&'):
             params = '?' + params[1:]
         elif params and not params.startswith('?'):
             params = '?' + params
         return f'https://www.youtube.com/embed/{video_id}{params}'
 
-    def replace_short(match):
+    def replace_shorts(match):
         video_id = match.group(1)
-        params = match.group(2) or ''
-        if params.startswith('&'):
-            params = '?' + params[1:]
-        elif params and not params.startswith('?'):
-            params = '?' + params
-        return f'https://www.youtube.com/embed/{video_id}{params}'
+        return f'https://www.youtube.com/embed/{video_id}'
 
     content = re.sub(pattern_standard, replace_standard, content)
-    content = re.sub(pattern_short, replace_short, content)
+    content = re.sub(pattern_shorts, replace_shorts, content)
 
     return content
 
 
 def convert_youtube_embeds_to_html(content):
-    """Конвертирует YouTube embed ссылки в iframe"""
-    # ✅ Исправленный паттерн
-    pattern = r'https://www\.youtube\.com/embed/([a-zA-Z0-9_-]+)([^\s"\'<>]*)?'
+    # Паттерн для Shorts (с #shorts в конце URL)
+    pattern_shorts = r'https://www\.youtube\.com/embed/([a-zA-Z0-9_-]+)([^\s"\'<>]*)#shorts'
+    # Паттерн для обычных видео
+    pattern_normal = r'https://www\.youtube\.com/embed/([a-zA-Z0-9_-]+)([^\s"\'<>]*)'
 
-    def replace_with_iframe(match):
+    def replace_with_iframe(match, is_shorts):
         video_id = match.group(1)
         params = match.group(2) or ''
-        # ✅ Добавляем loading="lazy" и referrerpolicy
-        return f'''<div class="youtube-embed-wrapper">
-        <iframe width="560" height="315" 
-        src="https://www.youtube.com/embed/{video_id}{params}" 
-        frameborder="0" 
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-        referrerpolicy="strict-origin-when-cross-origin" 
-        allowfullscreen 
-        loading="lazy">
-        </iframe>
-        </div><br>'''
+        if is_shorts:
+            return f'''<div class="youtube-embed-wrapper">
+                        <iframe width="560" height="315" 
+                            src="https://www.youtube.com/embed/{video_id}" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                            referrerpolicy="strict-origin-when-cross-origin" 
+                            allowfullscreen 
+                            loading="lazy">
+                        </iframe>
+                    </div><br>'''
+        else:
+            return f'''<div class="youtube-embed-wrapper">
+                <iframe width="560" height="315" 
+                    src="https://www.youtube.com/embed/{video_id}{params}" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    referrerpolicy="strict-origin-when-cross-origin" 
+                    allowfullscreen 
+                    loading="lazy">
+                </iframe>
+            </div><br>'''
 
-    return re.sub(pattern, replace_with_iframe, content)
+    content = re.sub(pattern_shorts, lambda m: replace_with_iframe(m, is_shorts=True), content)
+    content = re.sub(pattern_normal, lambda m: replace_with_iframe(m, is_shorts=False), content)
+
+    return content
+
 class AnnouncementViewSet(viewsets.ModelViewSet):
     """
     ViewSet для управления объявлениями.
