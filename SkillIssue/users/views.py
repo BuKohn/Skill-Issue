@@ -230,9 +230,10 @@ def guide_detail(request, pk):
     # =====================================================
 
     html = re.sub(
-        r'  <img\s+[^  >]*src=  "(?!https?://|/|/media/)([^  "]+)  "',
-        r'  <img src=  "/media/guides/\1  "',
-        html
+        r'src="(?!https?://|/)([^"]+)"',
+        r'src="/media/guides/\1"',
+        html,
+        flags=re.IGNORECASE
     )
 
     guide_content_html = mark_safe(html)
