@@ -9,109 +9,170 @@
         })();
     </script>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/editor.css' %}">
 </head>
 <body>
     {% include 'users/header.html' %}
 
-    <div class="body-background">
-        <h1 id="pageTitle" class="simple-text" style="margin-top: 20px; font-size: 1.5rem;"
-            data-lang-ru="{% if guide %}Отредактируйте руководство{% else %}Начните создавать своё руководство!{% endif %}"
-            data-lang-en="{% if guide %}Edit the guide{% else %}Start creating your guide!{% endif %}">
-            {% if guide %}Отредактируйте руководство{% else %}Начните создавать своё руководство!{% endif %}
-        </h1>
-        <a class="simple-text" style="margin-top: 0; font-size: 0.8rem; color:#424242; margin-bottom: 20px"
-           data-lang-ru="Поддерживается разметка текста с помощью markdown"
-           data-lang-en="Markdown formatting is supported">
-            Поддерживается разметка текста с помощью markdown
-        </a>
+    <div class="edit-page-wrapper">
 
-        <div class="editor-container">
-            <div class="profile-row-container" style="gap: 20px; flex-wrap: nowrap; align-items: flex-start;">
-                <div class="profile-column-container" style="max-width: 260px;">
-                    <div style="display: flex; justify-content: center; margin-top: 10px;">
-                        <label for="guide-image-upload" style="cursor: pointer;">
-                            <img id="guide-preview-image"
-                                 class="image-element"
-                                 src="{% static 'images/default-guide.png' %}"
-                                 alt="Guide cover image"
-                                 style="object-fit: cover;">
-                        </label>
-                        <input type="file" id="guide-image-upload" class="file-input" accept="image/*">
-                    </div>
-                    <a class="simple-text" style="font-size: 1.1rem; margin: 0 auto; margin-top: 8px;"
-                       data-lang-ru="Изображение карточки" data-lang-en="Card image">
-                        Изображение карточки
-                    </a>
+        <!-- Page header -->
+        <div class="edit-page-header">
+            <h1 id="pageTitle"
+                data-lang-ru="{% if guide %}Отредактируйте руководство{% else %}Начните создавать своё руководство!{% endif %}"
+                data-lang-en="{% if guide %}Edit the guide{% else %}Start creating your guide!{% endif %}">
+                {% if guide %}Отредактируйте руководство{% else %}Начните создавать своё руководство!{% endif %}
+            </h1>
+            <p class="edit-page-subtitle"
+               data-lang-ru="Поддерживается разметка текста с помощью markdown"
+               data-lang-en="Markdown formatting is supported">
+                Поддерживается разметка текста с помощью markdown
+            </p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="editor-tabs">
+            <button class="editor-tab-btn active" data-tab="editor"
+                    data-lang-ru="Редактор" data-lang-en="Editor">Редактор</button>
+            <button class="editor-tab-btn" data-tab="preview"
+                    data-lang-ru="Предпросмотр" data-lang-en="Preview">Предпросмотр</button>
+        </div>
+
+        <!-- ── EDITOR PANEL ── -->
+        <div class="editor-tab-panel active" id="tab-panel-editor">
+
+            <!-- Card: Main Info -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <h2 class="form-card-title"
+                        data-lang-ru="Основная информация"
+                        data-lang-en="Main Info">Основная информация</h2>
                 </div>
+                <div class="form-card-body">
+                    <div class="form-row">
 
-                <div class="profile-column-container" style="flex: 1; width: 100%;">
-                    <input id="titleInput" type="text" class="guide_name_input"
-                           placeholder="Введите название руководства"
-                           data-placeholder-ru="Введите название руководства"
-                           data-placeholder-en="Enter guide title"
-                           value="{% if guide %}{{ guide.title|escape }}{% endif %}">
+                        <div class="image-upload-panel">
+                            <label for="guide-image-upload" class="image-upload-trigger">
+                                <img id="guide-preview-image"
+                                     class="image-element"
+                                     src="{% static 'images/default-guide.png' %}"
+                                     alt="Guide cover image">
+                            </label>
+                            <input type="file" id="guide-image-upload" class="file-input" accept="image/*">
+                            <p class="image-upload-hint"
+                               data-lang-ru="Изображение карточки"
+                               data-lang-en="Card image">Изображение карточки</p>
+                        </div>
 
-                    <input id="tagsInput" type="text" class="guide_name_input"
-                           placeholder="Введите теги через запятую (например: Python, Django, программирование)"
-                           data-placeholder-ru="Введите теги через запятую (например: Python, Django, программирование)"
-                           data-placeholder-en="Enter tags separated by commas (e.g. Python, Django, programming)"
-                           value="{% if guide %}{{ guide.tags|join:', ' }}{% endif %}"
-                           style="margin-top: 10px;">
+                        <div class="form-fields-panel">
+                            <div class="form-field">
+                                <label class="form-label"
+                                       data-lang-ru="Название"
+                                       data-lang-en="Title">Название</label>
+                                <input id="titleInput" type="text" class="form-input"
+                                       placeholder="Введите название руководства"
+                                       data-placeholder-ru="Введите название руководства"
+                                       data-placeholder-en="Enter guide title"
+                                       value="{% if guide %}{{ guide.title|escape }}{% endif %}">
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label"
+                                       data-lang-ru="Теги"
+                                       data-lang-en="Tags">Теги</label>
+                                <input id="tagsInput" type="text" class="form-input"
+                                       placeholder="Введите теги через запятую (например: Python, Django, программирование)"
+                                       data-placeholder-ru="Введите теги через запятую (например: Python, Django, программирование)"
+                                       data-placeholder-en="Enter tags separated by commas (e.g. Python, Django, programming)"
+                                       value="{% if guide %}{{ guide.tags|join:', ' }}{% endif %}">
+                                <p class="form-helper"
+                                   data-lang-ru="Разделяйте теги запятой"
+                                   data-lang-en="Separate tags with commas">Разделяйте теги запятой</p>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
 
-            <div class="editor-section">
-                <div class="editor-header">
-                    <div class="toolbar">
-                        <button class="toolbar-btn" onclick="insertText('**', '**')" title="Жирный текст" data-lang-ru-title="Жирный текст" data-lang-en-title="Bold">**B**</button>
-                        <button class="toolbar-btn" onclick="insertText('*', '*')" title="Курсив" data-lang-ru-title="Курсив" data-lang-en-title="Italic">*I*</button>
-                        <button class="toolbar-btn" onclick="insertText('# ', '')" title="Заголовок 1" data-lang-ru-title="Заголовок 1" data-lang-en-title="Heading 1">H1</button>
-                        <button class="toolbar-btn" onclick="insertText('## ', '')" title="Заголовок 2" data-lang-ru-title="Заголовок 2" data-lang-en-title="Heading 2">H2</button>
-                        <button class="toolbar-btn" onclick="insertText('- ', '')" title="Список" data-lang-ru-title="Список" data-lang-en-title="List">-</button>
-                        <button class="toolbar-btn" onclick="insertText('```\n', '\n```')" title="Блок кода" data-lang-ru-title="Блок кода" data-lang-en-title="Code block">```</button>
-                        <button class="toolbar-btn" onclick="insertText('> ', '')" title="Цитата" data-lang-ru-title="Цитата" data-lang-en-title="Quote">></button>
-                        <input type="file" id="imageInput" class="file-input" accept="image/*" onchange="handleImageUpload()">
-                        <label for="imageInput" class="file-label" data-lang-ru="Изображение" data-lang-en="Image">Изображение</label>
+            <!-- Card: Content -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <h2 class="form-card-title"
+                        data-lang-ru="Содержимое"
+                        data-lang-en="Content">Содержимое</h2>
+                </div>
+                <div class="form-card-body">
+                    <div class="editor-container">
+                        <div class="editor-header">
+                            <div class="toolbar">
+                                <button class="toolbar-btn" onclick="insertText('**', '**')" title="Жирный текст" data-lang-ru-title="Жирный текст" data-lang-en-title="Bold">**B**</button>
+                                <button class="toolbar-btn" onclick="insertText('*', '*')" title="Курсив" data-lang-ru-title="Курсив" data-lang-en-title="Italic">*I*</button>
+                                <button class="toolbar-btn" onclick="insertText('# ', '')" title="Заголовок 1" data-lang-ru-title="Заголовок 1" data-lang-en-title="Heading 1">H1</button>
+                                <button class="toolbar-btn" onclick="insertText('## ', '')" title="Заголовок 2" data-lang-ru-title="Заголовок 2" data-lang-en-title="Heading 2">H2</button>
+                                <button class="toolbar-btn" onclick="insertText('- ', '')" title="Список" data-lang-ru-title="Список" data-lang-en-title="List">-</button>
+                                <button class="toolbar-btn" onclick="insertText('```\n', '\n```')" title="Блок кода" data-lang-ru-title="Блок кода" data-lang-en-title="Code block">```</button>
+                                <button class="toolbar-btn" onclick="insertText('> ', '')" title="Цитата" data-lang-ru-title="Цитата" data-lang-en-title="Quote">></button>
+                                <input type="file" id="imageInput" class="file-input" accept="image/*" onchange="handleImageUpload()">
+                                <label for="imageInput" class="file-label" data-lang-ru="Изображение" data-lang-en="Image">Изображение</label>
+                            </div>
+                        </div>
+                        <textarea id="markdownEditor"
+                                  placeholder="Начните писать ваше руководство здесь..."
+                                  data-placeholder-ru="Начните писать ваше руководство здесь..."
+                                  data-placeholder-en="Start writing your guide here...">
+                            {% if guide %}{{ guide.content|escape }}{% endif %}
+                        </textarea>
                     </div>
                 </div>
-                <textarea id="markdownEditor"
-                          placeholder="Начните писать ваше руководство здесь..."
-                          data-placeholder-ru="Начните писать ваше руководство здесь..."
-                          data-placeholder-en="Start writing your guide here...">
-                    {% if guide %}{{ guide.content|escape }}{% endif %}
-                </textarea>
             </div>
 
-            <div class="preview-section">
-                <div class="preview-header">
-                    <h3 style="line-height: 0; margin-top:5px" data-lang-ru="Предпросмотр" data-lang-en="Preview">Предпросмотр</h3>
+            <!-- Action bar -->
+            <div class="form-actions">
+                <div class="form-actions-left">
+                    {% if guide %}
+                    <button class="btn-danger"
+                            id="delete-guide-btn"
+                            data-lang-ru="Удалить руководство"
+                            data-lang-en="Delete guide">
+                        Удалить руководство
+                    </button>
+                    {% endif %}
                 </div>
-                <div id="preview" class="preview-content">
-                    <em style="color: #666;" data-lang-ru="Предпросмотр появится здесь..." data-lang-en="Preview will appear here...">Предпросмотр появится здесь...</em>
+                <div class="form-actions-right">
+                    <button class="btn-secondary" onclick="clearEditor()" data-lang-ru="Очистить" data-lang-en="Clear">Очистить</button>
+                    <button class="btn-primary" onclick="saveGuide()" data-lang-ru="Сохранить руководство" data-lang-en="Save guide">Сохранить руководство</button>
+                </div>
+            </div>
+
+        </div>
+        <!-- ── END EDITOR PANEL ── -->
+
+        <!-- ── PREVIEW PANEL ── -->
+        <div class="editor-tab-panel" id="tab-panel-preview">
+            <div class="form-card">
+                <div class="form-card-header">
+                    <h2 class="form-card-title"
+                        data-lang-ru="Предпросмотр содержимого"
+                        data-lang-en="Content preview">
+                        Предпросмотр содержимого
+                    </h2>
+                </div>
+                <div class="form-card-body guide-preview-page">
+                    <a id="guide-preview-title" class="simple-text guide-preview-page-title"></a>
+                    <div id="guide-preview-body" class="preview-content guide-preview-page-content">
+                        <em data-lang-ru="Содержимое появится здесь..." data-lang-en="Content will appear here...">Содержимое появится здесь...</em>
+                    </div>
                 </div>
             </div>
         </div>
+        <!-- ── END PREVIEW PANEL ── -->
 
-        <div class="actions">
-            <button class="profile-button" onclick="clearEditor()" data-lang-ru="Очистить" data-lang-en="Clear">Очистить</button>
-            <button class="profile-button" onclick="saveGuide()" data-lang-ru="Сохранить руководство" data-lang-en="Save guide">Сохранить руководство</button>
-            {% if guide %}
-            <button class="profile-button"
-                    id="delete-guide-btn"
-                    style="background-color:#ff5c5c; border:none;"
-                    data-lang-ru="Удалить руководство"
-                    data-lang-en="Delete guide">
-                Удалить руководство
-            </button>
-            {% endif %}
-        </div>
     </div>
 
     {% include 'users/footer.html' %}
 
 <script>
 const editor = document.getElementById('markdownEditor');
-const preview = document.getElementById('preview');
 const titleInput = document.getElementById('titleInput');
 const tagsInput = document.getElementById('tagsInput');
 const pageTitle = document.getElementById('pageTitle');
@@ -177,7 +238,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.tags && Array.isArray(data.tags)) {
                     tagsInput.value = data.tags.join(', ');
                 }
-
                 if (data.image) {
                     const guidePreview = document.getElementById('guide-preview-image');
                     if (guidePreview) {
@@ -185,19 +245,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         guidePreview.style.objectFit = 'cover';
                     }
                 }
-
                 const imageRegex = /!\[(.*?)\]\((.*?)\)/g;
                 let match;
                 while ((match = imageRegex.exec(data.content)) !== null) {
                     const altText = match[1];
                     const fileName = match[2];
-
                     if (!fileName.startsWith("http")) {
-                        const imageUrl = `/media/guides/${fileName}`;
-                        imageStorage.set(fileName, { url: imageUrl, name: altText || fileName });
+                        imageStorage.set(fileName, { url: `/media/guides/${fileName}`, name: altText || fileName });
                     }
                 }
-
                 updatePreview();
             })
             .catch(err => console.error(err));
@@ -213,18 +269,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 ? 'Удалить это руководство? Действие необратимо.'
                 : 'Delete this guide? This action cannot be undone.';
             if (!confirm(confirmMsg)) return;
-
             try {
                 const res = await fetch(`/api/guides/${guideId}/`, {
                     method: 'DELETE',
                     headers: { 'X-CSRFToken': getCookie('csrftoken') || '' },
                     credentials: 'same-origin'
                 });
-
-                if (!res.ok) {
-                    throw new Error(lang === 'RU' ? 'Не удалось удалить руководство' : 'Failed to delete guide');
-                }
-
+                if (!res.ok) throw new Error(lang === 'RU' ? 'Не удалось удалить руководство' : 'Failed to delete guide');
                 window.location.href = "{% url 'guides_list' %}";
             } catch (err) {
                 alert(err.message || (lang === 'RU' ? 'Ошибка при удалении' : 'Error deleting'));
@@ -244,12 +295,9 @@ function insertText(before, after) {
     const start = editor.selectionStart;
     const end = editor.selectionEnd;
     const selectedText = editor.value.substring(start, end);
-    const newText = editor.value.substring(0, start) + before + selectedText + after + editor.value.substring(end);
-
-    editor.value = newText;
+    editor.value = editor.value.substring(0, start) + before + selectedText + after + editor.value.substring(end);
     editor.focus();
     editor.setSelectionRange(start + before.length, end + before.length);
-
     updatePreview();
 }
 
@@ -258,7 +306,6 @@ let uploadedImages = [];
 function handleImageUpload() {
     const fileInput = document.getElementById('imageInput');
     const files = fileInput.files;
-
     if (files.length > 0) {
         Array.from(files).forEach(file => {
             const reader = new FileReader();
@@ -286,14 +333,11 @@ function handleImageUpload() {
                 // Вставляем markdown с уникальным ID
                 const markdownImage = `![${file.name}](${imageId})`;
                 const start = editor.selectionStart;
-                const newText = editor.value.substring(0, start) + '\n' + markdownImage + '\n' + editor.value.substring(start);
-                editor.value = newText;
-
+                editor.value = editor.value.substring(0, start) + '\n' + markdownImage + '\n' + editor.value.substring(start);
                 updatePreview();
             };
             reader.readAsDataURL(file);
         });
-
         fileInput.value = '';
     }
 }
@@ -314,20 +358,14 @@ document.getElementById('guide-image-upload').addEventListener('change', functio
 });
 
 function updatePreview() {
-    const markdownText = editor.value;
-    const html = markdownToHtml(markdownText);
-    preview.innerHTML = html;
+    // kept for toolbar buttons that call this directly
 }
 
 function markdownToHtml(markdown) {
     if (!markdown.trim()) {
         const lang = localStorage.getItem('lang') || 'RU';
-        const placeholder = lang === 'RU'
-            ? 'Предпросмотр появится здесь...'
-            : 'Preview will appear here...';
-        return `<em style="color: #666;">${placeholder}</em>`;
+        return `<em style="color: #666;">${lang === 'RU' ? 'Предпросмотр появится здесь...' : 'Preview will appear here...'}</em>`;
     }
-
     let html = markdown;
 
     // ✅ 1. СНАЧАЛА обрабатываем YouTube ссылки и сохраняем в отдельные плейсхолдеры
@@ -402,39 +440,35 @@ function clearEditor() {
     const confirmMsg = lang === 'RU'
         ? 'Вы уверены, что хотите очистить редактор?'
         : 'Are you sure you want to clear the editor?';
-    if (confirm(confirmMsg)) {
-        editor.value = '';
-        titleInput.value = '';
-        tagsInput.value = '';
-        imageStorage.clear();
-        imageCounter = 0;
-        const guidePreview = document.getElementById('guide-preview-image');
-        if (guidePreview) {
-            guidePreview.src = "{% static 'images/default-guide.png' %}";
-            guidePreview.style.objectFit = 'cover';
-        }
-        const guideImageInput = document.getElementById('guide-image-upload');
-        if (guideImageInput) {
-            guideImageInput.value = '';
-        }
-        updatePreview();
+    if (!confirm(confirmMsg)) return;
+    editor.value = '';
+    titleInput.value = '';
+    tagsInput.value = '';
+    imageStorage.clear();
+    imageCounter = 0;
+    const guidePreview = document.getElementById('guide-preview-image');
+    if (guidePreview) {
+        guidePreview.src = "{% static 'images/default-guide.png' %}";
+        guidePreview.style.objectFit = 'cover';
     }
+    const guideImageInput = document.getElementById('guide-image-upload');
+    if (guideImageInput) guideImageInput.value = '';
+    updatePreview();
 }
 
 async function saveGuide() {
     const guideTitle = titleInput.value.trim();
-    const content = editor.value;
-    const tags = tagsInput.value.trim();
+    const content    = editor.value;
+    const tags       = tagsInput.value.trim();
+    const lang       = localStorage.getItem('lang') || 'RU';
 
-    const lang = localStorage.getItem('lang') || 'RU';
-    const alertMsg = lang === 'RU'
-        ? "Введите название и текст"
-        : "Please enter title and content";
+    titleInput.classList.toggle('is-error', !guideTitle);
 
     if (!guideTitle || !content.trim()) {
-        alert(alertMsg);
+        alert(lang === 'RU' ? "Введите название и текст" : "Please enter title and content");
         return;
     }
+    titleInput.classList.remove('is-error');
 
     const formData = new FormData();
     formData.append("title", guideTitle);
@@ -453,8 +487,8 @@ async function saveGuide() {
     });
 
     const urlParams = new URLSearchParams(window.location.search);
-    const guideId = urlParams.get('id');
-    const url = guideId ? `/create_guide/?id=${guideId}` : "{% url 'create_guide' %}";
+    const guideId   = urlParams.get('id');
+    const url       = guideId ? `/create_guide/?id=${guideId}` : "{% url 'create_guide' %}";
 
     const response = await fetch(url, {
         method: "POST",
@@ -473,10 +507,7 @@ async function saveGuide() {
 
         window.location.href = guideId ? `/guides/${guideId}/` : "{% url 'guides_list' %}";
     } else {
-        const errorMsg = lang === 'RU'
-            ? "Ошибка при сохранении руководства"
-            : "Failed to save guide";
-        alert(errorMsg);
+        alert(lang === 'RU' ? "Ошибка при сохранении руководства" : "Failed to save guide");
     }
 }
 
@@ -484,16 +515,37 @@ editor.addEventListener('keydown', function(e) {
     if (e.key === 'Tab') {
         e.preventDefault();
         const start = this.selectionStart;
-        const end = this.selectionEnd;
+        const end   = this.selectionEnd;
         const spaces = '    ';
         this.value = this.value.substring(0, start) + spaces + this.value.substring(end);
         this.selectionStart = this.selectionEnd = start + spaces.length;
         updatePreview();
     }
 });
-
 editor.addEventListener('input', updatePreview);
 
+/* ── Tab switching ── */
+document.querySelectorAll('.editor-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.editor-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.editor-tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-panel-' + btn.dataset.tab).classList.add('active');
+        if (btn.dataset.tab === 'preview') updateGuidePreviewPanel();
+    });
+});
+
+/* ── Guide preview panel update ── */
+function updateGuidePreviewPanel() {
+    const titleEl = document.getElementById('guide-preview-title');
+    if (titleEl) {
+        const lang = localStorage.getItem('lang') || 'RU';
+        titleEl.textContent = titleInput.value.trim() ||
+            (lang === 'EN' ? '(No title)' : '(Название не указано)');
+    }
+    const bodyEl = document.getElementById('guide-preview-body');
+    if (bodyEl) bodyEl.innerHTML = markdownToHtml(editor.value);
+}
 </script>
 <script src="{% static 'js/search.js' %}"></script>
 <script src="{% static 'js/toggle_language.js' %}"></script>

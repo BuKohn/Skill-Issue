@@ -10,6 +10,7 @@
         })();
     </script>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/editor.css' %}">
 </head>
 <body>
 {% include 'users/header.html' %}
@@ -171,7 +172,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Редактирование существующего отзыва
     document.querySelectorAll('.edit-review-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const reviewId = btn.dataset.reviewId;
@@ -204,16 +204,13 @@ document.addEventListener('DOMContentLoaded', function() {
                       alert(data.error);
                       return;
                   }
-                  // Удаляем блок отзыва со страницы
                   const block = document.querySelector(`.review-block[data-review-id="${reviewId}"]`);
                   block.remove();
 
-                  // Обновляем рейтинг гида
                   if (data.guide_average_rating !== undefined) {
                       document.getElementById('guide-rating').textContent = `Рейтинг: ${Math.floor(data.guide_average_rating)}/5`;
                   }
 
-                  // Если есть рейтинг профиля
                   const profileRatingEl = document.querySelector('.profile-rating');
                   if (profileRatingEl) {
                       profileRatingEl.textContent = `Рейтинг: ${data.profile_average_rating}/5`;
@@ -253,21 +250,18 @@ document.addEventListener('DOMContentLoaded', function() {
                   return;
               }
 
-              // Обновляем текст и звезды отзыва
               if (isUpdate) {
                   const block = document.querySelector(`.review-block[data-review-id="${reviewId}"]`);
                   block.querySelector('.review-text').textContent = textarea.value;
                   block.querySelector('.review-stars').textContent = `⭐ ${currentRating}`;
               } else {
-                  location.reload(); // Или динамически вставлять новый отзыв
+                  location.reload();
               }
 
-              // Обновляем рейтинг гида
               if (data.guide_average_rating !== undefined) {
                   document.getElementById('guide-rating').textContent = `Рейтинг: ${Math.floor(data.guide_average_rating)}/5`;
               }
 
-              // Если на странице есть профиль автора, обновляем рейтинг профиля
               const profileRatingEl = document.querySelector('.profile-rating');
               if (profileRatingEl) {
                   profileRatingEl.textContent = `Рейтинг: ${data.profile_average_rating}/5`;

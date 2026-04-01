@@ -1,5 +1,5 @@
-:root {
-    /* Светлая тема */
+﻿:root {
+    /* РЎРІРµС‚Р»Р°СЏ С‚РµРјР° */
     --bg-primary: ghostwhite;
     --bg-secondary: white;
     --bg-tertiary: #fafafa;
@@ -22,7 +22,7 @@
 }
 
 [data-theme="dark"] {
-    /* Темная тема */
+    /* РўРµРјРЅР°СЏ С‚РµРјР° */
     --bg-primary: #1a1a1a;
     --bg-secondary: #2d2d2d;
     --bg-tertiary: #252525;
@@ -1174,7 +1174,7 @@ button#theme-toggle:focus {
     background: var(--bg-secondary);
 }
 
-/* Стили для комментариев к объявлениям */
+/* РЎС‚РёР»Рё РґР»СЏ РєРѕРјРјРµРЅС‚Р°СЂРёРµРІ Рє РѕР±СЉСЏРІР»РµРЅРёСЏРј */
 .comment-block {
     background-color: var(--bg-primary) !important;
     transition: background-color 0.3s ease;
@@ -2232,7 +2232,7 @@ svg.social-label-icon {
     transform: translateX(-50%) translateY(0);
 }
 
-/* Markdown редактор описания */
+/* Markdown СЂРµРґР°РєС‚РѕСЂ РѕРїРёСЃР°РЅРёСЏ */
 .md-editor-wrapper {
     border: 1px solid var(--border-color);
     border-radius: 10px;
@@ -2405,7 +2405,7 @@ svg.social-label-icon {
     transform: scale(1.1);
 }
 
-/* Markdown описание на странице профиля */
+/* Markdown РѕРїРёСЃР°РЅРёРµ РЅР° СЃС‚СЂР°РЅРёС†Рµ РїСЂРѕС„РёР»СЏ */
 .p-bio-md {
     font-size: 0.95rem;
     color: var(--text-secondary);
@@ -2569,3 +2569,4 @@ svg.social-label-icon {
     height: 100%;
     border: 0;
 }
+@import url('./editor.css');

@@ -1,5 +1,4 @@
 {% load static %}
-
 <html>
 <head>
     <title>Skill Issue</title>
@@ -10,117 +9,273 @@
         })();
     </script>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/editor.css' %}">
 </head>
 <body>
     {% include 'users/header.html' %}
 
-    <form method="POST" id="announcementForm" action="{% url 'create' %}">
-        {% csrf_token %}
-        <input type="hidden" name="title">
-        <input type="hidden" name="description">
+    <div class="edit-page-wrapper">
 
-        <div class="body-background">
-            <a class="simple-text" style="margin-top: 20px; font-size: 1.5rem;" data-lang-ru="Начните писать своё объявление!" data-lang-en="Start writing your announcement!">Начните писать своё объявление!</a>
-            <div class="editor-container">
-                <div class="profile-row-container" style="gap: 20px; flex-wrap: nowrap;">
-                    <div class="profile-column-container">
-                        <div style="display: flex; justify-content: center; margin-top: 20px;">
-                            <label for="image-upload" style="cursor: pointer;">
-                                <img id="preview-image" class="image-element" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjE1IiBoZWlnaHQ9IjIxNSIgdmlld0JveD0iMCAwIDIxNSAyMTUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMTUiIGhlaWdodD0iMjE1IiByeD0iNSIgZmlsbD0iI0ZGRkZGRiIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjEiLz4KPHBhdGggZD0iTTEwNy41IDU1VjE2MCIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNNjAgMTA3LjVIMTU1IiBzdHJva2U9IiM0MjQyNDIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=" alt="Добавить изображение" style="object-fit: cover;">
-                            </label>
-                            <input type="file" id="image-upload" class="file-input" accept="image/*">
-                        </div>
-                        <a class="simple-text" style="font-size: 1.2rem; margin: 0 auto;" data-lang-ru="Выберите изображение" data-lang-en="Choose image">Выберите изображение</a>
-                    </div> 
-                <div class="profile-column-container" style="width: 100%;">
-                    <input type="text" class="guide_name_input" style="margin-left: 0"
-                           placeholder="Введите название объявления"
-                           data-placeholder-ru="Введите название объявления"
-                           data-placeholder-en="Enter announcement title">
-                    <textarea class="textarea" style="height: 180px; max-height: 180px; min-height: 180px; margin-bottom: 30px; width: 100%;"
-                              placeholder="Напишите описание..."
-                              data-placeholder-ru="Напишите описание..."
-                              data-placeholder-en="Write a description..."></textarea>
+        <!-- Page header -->
+        <div class="edit-page-header">
+            <h1 data-lang-ru="Начните писать своё объявление!" data-lang-en="Start writing your announcement!">
+                Начните писать своё объявление!
+            </h1>
+        </div>
+
+        <!-- Tabs -->
+        <div class="editor-tabs">
+            <button class="editor-tab-btn active" data-tab="editor"
+                    data-lang-ru="Редактор" data-lang-en="Editor">Редактор</button>
+            <button class="editor-tab-btn" data-tab="preview"
+                    data-lang-ru="Предпросмотр" data-lang-en="Preview">Предпросмотр</button>
+        </div>
+
+        <!-- ── EDITOR PANEL ── -->
+        <div class="editor-tab-panel active" id="tab-panel-editor">
+
+            <!-- Card: Main Info -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <h2 class="form-card-title"
+                        data-lang-ru="Основная информация"
+                        data-lang-en="Main Info">Основная информация</h2>
                 </div>
+                <div class="form-card-body">
+                    <div class="form-row">
+
+                        <div class="image-upload-panel">
+                            <label for="image-upload" class="image-upload-trigger">
+                                <img id="preview-image" class="image-element"
+                                     src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjE1IiBoZWlnaHQ9IjIxNSIgdmlld0JveD0iMCAwIDIxNSAyMTUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMTUiIGhlaWdodD0iMjE1IiByeD0iNSIgZmlsbD0iI0ZGRkZGRiIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjEiLz4KPHBhdGggZD0iTTEwNy41IDU1VjE2MCIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNNjAgMTA3LjVIMTU1IiBzdHJva2U9IiM0MjQyNDIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo="
+                                     alt="Добавить изображение">
+                            </label>
+                            <input type="file" id="image-upload" name="image" class="file-input" accept="image/*">
+                            <p class="image-upload-hint"
+                               data-lang-ru="Выберите изображение"
+                               data-lang-en="Choose image">Выберите изображение</p>
+                        </div>
+
+                        <div class="form-fields-panel">
+                            <div class="form-field">
+                                <label class="form-label" for="ann-title"
+                                       data-lang-ru="Название"
+                                       data-lang-en="Title">Название</label>
+                                <input type="text" id="ann-title" name="title" class="form-input"
+                                       placeholder="Введите название объявления"
+                                       data-placeholder-ru="Введите название объявления"
+                                       data-placeholder-en="Enter announcement title">
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label" for="ann-desc"
+                                       data-lang-ru="Описание"
+                                       data-lang-en="Description">Описание</label>
+                                <textarea id="ann-desc" name="description" class="form-textarea-field"
+                                          placeholder="Напишите описание..."
+                                          data-placeholder-ru="Напишите описание..."
+                                          data-placeholder-en="Write a description..."></textarea>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
-            <input type="text" id="tags" class="guide_name_input" style="margin-bottom: 20px; text-align: center;"
-                   placeholder="теги через запятую"
-                   data-placeholder-ru="теги через запятую"
-                   data-placeholder-en="tags separated by commas">
-            <div class="actions">
-                <button class="profile-button" onclick="clearEditor()" data-lang-ru="Очистить" data-lang-en="Clear">Очистить</button>
-                <button class="profile-button" type="button" onclick="saveGuide()" data-lang-ru="Сохранить объявление" data-lang-en="Save announcement">Сохранить объявление</button>
+
+            <!-- Card: Settings -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <h2 class="form-card-title"
+                        data-lang-ru="Настройки"
+                        data-lang-en="Settings">Настройки</h2>
+                </div>
+                <div class="form-card-body">
+                    <div class="form-field">
+                        <label class="form-label" for="tags"
+                               data-lang-ru="Теги"
+                               data-lang-en="Tags">Теги</label>
+                        <input type="text" id="tags" name="tags" class="form-input"
+                               placeholder="теги через запятую"
+                               data-placeholder-ru="теги через запятую"
+                               data-placeholder-en="tags separated by commas">
+                        <p class="form-helper"
+                           data-lang-ru="Разделяйте теги запятой"
+                           data-lang-en="Separate tags with commas">Разделяйте теги запятой</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action bar -->
+            <div class="form-actions">
+                <div class="form-actions-left"></div>
+                <div class="form-actions-right">
+                    <button type="button" class="btn-secondary" onclick="clearEditor()"
+                            data-lang-ru="Очистить" data-lang-en="Clear">Очистить</button>
+                    <button type="button" class="btn-primary" onclick="saveAnnouncement()"
+                            data-lang-ru="Сохранить объявление" data-lang-en="Save announcement">
+                        Сохранить объявление
+                    </button>
+                </div>
+            </div>
+
+        </div>
+        <!-- ── END EDITOR PANEL ── -->
+
+        <!-- ── PREVIEW PANEL ── -->
+        <div class="editor-tab-panel" id="tab-panel-preview">
+            <div class="form-card">
+                <div class="form-card-header">
+                    <h2 class="form-card-title"
+                        data-lang-ru="Предпросмотр объявления"
+                        data-lang-en="Announcement preview">
+                        Предпросмотр объявления
+                    </h2>
+                </div>
+                <div class="form-card-body">
+                    <div class="ann-preview-wrap">
+                        <div class="ann-preview-layout">
+                            <div class="ann-preview-img-col">
+                                <div class="ann-preview-img-wrap">
+                                    <div class="ann-preview-img-placeholder" id="ann-preview-placeholder">🖼</div>
+                                    <img id="ann-preview-img" class="ann-preview-img" src="" alt="" hidden>
+                                </div>
+                            </div>
+                            <div class="ann-preview-body">
+                                <a id="ann-preview-title" class="simple-text ann-preview-title">
+                                    <span data-lang-ru="(Название не указано)"
+                                          data-lang-en="(No title)">(Название не указано)</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div id="ann-preview-desc" class="ann-preview-desc">
+                            <span data-lang-ru="(Нет описания)"
+                                  data-lang-en="(No description)">(Нет описания)</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </form>
+        <!-- ── END PREVIEW PANEL ── -->
+
+    </div>
 
     {% include 'users/footer.html' %}
 
     <script>
+        let hasCustomImage = false;
+
+        /* ── Image upload ── */
         document.getElementById('image-upload').addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file) {
+                hasCustomImage = true;
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const previewImage = document.getElementById('preview-image');
-                    previewImage.src = e.target.result;
-                    previewImage.style.objectFit = 'cover';
+                    document.getElementById('preview-image').src = e.target.result;
+                    document.getElementById('preview-image').style.objectFit = 'cover';
                 };
                 reader.readAsDataURL(file);
             }
         });
 
+        /* ── Clear all fields ── */
         function clearEditor() {
             const lang = localStorage.getItem('lang') || 'RU';
-            const confirmMsg = lang === 'RU' 
-                ? 'Вы уверены, что хотите очистить все поля?' 
+            const confirmMsg = lang === 'RU'
+                ? 'Вы уверены, что хотите очистить все поля?'
                 : 'Are you sure you want to clear all fields?';
-            if (confirm(confirmMsg)) {
-                document.getElementById('preview-image').src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjE1IiBoZWlnaHQ9IjIxNSIgdmlld0JveD0iMCAwIDIxNSAyMTUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMTUiIGhlaWdodD0iMjE1IiByeD0iNSIgZmlsbD0iI0ZGRkZGRiIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjEiLz4KPHBhdGggZD0iTTEwNy41IDU1VjE2MCIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNNjAgMTA3LjVIMTU1IiBzdHJva2U9IiM0MjQyNDIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=";
-                document.getElementById('preview-image').style.objectFit = 'contain';
-                document.getElementById('image-upload').value = '';
-                document.querySelector('.guide_name_input').value = '';
-                document.querySelector('.textarea').value = '';
-                document.getElementById('tags').value = '';
-            }
+            if (!confirm(confirmMsg)) return;
+
+            const PLACEHOLDER_SRC = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjE1IiBoZWlnaHQ9IjIxNSIgdmlld0JveD0iMCAwIDIxNSAyMTUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMTUiIGhlaWdodD0iMjE1IiByeD0iNSIgZmlsbD0iI0ZGRkZGRiIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjEiLz4KPHBhdGggZD0iTTEwNy41IDU1VjE2MCIgc3Ryb2tlPSIjNDI0MjQyIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNNjAgMTA3LjVIMTU1IiBzdHJva2U9IiM0MjQyNDIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=";
+            document.getElementById('preview-image').src = PLACEHOLDER_SRC;
+            document.getElementById('preview-image').style.objectFit = 'contain';
+            document.getElementById('image-upload').value = '';
+            document.getElementById('ann-title').value = '';
+            document.getElementById('ann-desc').value = '';
+            document.getElementById('tags').value = '';
         }
 
-        function saveGuide() {
-            const title = document.querySelector(".guide_name_input").value.trim();
-            const description = document.querySelector(".textarea").value.trim();
+        /* ── Save announcement via fetch ── */
+        function saveAnnouncement() {
+            const titleEl  = document.getElementById('ann-title');
+            const descEl   = document.getElementById('ann-desc');
+            const title       = titleEl.value.trim();
+            const description = descEl.value.trim();
 
             const lang = localStorage.getItem('lang') || 'RU';
-            const alertMsg = lang === 'RU'
-                ? 'Пожалуйста, заполните название и описание объявления'
-                : 'Please fill in the title and description';
+
+            titleEl.classList.toggle('is-error', !title);
+            descEl.classList.toggle('is-error', !description);
 
             if (!title || !description) {
+                const alertMsg = lang === 'RU'
+                    ? 'Пожалуйста, заполните название и описание объявления'
+                    : 'Please fill in the title and description';
                 alert(alertMsg);
                 return;
             }
 
             const formData = new FormData();
-            formData.append("title", title);
-            formData.append("description", description);
+            formData.append('title', title);
+            formData.append('description', description);
+            formData.append('tags', document.getElementById('tags').value.trim());
 
-            const tagsInput = document.getElementById("tags").value;
-            formData.append("tags", tagsInput);
-
-            const fileInput = document.getElementById("image-upload");
+            const fileInput = document.getElementById('image-upload');
             if (fileInput.files.length > 0) {
-                formData.append("image", fileInput.files[0]);
+                formData.append('image', fileInput.files[0]);
             }
 
             fetch("{% url 'create' %}", {
-                method: "POST",
+                method: 'POST',
                 body: formData,
-                headers: {
-                    "X-CSRFToken": "{{ csrf_token }}"
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            })
+            .then(res => {
+                if (res.ok || res.redirected) {
+                    window.location.href = "{% url 'announcements_list' %}";
+                } else {
+                    const errMsg = lang === 'RU' ? 'Ошибка при сохранении' : 'Failed to save';
+                    alert(errMsg);
                 }
-            }).then(() => {
+            })
+            .catch(() => {
                 window.location.href = "{% url 'announcements_list' %}";
             });
+        }
+
+        /* ── Tab switching ── */
+        document.querySelectorAll('.editor-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.editor-tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.editor-tab-panel').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('tab-panel-' + btn.dataset.tab).classList.add('active');
+                if (btn.dataset.tab === 'preview') updatePreviewPanel();
+            });
+        });
+
+        /* ── Preview panel update ── */
+        function updatePreviewPanel() {
+            const srcImg      = document.getElementById('preview-image');
+            const prevImg     = document.getElementById('ann-preview-img');
+            const placeholder = document.getElementById('ann-preview-placeholder');
+
+            if (hasCustomImage) {
+                prevImg.src = srcImg.src;
+                prevImg.removeAttribute('hidden');
+                placeholder.hidden = true;
+            } else {
+                prevImg.setAttribute('hidden', '');
+                placeholder.hidden = false;
+            }
+
+            const lang  = localStorage.getItem('lang') || 'RU';
+            const title = document.getElementById('ann-title').value.trim();
+            document.getElementById('ann-preview-title').textContent =
+                title || (lang === 'EN' ? '(No title)' : '(Название не указано)');
+
+            const desc = document.getElementById('ann-desc').value.trim();
+            document.getElementById('ann-preview-desc').textContent =
+                desc || (lang === 'EN' ? '(No description)' : '(Нет описания)');
         }
     </script>
     <script src="{% static 'js/search.js' %}"></script>
