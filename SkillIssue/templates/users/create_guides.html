@@ -181,23 +181,45 @@ let guideId = null;
 const imageStorage = new Map();
 let imageCounter = 0;
 
-// === ФУНКЦИЯ КОНВЕРТАЦИИ YOUTUBE ССЫЛОК В EMBED ===
 function convertYoutubeLinksToEmbed(content) {
-    const patternStandard = /https?:\/\/(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/g;
-    const patternShort = /https?:\/\/youtu\.be\/([a-zA-Z0-9_-]+)/g;
-    const patternEmbed = /https?:\/\/(?:www\.)?youtube\.com\/embed\/([a-zA-Z0-9_-]+)/g;
+    // ✅ YouTube Shorts - заменяем /shorts/ на /embed/ + #shorts
+    const patternShorts = /https?:\/\/(?:www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]+)([^\s"'<>]*)/g;
+    // ✅ Стандартные YouTube ссылки
+    const patternStandard = /https?:\/\/(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)([^\s"'<>]*)/g;
+    // ✅ Короткие ссылки youtu.be
+    const patternShort = /https?:\/\/youtu\.be\/([a-zA-Z0-9_-]+)([^\s"'<>]*)/g;
+    // ✅ Уже embed ссылки
+    const patternEmbed = /https?:\/\/(?:www\.)?youtube\.com\/embed\/([a-zA-Z0-9_-]+)([^\s"'<>]*)/g;
 
-    function createYoutubeIframe(videoId) {
-        return `<div class="youtube-embed-wrapper"><iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe></div>`;
+    function createYoutubeIframe(videoId, params = '') {
+        let embedParams = params;
+        if (embedParams.startsWith('&')) {
+            embedParams = '?' + embedParams.slice(1);
+        } else if (embedParams && !embedParams.startsWith('?')) {
+            embedParams = '?' + embedParams;
+        }
+        // ✅ ВСЕ видео используют горизонтальный формат и один класс
+        return `<div class="youtube-embed-wrapper"><iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}${embedParams}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe></div>`;
     }
 
-    content = content.replace(patternEmbed, (match, videoId) => createYoutubeIframe(videoId));
-    content = content.replace(patternStandard, (match, videoId) => createYoutubeIframe(videoId));
-    content = content.replace(patternShort, (match, videoId) => createYoutubeIframe(videoId));
+    // ✅ Shorts - простая замена: /shorts/ → /embed/ + #shorts
+    content = content.replace(patternShorts, (match, videoId, params) => {
+        const embedUrl = `https://www.youtube.com/embed/${videoId}${params}#shorts`;
+        // ✅ Используем тот же класс для горизонтального отображения
+        return `<div class="youtube-embed-wrapper"><iframe width="560" height="315" src="${embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe></div>`;
+    });
+
+    // ✅ Обычные видео - стандартная обработка
+    content = content.replace(patternEmbed, (match, videoId, params) => createYoutubeIframe(videoId, params));
+    content = content.replace(patternStandard, (match, videoId, params) => createYoutubeIframe(videoId, params));
+    content = content.replace(patternShort, (match, videoId, params) => createYoutubeIframe(videoId, params));
+
     return content;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    uploadedImages = [];
+
     const urlParams = new URLSearchParams(window.location.search);
     guideId = urlParams.get('id');
 
@@ -279,6 +301,8 @@ function insertText(before, after) {
     updatePreview();
 }
 
+let uploadedImages = [];
+
 function handleImageUpload() {
     const fileInput = document.getElementById('imageInput');
     const files = fileInput.files;
@@ -286,8 +310,28 @@ function handleImageUpload() {
         Array.from(files).forEach(file => {
             const reader = new FileReader();
             reader.onload = function(e) {
-                imageStorage.set(file.name, { url: e.target.result, name: file.name, file: file });
-                const markdownImage = `![${file.name}](${file.name})`;
+                const imageUrl = e.target.result;
+
+                // Создаем уникальный идентификатор для изображения
+                const imageId = `image_${Date.now()}_${file.name}`;
+
+                // Сохраняем в storage с уникальным ID
+                imageStorage.set(imageId, {
+                    url: imageUrl,
+                    name: file.name,
+                    file: file,
+                    id: imageId
+                });
+
+                // Добавляем в массив для отправки
+                uploadedImages.push({
+                    id: imageId,
+                    file: file,
+                    name: file.name
+                });
+
+                // Вставляем markdown с уникальным ID
+                const markdownImage = `![${file.name}](${imageId})`;
                 const start = editor.selectionStart;
                 editor.value = editor.value.substring(0, start) + '\n' + markdownImage + '\n' + editor.value.substring(start);
                 updatePreview();
@@ -323,6 +367,39 @@ function markdownToHtml(markdown) {
         return `<em style="color: #666;">${lang === 'RU' ? 'Предпросмотр появится здесь...' : 'Preview will appear here...'}</em>`;
     }
     let html = markdown;
+
+    // ✅ 1. СНАЧАЛА обрабатываем YouTube ссылки и сохраняем в отдельные плейсхолдеры
+    const youtubePlaceholders = new Map();
+    let placeholderId = 0;
+
+    // Находим все YouTube ссылки и заменяем их на плейсхолдеры
+    html = html.replace(
+        /https?:\/\/(?:www\.)?youtube\.com\/(watch\?v=|shorts\/|embed\/|youtu\.be\/)([a-zA-Z0-9_-]+)([^\s"'<>]*)/g,
+        (match, type, videoId, params) => {
+            let embedParams = params || '';
+            if (embedParams.startsWith('&')) {
+                embedParams = '?' + embedParams.slice(1);
+            } else if (embedParams && !embedParams.startsWith('?') && !embedParams.startsWith('#')) {
+                embedParams = '?' + embedParams;
+            }
+
+            // Определяем, shorts это или обычное видео
+            const isShorts = type.includes('shorts');
+            const width = isShorts ? '360' : '560';
+            const height = isShorts ? '640' : '315';
+            const wrapperClass = isShorts ? 'youtube-shorts-wrapper' : 'youtube-embed-wrapper';
+
+            const iframeHtml = `<div class="${wrapperClass}"><iframe width="${width}" height="${height}" src="https://www.youtube.com/embed/${videoId}${embedParams}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe></div>`;
+
+            const placeholder = `__YOUTUBE_PLACEHOLDER_${placeholderId}__`;
+            youtubePlaceholders.set(placeholder, iframeHtml);
+            placeholderId++;
+
+            return placeholder;
+        }
+    );
+
+    // ✅ 2. Затем обрабатываем изображения
     html = html.replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, path) => {
         if (imageStorage.has(path)) {
             const imageData = imageStorage.get(path);
@@ -332,6 +409,8 @@ function markdownToHtml(markdown) {
         }
         return `<img src="${path}" alt="${alt}" style="max-width:100%;height:auto;margin:10px 0;border:1px solid #ddd;border-radius:5px;">`;
     });
+
+    // ✅ 3. Затем заголовки и форматирование
     html = html
         .replace(/^# (.*$)/gim, '<h1>$1</h1>')
         .replace(/^## (.*$)/gim, '<h2>$1</h2>')
@@ -344,8 +423,15 @@ function markdownToHtml(markdown) {
         .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
         .replace(/^- (.*$)/gim, '<ul><li>$1</li></ul>')
         .replace(/<\/ul>\s*<ul>/g, '');
-    html = convertYoutubeLinksToEmbed(html);
+
+    // ✅ 4. Только ПОСЛЕ всего заменяем \n на <br>
     html = html.replace(/\n/g, '<br>');
+
+    // ✅ 5. Заменяем плейсхолдеры на реальный HTML
+    youtubePlaceholders.forEach((iframeHtml, placeholder) => {
+        html = html.replace(placeholder, iframeHtml);
+    });
+
     return html;
 }
 
@@ -389,10 +475,16 @@ async function saveGuide() {
     formData.append("content", content);
     formData.append("tags", tags);
 
+    // Добавляем обложку руководства
     const guideImageInput = document.getElementById('guide-image-upload');
     if (guideImageInput && guideImageInput.files.length > 0) {
         formData.append("image", guideImageInput.files[0]);
     }
+
+    // ✅ ОТПРАВЛЯЕМ ВСЕ ИЗОБРАЖЕНИЯ ИЗ КОНТЕНТА
+    uploadedImages.forEach(img => {
+        formData.append(`image_${img.id}`, img.file);
+    });
 
     const urlParams = new URLSearchParams(window.location.search);
     const guideId   = urlParams.get('id');
@@ -405,7 +497,14 @@ async function saveGuide() {
     });
 
     if (response.ok) {
-        alert(lang === 'RU' ? "Руководство успешно сохранено!" : "Guide saved successfully!");
+        const successMsg = lang === 'RU'
+            ? "Руководство успешно сохранено!"
+            : "Guide saved successfully!";
+        alert(successMsg);
+
+        // Очищаем массив после успешного сохранения
+        uploadedImages = [];
+
         window.location.href = guideId ? `/guides/${guideId}/` : "{% url 'guides_list' %}";
     } else {
         alert(lang === 'RU' ? "Ошибка при сохранении руководства" : "Failed to save guide");
